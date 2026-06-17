@@ -260,7 +260,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 <script>
 const BOARD_ID = 18417025952;
 const API_URL  = 'https://api.monday.com/v2';
-const FILE_URL = 'https://api.monday.com/v2/file';
+const FILE_URL = '/.netlify/functions/monday-upload'; // proxy para evitar CORS
 
 const COL = {
   fabricacion:       'color_mm45sq7w',
@@ -338,7 +338,12 @@ async function uploadFileToUpdate(updateId, blob, filename) {
   fd.append('variables', JSON.stringify({ file: null }));
   fd.append('map', JSON.stringify({ '0': ['variables.file'] }));
   fd.append('0', blob, filename);
-  const res = await fetch(FILE_URL, { method: 'POST', headers: { Authorization: S.token }, body: fd });
+  // Usamos el proxy Netlify (x-monday-token en vez de Authorization para que Netlify no lo intercepte)
+  const res = await fetch(FILE_URL, {
+    method: 'POST',
+    headers: { 'x-monday-token': S.token },
+    body: fd
+  });
   if (!res.ok) throw new Error(`HTTP ${res.status} al subir archivo`);
   const json = await res.json();
   if (json.errors) throw new Error(json.errors[0].message || 'Error Monday al subir');
