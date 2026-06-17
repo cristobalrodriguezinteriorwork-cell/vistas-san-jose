@@ -678,33 +678,40 @@ async function handleAction() {
 async function handlePhotos(event) {
   const files = Array.from(event.target.files);
   event.target.value = '';
-  if (!files.length || !S.current) return;
+  if (!files.length || !S.current) { toast('⚠️ No se seleccionó foto o no hay unidad abierta'); return; }
   const u = S.current, r = ROLES[S.role];
   const grid = document.getElementById('photo-grid');
-  if (!grid) { toast('Abre una unidad primero'); return; }
+  if (!grid) { toast('⚠️ No hay grid de fotos — asegúrate de estar en Inst. Cocinas o Inst. Topes'); return; }
 
   for (const file of files) {
-    // Show preview immediately using the original file
+    toast(`📸 Foto recibida: ${file.name} (${Math.round(file.size/1024)}KB, ${file.type})`);
+    // Show preview immediately
     const previewUrl = URL.createObjectURL(file);
     const img = document.createElement('img');
     img.src = previewUrl; img.className = 'photo-thumb uploading';
     grid.insertBefore(img, grid.lastElementChild);
-    toast('Subiendo foto...');
+
     try {
-      // Convert to JPEG (handles iPhone HEIC and resizes if needed)
+      // Step 1: Convert to JPEG
+      toast('⏳ Paso 1/3: Convirtiendo imagen...');
       const jpeg = await fileToJpeg(file);
+      toast(`⏳ Paso 2/3: Creando registro Monday... (${Math.round(jpeg.size/1024)}KB)`);
+
+      // Step 2: Create update
       const today = new Date().toISOString().split('T')[0];
       const fname = `foto_${u.name.replace(/ /g,'_')}_${Date.now()}.jpg`;
-      // Step 1: create update
       const uid = await createUpdate(u.id, `📷 ${r.name} — Foto de instalación ${u.name} (${today})`);
-      // Step 2: attach file
+      toast(`⏳ Paso 3/3: Subiendo archivo... (update ${uid})`);
+
+      // Step 3: Upload file
       await uploadFileToUpdate(uid, jpeg, fname);
       img.classList.remove('uploading');
       img.onclick = () => openPhotoModal(previewUrl);
-      toast('✅ Foto guardada en Monday');
+      toast('✅ Foto guardada en Monday correctamente');
     } catch(e) {
       img.classList.replace('uploading', 'upload-error');
-      toast('❌ Error: ' + e.message);
+      const msg = e.message || String(e);
+      toast('❌ ERROR: ' + msg);
       console.error('Photo upload error:', e);
     }
   }
@@ -736,7 +743,7 @@ function getSignatureBlob() { return new Promise(res => document.getElementById(
 
 // ── UI Helpers ────────────────────────────────────────────────────────
 let toastTimer;
-function toast(msg) { const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),3000); }
+function toast(msg) { const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),6000); }
 function showLoading(msg='Cargando...') { document.getElementById('loading-text').textContent=msg; document.getElementById('loading').classList.add('show'); }
 function hideLoading() { document.getElementById('loading').classList.remove('show'); }
 
