@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1F3864">
-<title>Vistas San José</title>
+<title>Palacios del Este</title>
 <link rel="manifest" href="manifest.json">
 <style>
 :root {
@@ -30,34 +30,55 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .screen { position: absolute; inset: 0; display: none; flex-direction: column; overflow: hidden; }
 .screen.active { display: flex; }
 
+/* ── Setup ── */
 #screen-setup { background: var(--brand); align-items: center; justify-content: center; padding: 32px 24px; }
-.setup-logo { font-size: 48px; margin-bottom: 16px; }
-.setup-title { color: #fff; font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 6px; }
-.setup-sub { color: rgba(255,255,255,0.7); font-size: 14px; text-align: center; margin-bottom: 32px; }
+.setup-logo { width: 80px; height: 80px; object-fit: contain; margin-bottom: 12px; border-radius: 12px; }
+.setup-logo-fallback { font-size: 48px; margin-bottom: 12px; }
+.setup-title { color: #fff; font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 2px; }
+.setup-brand { color: rgba(255,255,255,0.6); font-size: 13px; text-align: center; margin-bottom: 24px; letter-spacing: 1px; text-transform: uppercase; }
 .setup-card { background: #fff; border-radius: var(--radius); padding: 24px; width: 100%; max-width: 360px; }
 .setup-card label { font-size: 13px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
 .setup-card input { width: 100%; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; font-size: 14px; color: var(--text); outline: none; }
 .setup-card input:focus { border-color: var(--brand-mid); }
-.btn-primary { width: 100%; background: var(--brand); color: #fff; border: none; border-radius: 10px; padding: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 16px; transition: opacity 0.15s; }
-.btn-primary:active { opacity: 0.85; }
+.btn-primary { width: 100%; background: var(--brand); color: #fff; border: none; border-radius: 10px; padding: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 16px; }
 
+/* ── Roles ── */
 #screen-roles { background: var(--brand); padding: 0; }
-.roles-header { padding: 56px 24px 24px; }
-.roles-header h1 { color: #fff; font-size: 26px; font-weight: 800; }
-.roles-header p { color: rgba(255,255,255,0.65); font-size: 14px; margin-top: 4px; }
+.roles-header { padding: 48px 24px 20px; display: flex; align-items: center; gap: 14px; }
+.roles-header-logo { width: 48px; height: 48px; object-fit: contain; border-radius: 8px; flex-shrink: 0; }
+.roles-header-text h1 { color: #fff; font-size: 22px; font-weight: 800; }
+.roles-header-text p  { color: rgba(255,255,255,0.6); font-size: 13px; margin-top: 2px; }
 .roles-grid { background: var(--bg); flex: 1; border-radius: 24px 24px 0 0; padding: 24px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-content: start; overflow-y: auto; }
-.role-card { background: var(--card); border-radius: var(--radius); padding: 24px 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; box-shadow: var(--shadow); transition: transform 0.15s; border: 2px solid transparent; }
+.role-card { background: var(--card); border-radius: var(--radius); padding: 24px 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; box-shadow: var(--shadow); border: 2px solid transparent; transition: transform 0.15s; }
 .role-card:active { transform: scale(0.97); }
 .role-icon { font-size: 36px; }
 .role-name { font-size: 13px; font-weight: 700; text-align: center; color: var(--text); }
-.role-sub { font-size: 11px; color: var(--text-muted); text-align: center; }
-.role-card.taller { border-color: var(--brand-mid); }
+.role-sub  { font-size: 11px; color: var(--text-muted); text-align: center; }
+.role-card.taller      { border-color: var(--brand-mid); }
 .role-card.inst-cocina { border-color: var(--green); }
-.role-card.inst-tope { border-color: var(--orange); }
-.role-card.encargado { border-color: var(--red); }
+.role-card.inst-tope   { border-color: var(--orange); }
+.role-card.encargado   { border-color: var(--red); }
 
+/* ── PIN Screen ── */
+#screen-pin { background: var(--brand); align-items: center; justify-content: flex-start; padding-top: 60px; }
+.pin-back { position: absolute; top: 48px; left: 16px; background: rgba(255,255,255,0.15); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.pin-role-label { color: rgba(255,255,255,0.7); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.pin-role-name  { color: #fff; font-size: 22px; font-weight: 700; margin-bottom: 32px; }
+.pin-dots { display: flex; gap: 16px; margin-bottom: 40px; }
+.pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); background: transparent; transition: background 0.15s; }
+.pin-dot.filled { background: #fff; border-color: #fff; }
+.pin-dot.error  { background: var(--red); border-color: var(--red); }
+.pin-pad { display: grid; grid-template-columns: repeat(3, 72px); gap: 14px; }
+.pin-key { width: 72px; height: 72px; border-radius: 50%; border: none; background: rgba(255,255,255,0.12); color: #fff; font-size: 24px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.1s; }
+.pin-key:active { background: rgba(255,255,255,0.28); }
+.pin-key.del { font-size: 18px; }
+.pin-key.empty { background: transparent; pointer-events: none; }
+.pin-error-msg { color: rgba(255,100,100,0.9); font-size: 14px; margin-top: 16px; min-height: 20px; }
+
+/* ── App Header ── */
 .app-header { background: var(--brand); color: #fff; padding: 48px 16px 14px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 .app-header .back-btn { background: rgba(255,255,255,0.15); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.app-header .header-logo { width: 32px; height: 32px; object-fit: contain; border-radius: 6px; flex-shrink: 0; }
 .app-header .header-info { flex: 1; }
 .app-header h2 { font-size: 17px; font-weight: 700; }
 .app-header .header-sub { font-size: 12px; opacity: 0.7; margin-top: 1px; }
@@ -65,153 +86,186 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .refresh-btn.spinning { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ── Units ── */
 .units-search { padding: 12px 16px; background: var(--brand); }
 .units-search input { width: 100%; background: rgba(255,255,255,0.15); border: none; border-radius: 10px; padding: 10px 14px; color: #fff; font-size: 14px; outline: none; }
 .units-search input::placeholder { color: rgba(255,255,255,0.55); }
-
 .units-stats { display: flex; gap: 8px; padding: 10px 16px; background: var(--brand); }
 .stat-chip { flex: 1; background: rgba(255,255,255,0.12); border-radius: 8px; padding: 6px 8px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
-.stat-chip:active { opacity: 0.75; }
 .stat-chip.chip-active { background: rgba(255,255,255,0.28); border-color: rgba(255,255,255,0.55); }
 .stat-chip .stat-n { font-size: 18px; font-weight: 700; color: #fff; display: block; }
 .stat-chip .stat-l { font-size: 10px; color: rgba(255,255,255,0.65); }
-
 .filter-bar { display: flex; gap: 8px; padding: 8px 12px 0; background: var(--brand); }
-.filter-pill { border: none; border-radius: 20px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
-.filter-pill.active { background: #fff; color: var(--brand); }
+.filter-pill { border: none; border-radius: 20px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.filter-pill.active   { background: #fff; color: var(--brand); }
 .filter-pill.inactive { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); }
-
 .units-list { flex: 1; overflow-y: auto; padding: 12px; background: var(--bg); border-radius: 20px 20px 0 0; margin-top: -2px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; align-content: start; }
 .unit-btn { aspect-ratio: 1; border: none; border-radius: 10px; cursor: pointer; font-size: 11px; font-weight: 700; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; transition: transform 0.1s; }
 .unit-btn:active { transform: scale(0.93); }
-.unit-btn .u-num { font-size: 13px; font-weight: 800; }
+.unit-btn .u-num  { font-size: 13px; font-weight: 800; }
 .unit-btn .u-icon { font-size: 14px; }
-.unit-btn.status-done { background: #d1fae5; color: #065f46; }
+.unit-btn .u-warn { font-size: 10px; }
+.unit-btn.status-done     { background: #d1fae5; color: #065f46; }
 .unit-btn.status-progress { background: #fef3c7; color: #92400e; }
-.unit-btn.status-pending { background: #f3f4f6; color: #6b7280; }
+.unit-btn.status-pending  { background: #f3f4f6; color: #6b7280; }
 .unit-btn.has-issue { outline: 2px solid #df2f4a; outline-offset: -2px; }
-.unit-btn .u-warn { font-size: 10px; line-height: 1; }
 
-.issue-card { background: #fff8f0; border: 1.5px solid #fdab3d; border-radius: var(--radius); padding: 20px; }
-.issue-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #92400e; margin-bottom: 8px; font-weight: 600; }
-.issue-existing { background: #fff3cd; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; font-size: 13px; color: #7c5a00; line-height: 1.5; }
-.issue-existing strong { display: block; font-size: 11px; color: #92400e; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.4px; }
-.issue-actions-row { display: flex; gap: 8px; margin-bottom: 12px; }
-.btn-issue-sm { flex: 1; border: none; border-radius: 8px; padding: 9px; font-size: 13px; font-weight: 700; cursor: pointer; }
-.btn-issue-sm:active { opacity: 0.8; }
-.btn-clear   { background: #e5e7eb; color: #374151; }
-.btn-resolve { background: var(--green); color: #fff; }
-.issue-textarea { width: 100%; border: 1.5px solid #fdab3d; border-radius: 10px; padding: 12px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 80px; outline: none; color: var(--text); background: #fff; }
-.issue-textarea:focus { border-color: #e08000; }
-.btn-issue { width: 100%; background: #fdab3d; color: #fff; border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
-.btn-issue:active { opacity: 0.85; }
-
+/* ── Detail ── */
 .detail-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 .detail-status-card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
 .detail-status-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 12px; font-weight: 600; }
 .status-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
 .status-row:last-child { border-bottom: none; }
 .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.status-dot.done { background: var(--green); }
+.status-dot.done     { background: var(--green); }
 .status-dot.progress { background: var(--orange); }
-.status-dot.pending { background: var(--grey); }
+.status-dot.pending  { background: var(--grey); }
 .status-label { font-size: 14px; color: var(--text); flex: 1; }
-.status-val { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+.status-val   { font-size: 12px; color: var(--text-muted); font-weight: 500; }
 
+/* ── Photos ── */
 .photos-card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
 .photos-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 12px; font-weight: 600; }
 .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
 .photo-thumb { width: 100%; aspect-ratio: 1; border-radius: 8px; object-fit: cover; cursor: pointer; display: block; }
-.photo-thumb.uploading { opacity: 0.45; pointer-events: none; }
+.photo-thumb.uploading    { opacity: 0.45; pointer-events: none; }
 .photo-thumb.upload-error { opacity: 0.45; outline: 2px solid var(--red); }
-.photo-add { aspect-ratio: 1; border-radius: 8px; background: var(--brand-light); border: 2px dashed var(--brand-mid); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--brand-mid); font-size: 28px; }
+.photo-add     { aspect-ratio: 1; border-radius: 8px; background: var(--brand-light); border: 2px dashed var(--brand-mid); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--brand-mid); font-size: 28px; }
 .photo-loading { aspect-ratio: 1; border-radius: 8px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
+/* ── Signature ── */
 .sig-card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
-.sig-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 12px; font-weight: 600; }
+.sig-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
+.sig-card p  { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
 .sig-done-banner { background: #d1fae5; color: #065f46; border-radius: 10px; padding: 12px 16px; font-size: 14px; font-weight: 600; text-align: center; margin-bottom: 12px; }
 .sig-done-banner span { display: block; font-size: 11px; font-weight: 400; opacity: 0.75; margin-top: 3px; }
-.sig-canvas-wrap { border: 2px solid #e5e7eb; border-radius: 10px; overflow: hidden; background: #fafafa; }
+.sig-done-banner img { display: block; max-width: 100%; border-radius: 6px; margin-top: 10px; background: #fff; }
+.sig-activate-btn { width: 100%; background: var(--brand-light); border: 2px dashed var(--brand-mid); color: var(--brand); border-radius: 10px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; text-align: center; }
+.sig-activate-btn:active { opacity: 0.8; }
+.sig-canvas-wrap { border: 2px solid var(--brand-mid); border-radius: 10px; overflow: hidden; background: #fafafa; display: none; }
 #sig-canvas { display: block; width: 100%; touch-action: none; cursor: crosshair; }
 .sig-actions { display: flex; gap: 8px; margin-top: 10px; }
-.btn-outline { flex: 1; background: transparent; border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 10px; font-size: 14px; cursor: pointer; color: var(--text-muted); font-weight: 600; }
+.btn-outline  { flex: 1; background: transparent; border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 10px; font-size: 14px; cursor: pointer; color: var(--text-muted); font-weight: 600; }
+.btn-confirm-sig { flex: 2; background: var(--green); border: none; border-radius: 8px; padding: 10px; font-size: 14px; cursor: pointer; color: #fff; font-weight: 700; }
 
+/* ── Issues ── */
+.issue-card { background: #fff8f0; border: 1.5px solid var(--orange); border-radius: var(--radius); padding: 20px; }
+.issue-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #92400e; margin-bottom: 8px; font-weight: 600; }
+.issue-existing { background: #fff3cd; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; font-size: 13px; color: #7c5a00; line-height: 1.5; }
+.issue-existing strong { display: block; font-size: 11px; color: #92400e; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.4px; }
+.issue-actions-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.btn-issue-sm { flex: 1; border: none; border-radius: 8px; padding: 9px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.btn-clear   { background: #e5e7eb; color: #374151; }
+.btn-resolve { background: var(--green); color: #fff; }
+.issue-textarea { width: 100%; border: 1.5px solid var(--orange); border-radius: 10px; padding: 12px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 80px; outline: none; color: var(--text); background: #fff; }
+.btn-issue { width: 100%; background: var(--orange); color: #fff; border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+
+/* ── Action Footer ── */
 .action-footer { padding: 16px; background: var(--card); border-top: 1px solid #f0f0f0; flex-shrink: 0; }
 .btn-action { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
 .btn-action:active { opacity: 0.85; transform: scale(0.98); }
-.btn-action.taller { background: var(--brand); color: #fff; }
+.btn-action.taller      { background: var(--brand); color: #fff; }
 .btn-action.inst-cocina { background: var(--green); color: #fff; }
-.btn-action.inst-tope { background: var(--orange); color: #fff; }
-.btn-action.encargado { background: var(--red); color: #fff; }
-.btn-action:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-action.inst-tope   { background: var(--orange); color: #fff; }
+.btn-action.encargado   { background: var(--red); color: #fff; }
+.btn-action:disabled    { opacity: 0.4; cursor: not-allowed; }
 .btn-undo { width: 100%; background: transparent; border: 1.5px solid #e5e7eb; color: var(--text-muted); border-radius: 10px; padding: 10px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; }
-.btn-undo:active { opacity: 0.7; }
 
-#toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px); background: #1a1a2e; color: #fff; padding: 12px 20px; border-radius: 24px; font-size: 14px; font-weight: 500; transition: transform 0.3s ease; z-index: 1000; white-space: nowrap; pointer-events: none; }
+/* ── Overlays ── */
+#toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px); background: #1a1a2e; color: #fff; padding: 12px 20px; border-radius: 24px; font-size: 14px; font-weight: 500; transition: transform 0.3s ease; z-index: 1000; white-space: nowrap; pointer-events: none; max-width: 90vw; white-space: normal; text-align: center; }
 #toast.show { transform: translateX(-50%) translateY(0); }
-
 #loading { position: fixed; inset: 0; background: rgba(31,56,100,0.85); display: none; align-items: center; justify-content: center; z-index: 999; flex-direction: column; gap: 16px; }
 #loading.show { display: flex; }
 .spinner { width: 44px; height: 44px; border: 4px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
 #loading p { color: #fff; font-size: 15px; font-weight: 500; }
-
-#photo-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 998; }
+#photo-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.92); display: none; align-items: center; justify-content: center; z-index: 998; }
 #photo-modal.show { display: flex; }
 #photo-modal img { max-width: 95vw; max-height: 90vh; border-radius: 8px; object-fit: contain; }
 #photo-modal-close { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.2); border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer; }
 
-@media (min-width: 480px) {
-  .units-list { grid-template-columns: repeat(8, 1fr); }
-}
+@media (min-width: 480px) { .units-list { grid-template-columns: repeat(8, 1fr); } }
 </style>
 </head>
 <body>
 
-<!-- Setup -->
+<!-- ── Setup ─────────────────────────────────────────────────── -->
 <div id="screen-setup" class="screen">
-  <div class="setup-logo">🏗️</div>
-  <div class="setup-title">Vistas San José</div>
-  <div class="setup-sub">Sistema de Seguimiento de Instalaciones</div>
+  <img src="logo.png" class="setup-logo" onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'">
+  <div id="logo-fallback" class="setup-logo-fallback" style="display:none">🏗️</div>
+  <div class="setup-title">Palacios del Este</div>
+  <div class="setup-brand">Wood Studio</div>
   <div class="setup-card">
     <label>Token API de Monday.com</label>
     <input type="password" id="api-token-input" placeholder="eyJhbGciOiJ..." autocomplete="off">
     <button class="btn-primary" onclick="saveToken()">Conectar</button>
-    <p style="font-size:11px;color:#9ca3af;margin-top:12px;text-align:center;">El token se guarda en este dispositivo.<br>Ve a Monday → Avatar → Developers → My Access Tokens</p>
+    <p style="font-size:11px;color:#9ca3af;margin-top:12px;text-align:center;">El token se guarda en este dispositivo.</p>
   </div>
 </div>
 
-<!-- Roles -->
+<!-- ── Roles ─────────────────────────────────────────────────── -->
 <div id="screen-roles" class="screen">
   <div class="roles-header">
-    <h1>¿Quién eres?</h1>
-    <p>Vistas San José · Seguimiento</p>
+    <img src="logo.png" class="roles-header-logo" onerror="this.style.display='none'">
+    <div class="roles-header-text">
+      <h1>Palacios del Este</h1>
+      <p>Wood Studio · Selecciona tu rol</p>
+    </div>
   </div>
   <div class="roles-grid">
-    <div class="role-card taller" onclick="selectRole('taller')">
+    <div class="role-card taller"      onclick="goToPin('taller')">
       <div class="role-icon">🔨</div><div class="role-name">TALLER</div><div class="role-sub">John</div>
     </div>
-    <div class="role-card inst-cocina" onclick="selectRole('instaladorCocina')">
+    <div class="role-card inst-cocina" onclick="goToPin('instaladorCocina')">
       <div class="role-icon">🏠</div><div class="role-name">INST. COCINAS</div><div class="role-sub">Cocinas + Vanities</div>
     </div>
-    <div class="role-card inst-tope" onclick="selectRole('instaladorTope')">
+    <div class="role-card inst-tope"   onclick="goToPin('instaladorTope')">
       <div class="role-icon">🪨</div><div class="role-name">INST. TOPES</div><div class="role-sub">Countertops</div>
     </div>
-    <div class="role-card encargado" onclick="selectRole('encargado')">
+    <div class="role-card encargado"   onclick="goToPin('encargado')">
       <div class="role-icon">✅</div><div class="role-name">ENCARGADO</div><div class="role-sub">Aprobación final</div>
     </div>
-    <div style="grid-column:1/-1;text-align:center;padding:8px 0;">
+    <div style="grid-column:1/-1;text-align:center;padding:4px 0;">
       <button onclick="showSetup()" style="background:none;border:none;color:var(--text-muted);font-size:12px;cursor:pointer;">⚙️ Configuración</button>
     </div>
   </div>
 </div>
 
-<!-- Units List -->
+<!-- ── PIN ───────────────────────────────────────────────────── -->
+<div id="screen-pin" class="screen" style="align-items:center;">
+  <button class="pin-back" onclick="showRoles()">←</button>
+  <div class="pin-role-label">Acceso</div>
+  <div class="pin-role-name" id="pin-role-name">Taller — John</div>
+  <div class="pin-dots">
+    <span class="pin-dot" id="dot-0"></span>
+    <span class="pin-dot" id="dot-1"></span>
+    <span class="pin-dot" id="dot-2"></span>
+    <span class="pin-dot" id="dot-3"></span>
+  </div>
+  <div class="pin-pad">
+    <button class="pin-key" onclick="pinKey('1')">1</button>
+    <button class="pin-key" onclick="pinKey('2')">2</button>
+    <button class="pin-key" onclick="pinKey('3')">3</button>
+    <button class="pin-key" onclick="pinKey('4')">4</button>
+    <button class="pin-key" onclick="pinKey('5')">5</button>
+    <button class="pin-key" onclick="pinKey('6')">6</button>
+    <button class="pin-key" onclick="pinKey('7')">7</button>
+    <button class="pin-key" onclick="pinKey('8')">8</button>
+    <button class="pin-key" onclick="pinKey('9')">9</button>
+    <button class="pin-key empty"></button>
+    <button class="pin-key" onclick="pinKey('0')">0</button>
+    <button class="pin-key del" onclick="pinDel()">⌫</button>
+  </div>
+  <div class="pin-error-msg" id="pin-error"></div>
+</div>
+
+<!-- ── Units ─────────────────────────────────────────────────── -->
 <div id="screen-units" class="screen">
   <div class="app-header">
     <button class="back-btn" onclick="showRoles()">←</button>
+    <img src="logo.png" class="header-logo" onerror="this.style.display='none'">
     <div class="header-info">
       <h2 id="units-header-title">Taller — John</h2>
-      <div class="header-sub" id="units-header-sub">Vistas San José · 240 unidades</div>
+      <div class="header-sub" id="units-header-sub">Palacios del Este · 240 unidades</div>
     </div>
     <button class="refresh-btn" id="refresh-btn" onclick="loadUnits()">↻</button>
   </div>
@@ -224,17 +278,18 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
     <div class="stat-chip" id="chip-pending"  onclick="toggleChipFilter('pending')"><span class="stat-n" id="stat-pending">0</span><span class="stat-l">⬜ Pendientes</span></div>
     <div class="stat-chip" id="chip-issues"   onclick="toggleChipFilter('issues')"><span class="stat-n" id="stat-issues" style="color:#fdab3d">0</span><span class="stat-l">⚠️ Problemas</span></div>
   </div>
-  <div class="filter-bar" id="filter-bar" style="display:none;">
+  <div class="filter-bar">
     <button class="filter-pill active"   id="filter-all"         onclick="setFilter('all')">Todas</button>
-    <button class="filter-pill inactive" id="filter-issues-pill" onclick="setFilter('issues')">⚠️ Con Problemas</button>
+    <button class="filter-pill inactive" id="filter-issues-pill" onclick="setFilter('issues')">⚠️ Problemas</button>
   </div>
   <div class="units-list" id="units-grid"></div>
 </div>
 
-<!-- Unit Detail -->
+<!-- ── Detail ─────────────────────────────────────────────────── -->
 <div id="screen-detail" class="screen">
   <div class="app-header">
     <button class="back-btn" onclick="showUnits()">←</button>
+    <img src="logo.png" class="header-logo" onerror="this.style.display='none'">
     <div class="header-info">
       <h2 id="detail-title">Unidad 1</h2>
       <div class="header-sub" id="detail-role-label"></div>
@@ -253,14 +308,24 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
   <button id="photo-modal-close" onclick="closePhotoModal()">✕</button>
   <img id="photo-modal-img" src="" alt="">
 </div>
-
 <div id="toast"></div>
 <div id="loading"><div class="spinner"></div><p id="loading-text">Cargando...</p></div>
 
 <script>
+// ═══════════════════════════════════════════════════════════════
+//  CONFIGURACIÓN — cambia aquí los PINs de cada rol
+// ═══════════════════════════════════════════════════════════════
+const PINS = {
+  taller:           '1111',   // ← PIN de John (Taller)
+  instaladorCocina: '2222',   // ← PIN Instalador Cocinas
+  instaladorTope:   '3333',   // ← PIN Instalador Topes
+  encargado:        '4444',   // ← PIN Encargado
+};
+// ═══════════════════════════════════════════════════════════════
+
 const BOARD_ID = 18417025952;
 const API_URL  = 'https://api.monday.com/v2';
-const FILE_URL = '/.netlify/functions/monday-upload'; // proxy para evitar CORS
+const FILE_URL = '/.netlify/functions/monday-upload';
 
 const COL = {
   fabricacion:       'color_mm45sq7w',
@@ -274,13 +339,17 @@ const COL = {
 };
 
 const ROLES = {
-  taller:           { name: 'Taller — John',   col: COL.fabricacion,       cls: 'taller',      photos: false, sig: false, sigRequired: false, issues: true,  action: 'Marcar como Fabricada ✔' },
-  instaladorCocina: { name: 'Inst. Cocinas',    col: COL.instalacionCocina, cls: 'inst-cocina', photos: true,  sig: true,  sigRequired: false, issues: true,  action: 'Marcar Cocina/Vanity Instalada ✔' },
-  instaladorTope:   { name: 'Inst. Topes',      col: COL.instalacionTope,   cls: 'inst-tope',   photos: true,  sig: true,  sigRequired: false, issues: true,  action: 'Marcar Topes Instalados ✔' },
-  encargado:        { name: 'Encargado',        col: COL.aprobacion,        cls: 'encargado',   photos: false, sig: true,  sigRequired: true,  issues: false, action: 'Firmar y Aprobar ✔' },
+  taller:           { name: 'Taller — John',  col: COL.fabricacion,       cls: 'taller',      photos: false, sig: false, sigRequired: false, issues: true,  action: 'Marcar como Fabricada ✔' },
+  instaladorCocina: { name: 'Inst. Cocinas',   col: COL.instalacionCocina, cls: 'inst-cocina', photos: true,  sig: true,  sigRequired: false, issues: true,  action: 'Marcar Cocina/Vanity Instalada ✔' },
+  instaladorTope:   { name: 'Inst. Topes',     col: COL.instalacionTope,   cls: 'inst-tope',   photos: true,  sig: true,  sigRequired: false, issues: true,  action: 'Marcar Topes Instalados ✔' },
+  encargado:        { name: 'Encargado',       col: COL.aprobacion,        cls: 'encargado',   photos: false, sig: true,  sigRequired: true,  issues: false, action: 'Firmar y Aprobar ✔' },
 };
 
-const S = { token: null, role: null, units: [], current: null, sigDrawn: false, filter: 'all' };
+const S = {
+  token: null, role: null, units: [], current: null,
+  sigDrawn: false, sigConfirmed: false, sigActive: false,
+  filter: 'all', pinBuffer: '', pinTargetRole: null,
+};
 
 window.addEventListener('load', () => {
   S.token = localStorage.getItem('vsj_token');
@@ -291,9 +360,9 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + id).classList.add('active');
 }
-function showSetup() { showScreen('setup'); }
-function showRoles() { showScreen('roles'); }
-function showUnits() { showScreen('units'); }
+function showSetup()  { showScreen('setup'); }
+function showRoles()  { showScreen('roles'); }
+function showUnits()  { showScreen('units'); }
 
 function saveToken() {
   const t = document.getElementById('api-token-input').value.trim();
@@ -303,7 +372,54 @@ function saveToken() {
   showScreen('roles');
 }
 
-// ── Monday API ──────────────────────────────────────────────────────
+// ── PIN System ───────────────────────────────────────────────────
+function goToPin(roleId) {
+  S.pinTargetRole = roleId;
+  S.pinBuffer = '';
+  document.getElementById('pin-role-name').textContent = ROLES[roleId].name;
+  document.getElementById('pin-error').textContent = '';
+  updatePinDots(false);
+  showScreen('pin');
+}
+
+function pinKey(digit) {
+  if (S.pinBuffer.length >= 4) return;
+  S.pinBuffer += digit;
+  updatePinDots(false);
+  if (S.pinBuffer.length === 4) setTimeout(verifyPin, 120);
+}
+
+function pinDel() {
+  S.pinBuffer = S.pinBuffer.slice(0, -1);
+  updatePinDots(false);
+  document.getElementById('pin-error').textContent = '';
+}
+
+function updatePinDots(error) {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('dot-' + i);
+    dot.className = 'pin-dot';
+    if (error)              dot.classList.add('error');
+    else if (i < S.pinBuffer.length) dot.classList.add('filled');
+  }
+}
+
+function verifyPin() {
+  if (S.pinBuffer === PINS[S.pinTargetRole]) {
+    document.getElementById('pin-error').textContent = '';
+    selectRole(S.pinTargetRole);
+  } else {
+    updatePinDots(true);
+    document.getElementById('pin-error').textContent = 'Código incorrecto';
+    setTimeout(() => {
+      S.pinBuffer = '';
+      updatePinDots(false);
+      document.getElementById('pin-error').textContent = '';
+    }, 1200);
+  }
+}
+
+// ── Monday API ───────────────────────────────────────────────────
 async function gql(query, variables = {}) {
   const res  = await fetch(API_URL, {
     method:  'POST',
@@ -338,7 +454,6 @@ async function uploadFileToUpdate(updateId, blob, filename) {
   fd.append('variables', JSON.stringify({ file: null }));
   fd.append('map', JSON.stringify({ '0': ['variables.file'] }));
   fd.append('0', blob, filename);
-  // Usamos el proxy Netlify (x-monday-token en vez de Authorization para que Netlify no lo intercepte)
   const res = await fetch(FILE_URL, {
     method: 'POST',
     headers: { 'x-monday-token': S.token },
@@ -350,25 +465,36 @@ async function uploadFileToUpdate(updateId, blob, filename) {
   return json;
 }
 
-// Convierte cualquier imagen (incluyendo HEIC de iPhone) a JPEG via canvas
+// Convierte cualquier imagen a JPEG (resuelve HEIC de iPhone)
 async function fileToJpeg(file) {
   return new Promise(resolve => {
     const img = new Image();
     const objUrl = URL.createObjectURL(file);
     img.onload = () => {
+      const MAX = 1400;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if (w > MAX || h > MAX) { const r = Math.min(MAX/w, MAX/h); w = Math.round(w*r); h = Math.round(h*r); }
       const canvas = document.createElement('canvas');
-      canvas.width  = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      canvas.getContext('2d').drawImage(img, 0, 0);
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
       URL.revokeObjectURL(objUrl);
-      canvas.toBlob(blob => resolve(blob || file), 'image/jpeg', 0.88);
+      canvas.toBlob(blob => resolve(blob || file), 'image/jpeg', 0.82);
     };
     img.onerror = () => { URL.revokeObjectURL(objUrl); resolve(file); };
     img.src = objUrl;
   });
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────
+// Descarga un archivo de Monday con auth y lo convierte a blob URL
+async function fetchAsBlob(url) {
+  try {
+    const res = await fetch(url, { headers: { Authorization: S.token } });
+    if (!res.ok) return null;
+    return URL.createObjectURL(await res.blob());
+  } catch(e) { return null; }
+}
+
+// ── Helpers ──────────────────────────────────────────────────────
 function getColStatus(unit, colId) {
   const cv = unit.column_values.find(c => c.id === colId);
   if (!cv || !cv.text) return 'pending';
@@ -379,22 +505,21 @@ function getColStatus(unit, colId) {
 }
 function getColText(unit, colId) { const cv = unit.column_values.find(c => c.id === colId); return cv?.text || ''; }
 function hasIssue(unit) { return !!getColText(unit, COL.problemas).trim(); }
-function statusIcon(s) { return s==='done'?'✅':s==='progress'?'⏳':'⬜'; }
-function statusLabel(s){ return s==='done'?'Completado':s==='progress'?'En proceso':'Pendiente'; }
+function statusIcon(s)  { return s==='done'?'✅':s==='progress'?'⏳':'⬜'; }
+function statusLabel(s) { return s==='done'?'Completado':s==='progress'?'En proceso':'Pendiente'; }
 
 async function refreshAll() {
   const items = await loadAllItems();
-  S.units = items.sort((a,b) => (parseInt(a.name.replace(/\D/g,''))||0) - (parseInt(b.name.replace(/\D/g,''))||0));
+  S.units = items.sort((a,b) => (parseInt(a.name.replace(/\D/g,''))||0)-(parseInt(b.name.replace(/\D/g,''))||0));
   if (S.current) S.current = S.units.find(u => u.id === S.current.id) || S.current;
 }
 
-// ── Units Screen ─────────────────────────────────────────────────────
+// ── Units Screen ─────────────────────────────────────────────────
 async function selectRole(roleId) {
   S.role = roleId; S.filter = 'all';
   const r = ROLES[roleId];
   document.getElementById('units-header-title').textContent = r.name;
-  document.getElementById('units-header-sub').textContent   = 'Vistas San José · 240 unidades';
-  document.getElementById('filter-bar').style.display       = 'flex';
+  document.getElementById('units-header-sub').textContent   = 'Palacios del Este · 240 unidades';
   showScreen('units');
   await loadUnits();
 }
@@ -451,10 +576,12 @@ function filterUnits(q) {
   renderUnits(q ? S.units.filter(u => u.name.toLowerCase().includes(q.toLowerCase())) : S.units);
 }
 
-// ── Detail Screen ────────────────────────────────────────────────────
+// ── Detail Screen ────────────────────────────────────────────────
 function openUnit(itemId) {
-  S.current  = S.units.find(u => u.id === itemId);
-  S.sigDrawn = false;
+  S.current      = S.units.find(u => u.id === itemId);
+  S.sigDrawn     = false;
+  S.sigConfirmed = false;
+  S.sigActive    = false;
   if (!S.current) return;
   const r = ROLES[S.role];
 
@@ -476,16 +603,16 @@ function openUnit(itemId) {
 
   renderDetail();
   showScreen('detail');
-  if (r.photos || r.sig) loadDetailMedia(itemId);  // async — load previous photos/sig
+  if (r.photos || r.sig) loadDetailMedia(itemId);
 }
 
 function renderDetail() {
   const r = ROLES[S.role], u = S.current;
   let html = `<div class="detail-status-card"><h3>Estado General</h3>
-    ${row('Fabricación (Taller)',      getColStatus(u,COL.fabricacion),       getColText(u,COL.fabricacion)       || statusLabel(getColStatus(u,COL.fabricacion)))}
-    ${row('Instalación Cocina/Vanity', getColStatus(u,COL.instalacionCocina), getColText(u,COL.instalacionCocina) || statusLabel(getColStatus(u,COL.instalacionCocina)))}
-    ${row('Instalación Topes',         getColStatus(u,COL.instalacionTope),   getColText(u,COL.instalacionTope)   || statusLabel(getColStatus(u,COL.instalacionTope)))}
-    ${row('Aprobación Encargado',      getColStatus(u,COL.aprobacion),        getColText(u,COL.aprobacion)        || statusLabel(getColStatus(u,COL.aprobacion)))}
+    ${row('Fabricación',      getColStatus(u,COL.fabricacion),       getColText(u,COL.fabricacion)       || statusLabel(getColStatus(u,COL.fabricacion)))}
+    ${row('Cocina / Vanity',  getColStatus(u,COL.instalacionCocina), getColText(u,COL.instalacionCocina) || statusLabel(getColStatus(u,COL.instalacionCocina)))}
+    ${row('Topes',            getColStatus(u,COL.instalacionTope),   getColText(u,COL.instalacionTope)   || statusLabel(getColStatus(u,COL.instalacionTope)))}
+    ${row('Aprobación',       getColStatus(u,COL.aprobacion),        getColText(u,COL.aprobacion)        || statusLabel(getColStatus(u,COL.aprobacion)))}
   </div>`;
 
   if (r.photos) html += `<div class="photos-card">
@@ -503,20 +630,24 @@ function renderDetail() {
           <button class="btn-issue-sm btn-clear" onclick="clearIssue()">🗑️ Borrar</button>
           <button class="btn-issue-sm btn-resolve" onclick="resolveIssue()">✅ Resuelto</button>
         </div>` : ''}
-      <textarea class="issue-textarea" id="issue-textarea" placeholder="Ej: Se rompió una puerta, falta una pata, gozne dañado..."></textarea>
+      <textarea class="issue-textarea" id="issue-textarea" placeholder="Ej: Se rompió una puerta, falta una pata..."></textarea>
       <button class="btn-issue" onclick="reportIssue()">📤 Reportar Problema</button>
     </div>`;
   }
 
   if (r.sig) {
-    const sigTitle   = r.sigRequired ? '✍️ Firma de Aprobación' : '✍️ Firma del Encargado (opcional)';
-    const sigSubtext = r.sigRequired ? 'Dibuja tu firma para aprobar esta unidad'
-                                     : 'El encargado puede firmar para certificar que el trabajo está terminado';
-    html += `<div class="sig-card"><h3>${sigTitle}</h3>
-      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">${sigSubtext}</p>
+    const sigTitle = r.sigRequired ? '✍️ Firma de Aprobación' : '✍️ Firma del Encargado (opcional)';
+    const sigSub   = r.sigRequired ? 'Presiona el botón para activar la firma.' : 'El encargado puede firmar para certificar que el trabajo está terminado.';
+    html += `<div class="sig-card" id="sig-card">
+      <h3>${sigTitle}</h3>
+      <p>${sigSub}</p>
       <div id="sig-status"></div>
+      <button id="sig-activate-btn" class="sig-activate-btn" onclick="activateSignature()">✍️ Activar Firma</button>
       <div id="sig-canvas-wrap" class="sig-canvas-wrap"><canvas id="sig-canvas" height="160"></canvas></div>
-      <div class="sig-actions"><button class="btn-outline" onclick="clearSignature()">Limpiar</button></div>
+      <div class="sig-actions" id="sig-actions" style="display:none;">
+        <button class="btn-outline" onclick="clearSignature()">Limpiar</button>
+        <button class="btn-confirm-sig" onclick="confirmSignature()">✅ Confirmar Firma</button>
+      </div>
     </div>`;
     setTimeout(initSignatureCanvas, 50);
   }
@@ -529,18 +660,7 @@ function row(label, status, text) {
     <span class="status-label">${label}</span><span class="status-val">${text}</span></div>`;
 }
 
-// ── Load previous photos & signature from Monday ──────────────────────
-
-// Monday asset URLs require the API token — fetch with auth and make a blob URL
-async function fetchAsBlob(url) {
-  try {
-    const res = await fetch(url, { headers: { Authorization: S.token } });
-    if (!res.ok) return null;
-    const blob = await res.blob();
-    return URL.createObjectURL(blob);
-  } catch(e) { return null; }
-}
-
+// ── Load media from Monday ────────────────────────────────────────
 async function loadDetailMedia(itemId) {
   try {
     const q = `query($id:ID!){ items(ids:[$id]){ updates(limit:100){ id body assets{ id name url public_url file_extension } } } }`;
@@ -553,30 +673,19 @@ async function loadDetailMedia(itemId) {
     if (grid) {
       const imgExts = new Set(['jpg','jpeg','png','gif','webp','heic','heif']);
       const photoAssets = [];
-      updates.filter(u => u.body?.includes('📷')).forEach(upd => {
-        upd.assets.filter(a => imgExts.has((a.file_extension||'').toLowerCase())).forEach(a => photoAssets.push(a));
-      });
-
+      updates.filter(u => u.body?.includes('📷')).forEach(upd =>
+        upd.assets.filter(a => imgExts.has((a.file_extension||'').toLowerCase())).forEach(a => photoAssets.push(a))
+      );
       for (const asset of photoAssets) {
         const img = document.createElement('img');
         img.className = 'photo-thumb uploading';
         grid.insertBefore(img, grid.lastElementChild);
-        // Try public_url first (no auth needed), then fetch with auth
         const src = asset.public_url || await fetchAsBlob(asset.url);
         if (src) {
-          img.src = src;
-          img.classList.remove('uploading');
+          img.src = src; img.classList.remove('uploading');
           img.onclick = () => openPhotoModal(src);
-          img.onerror  = () => {
-            // public_url failed — fallback to auth fetch
-            fetchAsBlob(asset.url).then(blobSrc => {
-              if (blobSrc) { img.src = blobSrc; img.onclick = () => openPhotoModal(blobSrc); }
-              else img.remove();
-            });
-          };
-        } else {
-          img.remove();
-        }
+          img.onerror = () => fetchAsBlob(asset.url).then(b => b ? (img.src=b, img.onclick=()=>openPhotoModal(b)) : img.remove());
+        } else { img.remove(); }
       }
     }
 
@@ -588,17 +697,18 @@ async function loadDetailMedia(itemId) {
         const match = sigUpd.body.match(/✍️\s(.+?)\s—\sFirma.+\((.+)\)/);
         const who  = match?.[1] || 'Encargado';
         const when = match?.[2] || '';
-        // Try to show the actual signature image
         const sigAsset = sigUpd.assets?.find(a => (a.file_extension||'').toLowerCase() === 'png');
         let sigImgHtml = '';
         if (sigAsset) {
           const sigSrc = sigAsset.public_url || await fetchAsBlob(sigAsset.url);
-          if (sigSrc) sigImgHtml = `<img src="${sigSrc}" style="max-width:100%;border-radius:6px;margin-top:8px;background:#fff;" alt="Firma">`;
+          if (sigSrc) sigImgHtml = `<img src="${sigSrc}" alt="Firma">`;
         }
-        sigStatus.innerHTML = `<div class="sig-done-banner">✅ Firmado por ${who}${when?`<span>${when}</span>`:''}</div>${sigImgHtml}`;
-        // Hide the blank canvas once we know it's already signed
-        const wrap = document.getElementById('sig-canvas-wrap');
-        if (wrap) wrap.style.display = 'none';
+        sigStatus.innerHTML = `<div class="sig-done-banner">✅ Firmado por ${who}${when?`<span>${when}</span>`:''}${sigImgHtml}</div>`;
+        // Ocultar botón de activar y canvas — ya está firmado
+        document.getElementById('sig-activate-btn')?.style && (document.getElementById('sig-activate-btn').style.display = 'none');
+        document.getElementById('sig-canvas-wrap').style.display  = 'none';
+        document.getElementById('sig-actions').style.display      = 'none';
+        S.sigConfirmed = true;
       }
     }
   } catch(e) {
@@ -607,7 +717,115 @@ async function loadDetailMedia(itemId) {
   }
 }
 
-// ── Issue Reporting ───────────────────────────────────────────────────
+// ── Signature ────────────────────────────────────────────────────
+let sigCtx = null, sigDrawing = false;
+
+function initSignatureCanvas() {
+  const canvas = document.getElementById('sig-canvas');
+  if (!canvas) return;
+  canvas.width = canvas.offsetWidth || 300;
+  sigCtx = canvas.getContext('2d');
+  Object.assign(sigCtx, { strokeStyle: '#1F3864', lineWidth: 2.5, lineCap: 'round', lineJoin: 'round' });
+  const pos = e => {
+    const rect = canvas.getBoundingClientRect();
+    const src  = e.touches ? e.touches[0] : e;
+    return { x: src.clientX - rect.left, y: src.clientY - rect.top };
+  };
+  canvas.addEventListener('mousedown',  e => { if (!S.sigActive) return; sigDrawing=true; const p=pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); });
+  canvas.addEventListener('mousemove',  e => { if (!sigDrawing || !S.sigActive) return; const p=pos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); S.sigDrawn=true; });
+  canvas.addEventListener('mouseup',    () => sigDrawing=false);
+  canvas.addEventListener('touchstart', e => { if (!S.sigActive) return; e.preventDefault(); sigDrawing=true; const p=pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); }, {passive:false});
+  canvas.addEventListener('touchmove',  e => { if (!sigDrawing || !S.sigActive) return; e.preventDefault(); const p=pos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); S.sigDrawn=true; }, {passive:false});
+  canvas.addEventListener('touchend',   () => sigDrawing=false);
+}
+
+function activateSignature() {
+  if (S.sigConfirmed) return;
+  S.sigActive = true;
+  document.getElementById('sig-activate-btn').style.display = 'none';
+  document.getElementById('sig-canvas-wrap').style.display  = 'block';
+  document.getElementById('sig-actions').style.display      = 'flex';
+  // Re-init canvas size now that it's visible
+  const canvas = document.getElementById('sig-canvas');
+  if (canvas && sigCtx) { canvas.width = canvas.offsetWidth || 300; }
+  toast('Dibuja tu firma');
+}
+
+function clearSignature() {
+  if (!sigCtx || S.sigConfirmed) return;
+  const c = document.getElementById('sig-canvas');
+  sigCtx.clearRect(0, 0, c.width, c.height);
+  S.sigDrawn = false;
+}
+
+async function confirmSignature() {
+  if (!S.sigDrawn) { toast('Dibuja tu firma primero'); return; }
+  if (S.sigConfirmed) return;
+
+  const u = S.current, r = ROLES[S.role];
+  const today = new Date().toISOString().split('T')[0];
+  showLoading('Guardando firma...');
+  try {
+    const blob = await getSignatureBlob();
+    const uid  = await createUpdate(u.id, `✍️ ${r.name} — Firma de aprobación ${u.name} (${today})`);
+    await uploadFileToUpdate(uid, blob, `firma_${u.name.replace(/ /g,'_')}_${today}.png`);
+
+    S.sigConfirmed = true;
+    S.sigActive    = false;
+
+    // Lock the canvas visually
+    document.getElementById('sig-canvas-wrap').style.pointerEvents = 'none';
+    document.getElementById('sig-canvas-wrap').style.opacity = '0.7';
+    document.getElementById('sig-actions').innerHTML =
+      `<div style="color:var(--green);font-weight:700;font-size:14px;padding:8px 0;">✅ Firma confirmada y guardada en Monday</div>`;
+    hideLoading();
+    toast('✅ Firma guardada en Monday');
+  } catch(e) {
+    hideLoading();
+    toast('❌ Error guardando firma: ' + e.message);
+  }
+}
+
+function getSignatureBlob() {
+  return new Promise(res => document.getElementById('sig-canvas').toBlob(res, 'image/png'));
+}
+
+// ── Photos ───────────────────────────────────────────────────────
+async function handlePhotos(event) {
+  const files = Array.from(event.target.files);
+  event.target.value = '';
+  if (!files.length || !S.current) return;
+  const u = S.current, r = ROLES[S.role];
+  const grid = document.getElementById('photo-grid');
+  if (!grid) return;
+
+  for (const file of files) {
+    const previewUrl = URL.createObjectURL(file);
+    const img = document.createElement('img');
+    img.src = previewUrl; img.className = 'photo-thumb uploading';
+    grid.insertBefore(img, grid.lastElementChild);
+    toast('⏳ Subiendo foto...');
+    try {
+      const jpeg  = await fileToJpeg(file);
+      const today = new Date().toISOString().split('T')[0];
+      const fname = `foto_${u.name.replace(/ /g,'_')}_${Date.now()}.jpg`;
+      const uid   = await createUpdate(u.id, `📷 ${r.name} — Foto de instalación ${u.name} (${today})`);
+      await uploadFileToUpdate(uid, jpeg, fname);
+      img.classList.remove('uploading');
+      img.onclick = () => openPhotoModal(previewUrl);
+      toast('✅ Foto guardada en Monday');
+    } catch(e) {
+      img.classList.replace('uploading', 'upload-error');
+      toast('❌ Error: ' + e.message);
+      console.error('Photo upload error:', e);
+    }
+  }
+}
+
+function openPhotoModal(src)  { document.getElementById('photo-modal-img').src=src; document.getElementById('photo-modal').classList.add('show'); }
+function closePhotoModal()    { document.getElementById('photo-modal').classList.remove('show'); }
+
+// ── Issues ───────────────────────────────────────────────────────
 async function reportIssue() {
   const text = document.getElementById('issue-textarea')?.value.trim();
   if (!text) { toast('Escribe el problema antes de reportar'); return; }
@@ -619,7 +837,7 @@ async function reportIssue() {
   try {
     await mutateColumn(u.id, COL.problemas, `${r.name} (${ds} ${ts}): ${text}`);
     await createUpdate(u.id, `⚠️ PROBLEMA — ${u.name}\nPor: ${r.name} · ${ds} ${ts}\n\n${text}`);
-    await refreshAll(); hideLoading(); toast(`Problema reportado ⚠️`); renderDetail(); renderUnits(S.units);
+    await refreshAll(); hideLoading(); toast('Problema reportado ⚠️'); renderDetail(); renderUnits(S.units);
   } catch(e) { hideLoading(); toast('Error: '+e.message); }
 }
 
@@ -636,11 +854,11 @@ async function resolveIssue() {
   try {
     await mutateColumn(u.id, COL.problemas, '');
     await createUpdate(u.id, `✅ RESUELTO — ${u.name}\nPor: ${r.name} · ${ds}`);
-    await refreshAll(); hideLoading(); toast(`Resuelto ✅`); renderDetail(); renderUnits(S.units);
+    await refreshAll(); hideLoading(); toast('Resuelto ✅'); renderDetail(); renderUnits(S.units);
   } catch(e) { hideLoading(); toast('Error: '+e.message); }
 }
 
-// ── Undo Status ───────────────────────────────────────────────────────
+// ── Undo ─────────────────────────────────────────────────────────
 async function undoStatus() {
   const u = S.current, r = ROLES[S.role];
   showLoading('Revirtiendo...');
@@ -654,22 +872,16 @@ async function undoStatus() {
   } catch(e) { hideLoading(); toast('Error: '+e.message); }
 }
 
-// ── Main Action ───────────────────────────────────────────────────────
+// ── Main Action ───────────────────────────────────────────────────
 async function handleAction() {
   const r = ROLES[S.role], u = S.current;
-  if (r.sig && r.sigRequired && !S.sigDrawn) { toast('Dibuja tu firma primero'); return; }
+  if (r.sig && r.sigRequired && !S.sigConfirmed) { toast('Confirma tu firma primero'); return; }
   showLoading('Guardando...');
   try {
     const today = new Date().toISOString().split('T')[0];
     await mutateColumn(u.id, r.col, { label: 'Done' });
-    if (S.role==='taller')             await mutateColumn(u.id, COL.fechaEntrega, { date: today });
-    else if (S.role==='instaladorTope') await mutateColumn(u.id, COL.fechaTopes,   { date: today });
-
-    if (r.sig && S.sigDrawn) {
-      const blob = await getSignatureBlob();
-      const uid  = await createUpdate(u.id, `✍️ ${r.name} — Firma de aprobación ${u.name} (${today})`);
-      await uploadFileToUpdate(uid, blob, `firma_${u.name.replace(/ /g,'_')}_${today}.png`);
-    }
+    if (S.role === 'taller')              await mutateColumn(u.id, COL.fechaEntrega, { date: today });
+    else if (S.role === 'instaladorTope') await mutateColumn(u.id, COL.fechaTopes,   { date: today });
 
     await refreshAll(); hideLoading(); toast(`${u.name} completada ✅`);
     const ab = document.getElementById('action-btn');
@@ -679,76 +891,14 @@ async function handleAction() {
   } catch(e) { hideLoading(); toast('Error: '+e.message); }
 }
 
-// ── Photos — upload immediately ───────────────────────────────────────
-async function handlePhotos(event) {
-  const files = Array.from(event.target.files);
-  event.target.value = '';
-  if (!files.length || !S.current) { toast('⚠️ No se seleccionó foto o no hay unidad abierta'); return; }
-  const u = S.current, r = ROLES[S.role];
-  const grid = document.getElementById('photo-grid');
-  if (!grid) { toast('⚠️ No hay grid de fotos — asegúrate de estar en Inst. Cocinas o Inst. Topes'); return; }
-
-  for (const file of files) {
-    toast(`📸 Foto recibida: ${file.name} (${Math.round(file.size/1024)}KB, ${file.type})`);
-    // Show preview immediately
-    const previewUrl = URL.createObjectURL(file);
-    const img = document.createElement('img');
-    img.src = previewUrl; img.className = 'photo-thumb uploading';
-    grid.insertBefore(img, grid.lastElementChild);
-
-    try {
-      // Step 1: Convert to JPEG
-      toast('⏳ Paso 1/3: Convirtiendo imagen...');
-      const jpeg = await fileToJpeg(file);
-      toast(`⏳ Paso 2/3: Creando registro Monday... (${Math.round(jpeg.size/1024)}KB)`);
-
-      // Step 2: Create update
-      const today = new Date().toISOString().split('T')[0];
-      const fname = `foto_${u.name.replace(/ /g,'_')}_${Date.now()}.jpg`;
-      const uid = await createUpdate(u.id, `📷 ${r.name} — Foto de instalación ${u.name} (${today})`);
-      toast(`⏳ Paso 3/3: Subiendo archivo... (update ${uid})`);
-
-      // Step 3: Upload file
-      await uploadFileToUpdate(uid, jpeg, fname);
-      img.classList.remove('uploading');
-      img.onclick = () => openPhotoModal(previewUrl);
-      toast('✅ Foto guardada en Monday correctamente');
-    } catch(e) {
-      img.classList.replace('uploading', 'upload-error');
-      const msg = e.message || String(e);
-      toast('❌ ERROR: ' + msg);
-      console.error('Photo upload error:', e);
-    }
-  }
-}
-
-function openPhotoModal(src)  { document.getElementById('photo-modal-img').src=src; document.getElementById('photo-modal').classList.add('show'); }
-function closePhotoModal()    { document.getElementById('photo-modal').classList.remove('show'); }
-
-// ── Signature ─────────────────────────────────────────────────────────
-let sigCtx=null, sigDrawing=false;
-
-function initSignatureCanvas() {
-  const canvas = document.getElementById('sig-canvas');
-  if (!canvas) return;
-  canvas.width = canvas.offsetWidth;
-  sigCtx = canvas.getContext('2d');
-  Object.assign(sigCtx, { strokeStyle:'#1F3864', lineWidth:2.5, lineCap:'round', lineJoin:'round' });
-  const pos = e => { const r=canvas.getBoundingClientRect(), s=e.touches?e.touches[0]:e; return {x:s.clientX-r.left,y:s.clientY-r.top}; };
-  canvas.addEventListener('mousedown',  e => { sigDrawing=true; const p=pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); });
-  canvas.addEventListener('mousemove',  e => { if(!sigDrawing)return; const p=pos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); S.sigDrawn=true; });
-  canvas.addEventListener('mouseup',    () => sigDrawing=false);
-  canvas.addEventListener('touchstart', e => { e.preventDefault(); sigDrawing=true; const p=pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); }, {passive:false});
-  canvas.addEventListener('touchmove',  e => { e.preventDefault(); if(!sigDrawing)return; const p=pos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); S.sigDrawn=true; }, {passive:false});
-  canvas.addEventListener('touchend',   () => sigDrawing=false);
-}
-
-function clearSignature() { if(!sigCtx)return; const c=document.getElementById('sig-canvas'); sigCtx.clearRect(0,0,c.width,c.height); S.sigDrawn=false; }
-function getSignatureBlob() { return new Promise(res => document.getElementById('sig-canvas').toBlob(res,'image/png')); }
-
-// ── UI Helpers ────────────────────────────────────────────────────────
+// ── UI Helpers ────────────────────────────────────────────────────
 let toastTimer;
-function toast(msg) { const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),6000); }
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 5000);
+}
 function showLoading(msg='Cargando...') { document.getElementById('loading-text').textContent=msg; document.getElementById('loading').classList.add('show'); }
 function hideLoading() { document.getElementById('loading').classList.remove('show'); }
 
