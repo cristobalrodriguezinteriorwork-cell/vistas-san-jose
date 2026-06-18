@@ -1,5 +1,5 @@
-const CACHE = 'vsj-v1';
-const ASSETS = ['./index.html', './manifest.json'];
+const CACHE = 'pde-v3';
+const ASSETS = ['./index.html', './manifest.json', './logo.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
