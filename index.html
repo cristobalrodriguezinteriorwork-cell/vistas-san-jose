@@ -325,7 +325,7 @@ const PINS = {
 
 const BOARD_ID = 18417025952;
 const API_URL  = 'https://api.monday.com/v2';
-const FILE_URL = '/.netlify/functions/monday-upload';
+const FILE_URL = '/monday-file'; // proxy via netlify.toml redirect
 
 const COL = {
   fabricacion:       'color_mm45sq7w',
@@ -456,7 +456,7 @@ async function uploadFileToUpdate(updateId, blob, filename) {
   fd.append('0', blob, filename);
   const res = await fetch(FILE_URL, {
     method: 'POST',
-    headers: { 'x-monday-token': S.token },
+    headers: { 'Authorization': S.token },
     body: fd
   });
   if (!res.ok) throw new Error(`HTTP ${res.status} al subir archivo`);
