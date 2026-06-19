@@ -607,7 +607,8 @@ function openUnit(itemId) {
 
   renderDetail();
   showScreen('detail');
-  if (r.photos || r.sig) loadDetailMedia(itemId);
+  if (r.photos) loadLocalPhotos(itemId);   // fotos del dispositivo
+  if (r.photos || r.sig) loadDetailMedia(itemId); // fotos + firma de Monday
 }
 
 function renderDetail() {
@@ -794,6 +795,40 @@ function getSignatureBlob() {
   return new Promise(res => document.getElementById('sig-canvas').toBlob(res, 'image/png'));
 }
 
+// ── IndexedDB — fotos locales ────────────────────────────────────
+async function dbOpen() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open('pde-photos', 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore('photos', { keyPath: 'id', autoIncrement: true });
+    req.onsuccess = e => res(e.target.result);
+    req.onerror   = e => rej(e.target.error);
+  });
+}
+async function dbSavePhoto(unitId, dataUrl) {
+  const db = await dbOpen();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('photos', 'readwrite');
+    tx.objectStore('photos').add({ unitId, dataUrl, ts: Date.now() });
+    tx.oncomplete = res; tx.onerror = e => rej(e.target.error);
+  });
+}
+async function dbLoadPhotos(unitId) {
+  const db = await dbOpen();
+  return new Promise((res, rej) => {
+    const req = db.transaction('photos', 'readonly').objectStore('photos').getAll();
+    req.onsuccess = () => res(req.result.filter(p => p.unitId === unitId));
+    req.onerror   = e => rej(e.target.error);
+  });
+}
+async function dbDeletePhoto(id) {
+  const db = await dbOpen();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('photos', 'readwrite');
+    tx.objectStore('photos').delete(id);
+    tx.oncomplete = res; tx.onerror = e => rej(e.target.error);
+  });
+}
+
 // ── Photos ───────────────────────────────────────────────────────
 async function handlePhotos(event) {
   const files = Array.from(event.target.files);
@@ -808,24 +843,53 @@ async function handlePhotos(event) {
     const img = document.createElement('img');
     img.src = previewUrl; img.className = 'photo-thumb uploading';
     grid.insertBefore(img, grid.lastElementChild);
+    toast('⏳ Guardando foto...');
     try {
-      toast(`📸 Paso 1: convirtiendo (${Math.round(file.size/1024)}KB ${file.type})`);
-      const jpeg  = await fileToJpeg(file);
-      toast(`📸 Paso 2: creando update (${Math.round(jpeg.size/1024)}KB)`);
-      const today = new Date().toISOString().split('T')[0];
-      const fname = `foto_${u.name.replace(/ /g,'_')}_${Date.now()}.jpg`;
-      const uid   = await createUpdate(u.id, `📷 ${r.name} — Foto de instalación ${u.name} (${today})`);
-      toast(`📸 Paso 3: subiendo archivo (update ${uid})`);
-      await uploadFileToUpdate(uid, jpeg, fname);
+      const jpeg = await fileToJpeg(file);
+
+      // 1. Guardar localmente (siempre funciona)
+      const dataUrl = await blobToDataUrl(jpeg);
+      await dbSavePhoto(u.id, dataUrl);
       img.classList.remove('uploading');
       img.onclick = () => openPhotoModal(previewUrl);
-      toast('✅ Foto guardada en Monday');
+      toast('✅ Foto guardada en el dispositivo');
+
+      // 2. Intentar subir a Monday (best-effort, no bloquea)
+      const today = new Date().toISOString().split('T')[0];
+      const fname = `foto_${u.name.replace(/ /g,'_')}_${Date.now()}.jpg`;
+      createUpdate(u.id, `📷 ${r.name} — Foto de instalación ${u.name} (${today})`)
+        .then(uid => uploadFileToUpdate(uid, jpeg, fname))
+        .then(() => toast('☁️ Foto también sincronizada con Monday'))
+        .catch(e => console.warn('Monday upload failed (foto guardada local):', e.message));
+
     } catch(e) {
       img.classList.replace('uploading', 'upload-error');
-      toast('❌ ' + e.message);
-      console.error('Photo upload error:', e);
+      toast('❌ Error: ' + e.message);
     }
   }
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload  = () => res(reader.result);
+    reader.onerror = rej;
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function loadLocalPhotos(unitId) {
+  try {
+    const photos = await dbLoadPhotos(unitId);
+    const grid = document.getElementById('photo-grid');
+    if (!grid || !photos.length) return;
+    photos.forEach(p => {
+      const img = document.createElement('img');
+      img.src = p.dataUrl; img.className = 'photo-thumb';
+      img.onclick = () => openPhotoModal(p.dataUrl);
+      grid.insertBefore(img, grid.lastElementChild);
+    });
+  } catch(e) { console.warn('loadLocalPhotos:', e); }
 }
 
 function openPhotoModal(src)  { document.getElementById('photo-modal-img').src=src; document.getElementById('photo-modal').classList.add('show'); }
