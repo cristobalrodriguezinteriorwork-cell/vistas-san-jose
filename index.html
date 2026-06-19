@@ -450,16 +450,20 @@ async function createUpdate(itemId, body) {
 
 async function uploadFileToUpdate(updateId, blob, filename) {
   const fd = new FormData();
-  fd.append('query', `mutation($file:File!){ add_file_to_update(update_id:${updateId},file:$file){ id } }`);
-  fd.append('variables', JSON.stringify({ file: null }));
+  fd.append('query', `mutation($uid:ID!,$file:File!){ add_file_to_update(update_id:$uid,file:$file){ id } }`);
+  fd.append('variables', JSON.stringify({ uid: String(updateId), file: null }));
   fd.append('map', JSON.stringify({ '0': ['variables.file'] }));
   fd.append('0', blob, filename);
   const res = await fetch(FILE_URL, {
     method: 'POST',
-    headers: { 'Authorization': S.token },
+    headers: { 'Authorization': S.token, 'API-Version': '2024-01' },
     body: fd
   });
-  if (!res.ok) throw new Error(`HTTP ${res.status} al subir archivo`);
+  if (!res.ok) {
+    let detail = '';
+    try { const t = await res.text(); detail = ' — ' + t.slice(0,120); } catch(_) {}
+    throw new Error(`HTTP ${res.status} al subir archivo${detail}`);
+  }
   const json = await res.json();
   if (json.errors) throw new Error(json.errors[0].message || 'Error Monday al subir');
   return json;
