@@ -325,7 +325,7 @@ const PINS = {
 
 const BOARD_ID = 18417025952;
 const API_URL  = 'https://api.monday.com/v2';
-const FILE_URL = '/monday-file'; // proxy via netlify.toml redirect
+const FILE_URL = 'https://api.monday.com/v2/file'; // directo a Monday
 
 const COL = {
   fabricacion:       'color_mm45sq7w',
@@ -804,19 +804,21 @@ async function handlePhotos(event) {
     const img = document.createElement('img');
     img.src = previewUrl; img.className = 'photo-thumb uploading';
     grid.insertBefore(img, grid.lastElementChild);
-    toast('⏳ Subiendo foto...');
     try {
+      toast(`📸 Paso 1: convirtiendo (${Math.round(file.size/1024)}KB ${file.type})`);
       const jpeg  = await fileToJpeg(file);
+      toast(`📸 Paso 2: creando update (${Math.round(jpeg.size/1024)}KB)`);
       const today = new Date().toISOString().split('T')[0];
       const fname = `foto_${u.name.replace(/ /g,'_')}_${Date.now()}.jpg`;
       const uid   = await createUpdate(u.id, `📷 ${r.name} — Foto de instalación ${u.name} (${today})`);
+      toast(`📸 Paso 3: subiendo archivo (update ${uid})`);
       await uploadFileToUpdate(uid, jpeg, fname);
       img.classList.remove('uploading');
       img.onclick = () => openPhotoModal(previewUrl);
       toast('✅ Foto guardada en Monday');
     } catch(e) {
       img.classList.replace('uploading', 'upload-error');
-      toast('❌ Error: ' + e.message);
+      toast('❌ ' + e.message);
       console.error('Photo upload error:', e);
     }
   }
