@@ -78,7 +78,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 /* ── App Header ── */
 .app-header { background: var(--brand); color: #fff; padding: 48px 16px 14px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 .app-header .back-btn { background: rgba(255,255,255,0.15); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.app-header .header-logo { width: 32px; height: 32px; object-fit: contain; border-radius: 6px; flex-shrink: 0; }
+.app-header .header-logo { width: 38px; height: 38px; object-fit: cover; border-radius: 50%; border: 2px solid rgba(255,255,255,0.85); flex-shrink: 0; }
 .app-header .header-info { flex: 1; }
 .app-header h2 { font-size: 17px; font-weight: 700; }
 .app-header .header-sub { font-size: 12px; opacity: 0.7; margin-top: 1px; }
@@ -263,12 +263,12 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 <div id="screen-units" class="screen">
   <div class="app-header">
     <button class="back-btn" onclick="showRoles()">←</button>
-    <img src="logo.png" class="header-logo" onerror="this.style.display='none'">
     <div class="header-info">
       <h2 id="units-header-title">Taller — John</h2>
       <div class="header-sub" id="units-header-sub">Palacios del Este · 240 unidades</div>
     </div>
     <button class="refresh-btn" id="refresh-btn" onclick="loadUnits()">↻</button>
+    <img src="logo.png" class="header-logo" onerror="this.style.display='none'">
   </div>
   <div class="units-search">
     <input type="text" id="search-input" placeholder="🔍  Buscar unidad..." oninput="filterUnits(this.value)">
@@ -290,11 +290,11 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 <div id="screen-detail" class="screen">
   <div class="app-header">
     <button class="back-btn" onclick="showUnits()">←</button>
-    <img src="logo.png" class="header-logo" onerror="this.style.display='none'">
     <div class="header-info">
       <h2 id="detail-title">Unidad 1</h2>
       <div class="header-sub" id="detail-role-label"></div>
     </div>
+    <img src="logo.png" class="header-logo" onerror="this.style.display='none'">
   </div>
   <div class="detail-body" id="detail-body"></div>
   <div class="action-footer">
