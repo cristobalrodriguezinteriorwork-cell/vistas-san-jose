@@ -1,4 +1,4 @@
-const CACHE = 'pde-v3';
+const CACHE = 'pde-v5';
 const ASSETS = ['./index.html', './manifest.json', './logo.png'];
 
 self.addEventListener('install', e => {
