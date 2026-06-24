@@ -58,6 +58,9 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .role-card.inst-cocina { border-color: var(--green); }
 .role-card.inst-tope   { border-color: var(--orange); }
 .role-card.encargado   { border-color: var(--red); }
+.role-card.admin       { border-color: var(--brand); background: var(--brand); }
+.role-card.admin .role-name { color: #fff; }
+.role-card.admin .role-sub  { color: rgba(255,255,255,0.7); }
 
 /* ── PIN Screen ── */
 #screen-pin { background: var(--brand); align-items: center; justify-content: flex-start; padding-top: 60px; }
@@ -159,6 +162,43 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .btn-resolve { background: var(--green); color: #fff; }
 .issue-textarea { width: 100%; border: 1.5px solid var(--orange); border-radius: 10px; padding: 12px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 80px; outline: none; color: var(--text); background: #fff; }
 .btn-issue { width: 100%; background: var(--orange); color: #fff; border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+/* Cuadrito que abre la lista de reportes */
+.issue-open-box { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #fff; border: 1.5px solid var(--orange); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; cursor: pointer; text-align: left; }
+.issue-open-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.issue-open-icon { font-size: 18px; }
+.issue-open-txt { font-size: 14px; font-weight: 700; color: #92400e; }
+.issue-open-badges { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.issue-badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
+.issue-badge.pend { background: #fff3cd; color: #92400e; }
+.issue-badge.done { background: #d6f5e3; color: #00794a; }
+.issue-open-arrow { font-size: 22px; color: var(--orange); line-height: 1; }
+/* Página/modal de reportes */
+#issues-modal { position: fixed; inset: 0; background: rgba(31,56,100,0.55); display: none; align-items: flex-end; justify-content: center; z-index: 998; }
+#issues-modal.show { display: flex; }
+.issues-sheet { background: var(--bg); width: 100%; max-width: 520px; max-height: 90vh; border-radius: 20px 20px 0 0; display: flex; flex-direction: column; }
+.issues-sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 18px 12px; border-bottom: 1px solid #e5e7eb; }
+.issues-sheet-header h3 { font-size: 16px; font-weight: 800; color: var(--text); }
+.issues-sheet-close { background: #e5e7eb; border: none; width: 34px; height: 34px; border-radius: 50%; font-size: 16px; cursor: pointer; color: var(--text); }
+.issues-sheet-body { padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.issue-item { background: #fff8f0; border: 1.5px solid var(--orange); border-radius: 12px; padding: 14px; }
+.issue-item.fixed { background: #f1f5f3; border-color: #b9e3cd; }
+.issue-item-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.issue-item-num { font-size: 12px; font-weight: 800; color: var(--text-muted); }
+.issue-item-tag { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; background: #d6f5e3; color: #00794a; }
+.issue-item-tag.pend { background: #fff3cd; color: #92400e; }
+.issue-item-del { margin-left: auto; background: none; border: none; font-size: 16px; cursor: pointer; opacity: 0.6; }
+.issue-item-text { font-size: 15px; line-height: 1.5; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+.issue-item.fixed .issue-item-text { text-decoration: line-through; color: var(--text-muted); }
+.issue-item-meta { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+.issue-item-fix { width: 100%; margin-top: 12px; border: none; border-radius: 10px; padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer; background: var(--green); color: #fff; }
+.issue-item-fix.on { background: #e5e7eb; color: var(--text); }
+.issue-empty { font-size: 13px; color: var(--text-muted); padding: 6px 2px; }
+.issue-group-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--brand); margin: 6px 2px 2px; padding-top: 6px; border-top: 1px solid #e5e7eb; }
+.issue-group-title:first-child { border-top: none; padding-top: 0; }
+/* Barra de etapas (solo Administración) */
+.admin-stage-bar { display: flex; gap: 8px; padding: 8px 16px 0; background: var(--brand); overflow-x: auto; }
+.stage-pill { flex: 1; white-space: nowrap; border: none; border-radius: 8px; padding: 8px 6px; font-size: 12px; font-weight: 700; cursor: pointer; background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.85); }
+.stage-pill.active { background: #fff; color: var(--brand); }
 
 /* ── Action Footer ── */
 .action-footer { padding: 16px; background: var(--card); border-top: 1px solid #f0f0f0; flex-shrink: 0; }
@@ -194,7 +234,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
   <div id="logo-fallback" class="setup-logo-fallback" style="display:none">🏗️</div>
   <div class="setup-title">Palacios del Este</div>
   <div class="setup-brand">Wood Studio</div>
-  <div style="color:rgba(255,255,255,0.35);font-size:10px;margin-top:-18px;margin-bottom:18px;">v7</div>
+  <div style="color:rgba(255,255,255,0.35);font-size:10px;margin-top:-18px;margin-bottom:18px;">v8</div>
   <div class="setup-card">
     <label>Token API de Monday.com</label>
     <input type="password" id="api-token-input" placeholder="eyJhbGciOiJ..." autocomplete="off">
@@ -224,6 +264,9 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
     </div>
     <div class="role-card encargado"   onclick="goToPin('encargado')">
       <div class="role-icon">✅</div><div class="role-name">ENCARGADO</div><div class="role-sub">Aprobación final</div>
+    </div>
+    <div class="role-card admin" style="grid-column:1/-1;" onclick="goToPin('admin')">
+      <div class="role-icon">👑</div><div class="role-name">ADMINISTRACIÓN</div><div class="role-sub">Ver todo · todos los problemas</div>
     </div>
     <div style="grid-column:1/-1;text-align:center;padding:4px 0;">
       <button onclick="showSetup()" style="background:none;border:none;color:var(--text-muted);font-size:12px;cursor:pointer;">⚙️ Configuración</button>
@@ -273,6 +316,12 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
   <div class="units-search">
     <input type="text" id="search-input" placeholder="🔍  Buscar unidad..." oninput="filterUnits(this.value)">
   </div>
+  <div class="admin-stage-bar" id="admin-stage-bar" style="display:none;">
+    <button class="stage-pill active" data-stage="fabricacion"       onclick="setAdminStage('fabricacion',this)">📐 Taller</button>
+    <button class="stage-pill"        data-stage="instalacionCocina" onclick="setAdminStage('instalacionCocina',this)">🏠 Cocina</button>
+    <button class="stage-pill"        data-stage="instalacionTope"   onclick="setAdminStage('instalacionTope',this)">🪨 Topes</button>
+    <button class="stage-pill"        data-stage="aprobacion"        onclick="setAdminStage('aprobacion',this)">✅ Aprobado</button>
+  </div>
   <div class="units-stats">
     <div class="stat-chip" id="chip-done"     onclick="toggleChipFilter('done')"><span class="stat-n" id="stat-done">0</span><span class="stat-l">✅ Listas</span></div>
     <div class="stat-chip" id="chip-progress" onclick="toggleChipFilter('progress')"><span class="stat-n" id="stat-progress">0</span><span class="stat-l">⏳ En proceso</span></div>
@@ -303,11 +352,21 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
   </div>
 </div>
 
-<input type="file" id="camera-input" accept="image/*" capture="environment" multiple onchange="handlePhotos(event)">
+<input type="file" id="camera-input" accept="image/*" multiple onchange="handlePhotos(event)">
 
 <div id="photo-modal">
   <button id="photo-modal-close" onclick="closePhotoModal()">✕</button>
   <img id="photo-modal-img" src="" alt="">
+</div>
+
+<div id="issues-modal">
+  <div class="issues-sheet">
+    <div class="issues-sheet-header">
+      <h3 id="issues-modal-title">Reportes de Daño / Faltante</h3>
+      <button class="issues-sheet-close" onclick="closeIssuesModal()">✕</button>
+    </div>
+    <div class="issues-sheet-body" id="issues-sheet-body"></div>
+  </div>
 </div>
 <div id="toast"></div>
 <div id="loading"><div class="spinner"></div><p id="loading-text">Cargando...</p></div>
@@ -317,10 +376,11 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 //  CONFIGURACIÓN — cambia aquí los PINs de cada rol
 // ═══════════════════════════════════════════════════════════════
 const PINS = {
-  taller:           '1111',   // ← PIN de John (Taller)
+  taller:           '1111',   // ← PIN Taller (John)
   instaladorCocina: '2222',   // ← PIN Instalador Cocinas
   instaladorTope:   '3333',   // ← PIN Instalador Topes
   encargado:        '4444',   // ← PIN Encargado
+  admin:            '5555',   // ← PIN Administración (ve TODO)
 };
 // ═══════════════════════════════════════════════════════════════
 
@@ -329,27 +389,29 @@ const API_URL  = 'https://api.monday.com/v2';
 const FILE_URL = '/monday-file'; // proxy Netlify → Monday (evita CORS)
 
 const COL = {
-  fabricacion:       'color_mm45sq7w',
-  instalacionCocina: 'color_mm46atp1',
-  instalacionTope:   'color_mm45qby6',
-  aprobacion:        'color_mm456st1',
-  fechaEntrega:      'date_mm45rf2k',
-  fechaTopes:        'date_mm455ske',
-  problemas:         'text_mm452q9a',
-  problemasCliente:  'text_mm45n0n5',
+  fabricacion:       'color_mm45sq7w',     // Fabricacion Cocina (Taller)
+  instalacionCocina: 'color_mm46atp1',     // Instalación Cocina/Vanity
+  instalacionTope:   'color_mm45qby6',     // Instalación Tope
+  aprobacion:        'color_mm456st1',     // Inspección Contratista (Encargado)
+  fechaMedidas:      'date_mm45pexh',      // Fecha Medidas
+  fechaEntrega:      'date_mm45rf2k',      // Fecha Entrega
+  fechaTopes:        'date_mm455ske',      // Fecha Topes
+  problemas:         'long_text_mm4m5nqv', // Reportes App (texto largo)
+  problemasCliente:  'text_mm45n0n5',      // Arreglos Cliente
 };
 
 const ROLES = {
-  taller:           { name: 'Taller — John',  col: COL.fabricacion,       cls: 'taller',      photos: false, sig: false, sigRequired: false, issues: true,  action: 'Marcar como Fabricada ✔' },
-  instaladorCocina: { name: 'Inst. Cocinas',   col: COL.instalacionCocina, cls: 'inst-cocina', photos: true,  sig: true,  sigRequired: false, issues: true,  action: 'Marcar Cocina/Vanity Instalada ✔' },
-  instaladorTope:   { name: 'Inst. Topes',     col: COL.instalacionTope,   cls: 'inst-tope',   photos: true,  sig: true,  sigRequired: false, issues: true,  action: 'Marcar Topes Instalados ✔' },
-  encargado:        { name: 'Encargado',       col: COL.aprobacion,        cls: 'encargado',   photos: false, sig: true,  sigRequired: true,  issues: false, action: 'Firmar y Aprobar ✔' },
+  taller:           { name: 'Taller — John',  col: COL.fabricacion,       cls: 'taller',      photos: false, sig: false, sigRequired: false, issues: true,  doneLabel: 'Done', action: 'Marcar como Fabricada ✔' },
+  instaladorCocina: { name: 'Inst. Cocinas',  col: COL.instalacionCocina, cls: 'inst-cocina', photos: true,  sig: true,  sigRequired: false, issues: true,  doneLabel: 'Done', action: 'Marcar Cocina/Vanity Instalada ✔' },
+  instaladorTope:   { name: 'Inst. Topes',    col: COL.instalacionTope,   cls: 'inst-tope',   photos: true,  sig: true,  sigRequired: false, issues: true,  doneLabel: 'Done', action: 'Marcar Topes Instalados ✔' },
+  encargado:        { name: 'Encargado',      col: COL.aprobacion,        cls: 'encargado',   photos: false, sig: true,  sigRequired: true,  issues: false, doneLabel: 'Done', action: 'Firmar y Aprobar ✔' },
+  admin:            { name: 'Administración', col: COL.aprobacion,        cls: 'admin',       photos: true,  sig: false, sigRequired: false, issues: true,  doneLabel: '',           action: '' },
 };
 
 const S = {
   token: null, role: null, units: [], current: null,
   sigDrawn: false, sigConfirmed: false, sigActive: false,
-  filter: 'all', pinBuffer: '', pinTargetRole: null,
+  filter: 'all', pinBuffer: '', pinTargetRole: null, adminStage: 'fabricacion',
 };
 
 window.addEventListener('load', () => {
@@ -433,9 +495,18 @@ async function gql(query, variables = {}) {
 }
 
 async function loadAllItems() {
-  const q = `query($bid:ID!){ boards(ids:[$bid]){ items_page(limit:250){ items{ id name column_values{ id text value } } } } }`;
-  const d = await gql(q, { bid: String(BOARD_ID) });
-  return d.boards[0].items_page.items;
+  let allItems = [], cursor = null;
+  do {
+    const q = cursor
+      ? `query($bid:ID!,$cur:String!){ boards(ids:[$bid]){ items_page(limit:200,cursor:$cur){ cursor items{ id name column_values{ id text value } } } } }`
+      : `query($bid:ID!){ boards(ids:[$bid]){ items_page(limit:200){ cursor items{ id name column_values{ id text value } } } } }`;
+    const vars = cursor ? { bid: String(BOARD_ID), cur: cursor } : { bid: String(BOARD_ID) };
+    const d = await gql(q, vars);
+    const page = d.boards[0].items_page;
+    allItems = allItems.concat(page.items);
+    cursor = page.cursor || null;
+  } while (cursor);
+  return allItems;
 }
 
 async function mutateColumn(itemId, colId, val) {
@@ -504,12 +575,31 @@ function getColStatus(unit, colId) {
   const cv = unit.column_values.find(c => c.id === colId);
   if (!cv || !cv.text) return 'pending';
   const t = cv.text.toLowerCase();
-  if (t === 'done' || t === 'terminado') return 'done';
-  if (t === 'working on it' || t === 'en proceso') return 'progress';
-  return 'pending';
+  if (['terminado', 'satisfecho', 'done'].includes(t)) return 'done';
+  if (['sin comenzar', 'sin realizar', 'a realizar', 'a comenzar', 'sin empezar'].includes(t)) return 'pending';
+  return 'progress';
 }
 function getColText(unit, colId) { const cv = unit.column_values.find(c => c.id === colId); return cv?.text || ''; }
-function hasIssue(unit) { return !!getColText(unit, COL.problemas).trim(); }
+// Lee todos los reportes de daño/faltante. Soporta el formato viejo (texto plano = 1 reporte).
+function parseIssues(unit) {
+  const raw = getColText(unit, COL.problemas).trim();
+  if (!raw) return [];
+  try {
+    const arr = JSON.parse(raw);
+    if (Array.isArray(arr)) return arr;
+  } catch (e) { /* formato viejo */ }
+  return [{ t: raw, by: '', d: '', fixed: false }];
+}
+// Reportes que le corresponden a un rol. Admin ve todos. Los viejos (sin .role) solo admin.
+function issuesForRole(unit, role) {
+  const arr = parseIssues(unit);
+  if (role === 'admin') return arr;
+  return arr.filter(i => i.role === role);
+}
+// Hay problema "abierto" (sin arreglar) que le corresponde al rol actual.
+function hasIssue(unit) { return issuesForRole(unit, S.role).some(i => !i.fixed); }
+// Columna de estado activa según el rol (admin elige etapa).
+function currentCol() { return S.role === 'admin' ? COL[S.adminStage] : ROLES[S.role].col; }
 function statusIcon(s)  { return s==='done'?'✅':s==='progress'?'⏳':'⬜'; }
 function statusLabel(s) { return s==='done'?'Completado':s==='progress'?'En proceso':'Pendiente'; }
 
@@ -521,12 +611,27 @@ async function refreshAll() {
 
 // ── Units Screen ─────────────────────────────────────────────────
 async function selectRole(roleId) {
-  S.role = roleId; S.filter = 'all';
+  S.role = roleId; S.filter = 'all'; S.adminStage = 'fabricacion';
   const r = ROLES[roleId];
   document.getElementById('units-header-title').textContent = r.name;
   document.getElementById('units-header-sub').textContent   = 'Palacios del Este · 240 unidades';
+  // Barra de etapas: solo para Administración
+  const stageBar = document.getElementById('admin-stage-bar');
+  stageBar.style.display = roleId === 'admin' ? 'flex' : 'none';
+  if (roleId === 'admin') {
+    stageBar.querySelectorAll('.stage-pill').forEach(b => b.classList.toggle('active', b.dataset.stage === 'fabricacion'));
+  }
   showScreen('units');
   await loadUnits();
+}
+
+function setAdminStage(stage, btn) {
+  S.adminStage = stage; S.filter = 'all';
+  document.getElementById('admin-stage-bar').querySelectorAll('.stage-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('filter-all').className = 'filter-pill active';
+  document.getElementById('filter-issues-pill').className = 'filter-pill inactive';
+  renderUnits(S.units);
 }
 
 async function loadUnits() {
@@ -551,7 +656,7 @@ function setFilter(f) {
 }
 
 function renderUnits(units) {
-  const col = ROLES[S.role].col;
+  const col = currentCol();
   let done=0, prog=0, pend=0, issueCount=0;
   units.forEach(u => {
     const st = getColStatus(u, col);
@@ -565,7 +670,7 @@ function renderUnits(units) {
   else if (S.filter==='issues')   visible = units.filter(u => hasIssue(u));
 
   document.getElementById('units-grid').innerHTML = visible.map(u => {
-    const st = getColStatus(u,col), warn = hasIssue(u), num = u.name.replace('Unidad ','');
+    const st = getColStatus(u,col), warn = hasIssue(u), num = (u.name.replace(/\D/g,'') || u.name);
     return `<button class="unit-btn status-${st}${warn?' has-issue':''}" onclick="openUnit('${u.id}')">
       <span class="u-icon">${statusIcon(st)}</span><span class="u-num">${num}</span>${warn?'<span class="u-warn">⚠️</span>':''}
     </button>`;
@@ -593,17 +698,24 @@ function openUnit(itemId) {
   document.getElementById('detail-title').textContent      = S.current.name;
   document.getElementById('detail-role-label').textContent = r.name;
 
-  const actionBtn = document.getElementById('action-btn');
-  const undoBtn   = document.getElementById('undo-btn');
-  actionBtn.className   = `btn-action ${r.cls}`;
-  actionBtn.textContent = r.action;
-  const st = getColStatus(S.current, r.col);
-  if (st === 'done') {
-    actionBtn.disabled = true; actionBtn.textContent = '✅ Ya Completado';
-    undoBtn.style.display = 'block';
+  const footer = document.querySelector('#screen-detail .action-footer');
+  if (S.role === 'admin') {
+    // El admin solo observa: sin botón de marcar/revertir.
+    footer.style.display = 'none';
   } else {
-    actionBtn.disabled = false;
-    undoBtn.style.display = 'none';
+    footer.style.display = '';
+    const actionBtn = document.getElementById('action-btn');
+    const undoBtn   = document.getElementById('undo-btn');
+    actionBtn.className   = `btn-action ${r.cls}`;
+    actionBtn.textContent = r.action;
+    const st = getColStatus(S.current, r.col);
+    if (st === 'done') {
+      actionBtn.disabled = true; actionBtn.textContent = '✅ Ya Completado';
+      undoBtn.style.display = 'block';
+    } else {
+      actionBtn.disabled = false;
+      undoBtn.style.display = 'none';
+    }
   }
 
   renderDetail();
@@ -615,10 +727,10 @@ function openUnit(itemId) {
 function renderDetail() {
   const r = ROLES[S.role], u = S.current;
   let html = `<div class="detail-status-card"><h3>Estado General</h3>
-    ${row('Fabricación',      getColStatus(u,COL.fabricacion),       getColText(u,COL.fabricacion)       || statusLabel(getColStatus(u,COL.fabricacion)))}
-    ${row('Cocina / Vanity',  getColStatus(u,COL.instalacionCocina), getColText(u,COL.instalacionCocina) || statusLabel(getColStatus(u,COL.instalacionCocina)))}
-    ${row('Topes',            getColStatus(u,COL.instalacionTope),   getColText(u,COL.instalacionTope)   || statusLabel(getColStatus(u,COL.instalacionTope)))}
-    ${row('Aprobación',       getColStatus(u,COL.aprobacion),        getColText(u,COL.aprobacion)        || statusLabel(getColStatus(u,COL.aprobacion)))}
+    ${row('Fabricación',     getColStatus(u,COL.fabricacion),       getColText(u,COL.fabricacion)       || statusLabel(getColStatus(u,COL.fabricacion)))}
+    ${row('Cocina / Vanity', getColStatus(u,COL.instalacionCocina), getColText(u,COL.instalacionCocina) || statusLabel(getColStatus(u,COL.instalacionCocina)))}
+    ${row('Topes',           getColStatus(u,COL.instalacionTope),   getColText(u,COL.instalacionTope)   || statusLabel(getColStatus(u,COL.instalacionTope)))}
+    ${row('Aprobación',      getColStatus(u,COL.aprobacion),        getColText(u,COL.aprobacion)        || statusLabel(getColStatus(u,COL.aprobacion)))}
   </div>`;
 
   if (r.photos) html += `<div class="photos-card">
@@ -629,16 +741,30 @@ function renderDetail() {
     </div></div>`;
 
   if (r.issues) {
-    const existing = getColText(u, COL.problemas);
-    html += `<div class="issue-card"><h3>⚠️ Reportar Daño / Faltante</h3>
-      ${existing ? `<div class="issue-existing"><strong>Problema reportado:</strong>${existing}</div>
-        <div class="issue-actions-row">
-          <button class="btn-issue-sm btn-clear" onclick="clearIssue()">🗑️ Borrar</button>
-          <button class="btn-issue-sm btn-resolve" onclick="resolveIssue()">✅ Resuelto</button>
-        </div>` : ''}
-      <textarea class="issue-textarea" id="issue-textarea" placeholder="Ej: Se rompió una puerta, falta una pata..."></textarea>
-      <button class="btn-issue" onclick="reportIssue()">📤 Reportar Problema</button>
-    </div>`;
+    const issues  = issuesForRole(u, S.role);
+    const pending = issues.filter(i => !i.fixed).length;
+    const fixed   = issues.filter(i =>  i.fixed).length;
+    const isAdmin = S.role === 'admin';
+    const box = issues.length ? `<button class="issue-open-box" onclick="openIssuesModal()">
+          <div class="issue-open-main">
+            <span class="issue-open-icon">📋</span>
+            <span class="issue-open-txt">Ver reportes (${issues.length})</span>
+          </div>
+          <div class="issue-open-badges">
+            ${pending ? `<span class="issue-badge pend">${pending} pendiente${pending>1?'s':''}</span>` : ''}
+            ${fixed   ? `<span class="issue-badge done">${fixed} arreglado${fixed>1?'s':''}</span>` : ''}
+            <span class="issue-open-arrow">›</span>
+          </div>
+        </button>` : `<div class="issue-empty">Sin reportes${isAdmin?'':' por ahora'}.</div>`;
+    if (isAdmin) {
+      html += `<div class="issue-card"><h3>⚠️ Problemas (todos los roles)</h3>${box}</div>`;
+    } else {
+      html += `<div class="issue-card"><h3>⚠️ Reportar Daño / Faltante</h3>
+        ${issues.length ? box : ''}
+        <textarea class="issue-textarea" id="issue-textarea" placeholder="Ej: Se rompió una puerta, falta una pata..."></textarea>
+        <button class="btn-issue" onclick="reportIssue()">📤 Reportar Problema</button>
+      </div>`;
+    }
   }
 
   if (r.sig) {
@@ -897,6 +1023,13 @@ function openPhotoModal(src)  { document.getElementById('photo-modal-img').src=s
 function closePhotoModal()    { document.getElementById('photo-modal').classList.remove('show'); }
 
 // ── Issues ───────────────────────────────────────────────────────
+function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+async function saveIssues(unitId, arr) {
+  // Si quedó vacío mandamos texto vacío para limpiar la columna.
+  await mutateColumn(unitId, COL.problemas, { text: arr.length ? JSON.stringify(arr) : '' });
+}
+
 async function reportIssue() {
   const text = document.getElementById('issue-textarea')?.value.trim();
   if (!text) { toast('Escribe el problema antes de reportar'); return; }
@@ -906,26 +1039,93 @@ async function reportIssue() {
   const ts = now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
   showLoading('Reportando...');
   try {
-    await mutateColumn(u.id, COL.problemas, `${r.name} (${ds} ${ts}): ${text}`);
+    const arr = parseIssues(u);
+    arr.push({ t: text, by: r.name, role: S.role, d: `${ds} ${ts}`, fixed: false });
+    await saveIssues(u.id, arr);
     await createUpdate(u.id, `⚠️ PROBLEMA — ${u.name}\nPor: ${r.name} · ${ds} ${ts}\n\n${text}`);
     await refreshAll(); hideLoading(); toast('Problema reportado ⚠️'); renderDetail(); renderUnits(S.units);
   } catch(e) { hideLoading(); toast('Error: '+e.message); }
 }
 
-async function clearIssue() {
-  showLoading('Borrando...');
-  try { await mutateColumn(S.current.id, COL.problemas, ''); await refreshAll(); hideLoading(); toast('Borrado'); renderDetail(); renderUnits(S.units); }
-  catch(e) { hideLoading(); toast('Error: '+e.message); }
+// ── Modal de reportes ─────────────────────────────────────────────
+function openIssuesModal() {
+  if (!S.current) return;
+  document.getElementById('issues-modal-title').textContent = `Reportes — ${S.current.name}`;
+  renderIssuesList();
+  document.getElementById('issues-modal').classList.add('show');
+}
+function closeIssuesModal() { document.getElementById('issues-modal').classList.remove('show'); }
+
+function issueItemHtml(it, realIdx, editable) {
+  return `<div class="issue-item ${it.fixed ? 'fixed' : ''}">
+      <div class="issue-item-top">
+        <span class="issue-item-num">#${realIdx+1}</span>
+        ${it.fixed ? '<span class="issue-item-tag">✅ Arreglado</span>' : '<span class="issue-item-tag pend">⚠️ Pendiente</span>'}
+        ${editable ? `<button class="issue-item-del" onclick="deleteIssue(${realIdx})" title="Borrar">🗑️</button>` : ''}
+      </div>
+      <div class="issue-item-text">${escHtml(it.t)}</div>
+      ${(it.by || it.d) ? `<div class="issue-item-meta">${escHtml(it.by)}${it.by && it.d ? ' · ' : ''}${escHtml(it.d)}</div>` : ''}
+      ${editable ? `<button class="issue-item-fix ${it.fixed ? 'on' : ''}" onclick="toggleIssueFixed(${realIdx})">
+        ${it.fixed ? '↩ Marcar como pendiente' : '✅ Marcar como arreglado'}
+      </button>` : ''}
+    </div>`;
 }
 
-async function resolveIssue() {
+function renderIssuesList() {
+  const all  = parseIssues(S.current).map((it, i) => ({ it, i }));
+  const body = document.getElementById('issues-sheet-body');
+
+  if (S.role === 'admin') {
+    // Admin: todos los reportes agrupados por rol, solo lectura.
+    const groups = [['taller','📐 Taller'],['instaladorCocina','🏠 Inst. Cocinas'],['instaladorTope','🪨 Inst. Topes'],['encargado','✅ Encargado']];
+    let html = '';
+    groups.forEach(([rid, label]) => {
+      const items = all.filter(x => x.it.role === rid);
+      if (items.length) html += `<div class="issue-group-title">${label} (${items.length})</div>` + items.map(x => issueItemHtml(x.it, x.i, false)).join('');
+    });
+    const known = groups.map(g => g[0]);
+    const legacy = all.filter(x => !known.includes(x.it.role));
+    if (legacy.length) html += `<div class="issue-group-title">🗂️ Histórico (sin rol) (${legacy.length})</div>` + legacy.map(x => issueItemHtml(x.it, x.i, false)).join('');
+    if (!html) { closeIssuesModal(); renderDetail(); return; }
+    body.innerHTML = html;
+  } else {
+    // Rol normal: solo sus propios reportes, editables.
+    const mine = all.filter(x => x.it.role === S.role);
+    if (!mine.length) { closeIssuesModal(); renderDetail(); return; }
+    body.innerHTML = mine.map(x => issueItemHtml(x.it, x.i, true)).join('');
+  }
+}
+
+async function toggleIssueFixed(i) {
   const u = S.current, r = ROLES[S.role];
-  const ds = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
-  showLoading('Marcando resuelto...');
+  const arr = parseIssues(u);
+  if (!arr[i]) return;
+  // Solo el rol dueño puede marcar/reabrir el suyo (el admin es solo lectura).
+  if (S.role === 'admin' || (arr[i].role && arr[i].role !== S.role)) { toast('Solo el rol que lo reportó puede cambiarlo'); return; }
+  const nowFixed = !arr[i].fixed;
+  arr[i].fixed = nowFixed;
+  arr[i].fd = nowFixed ? new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '';
+  showLoading(nowFixed ? 'Marcando arreglado...' : 'Reabriendo...');
   try {
-    await mutateColumn(u.id, COL.problemas, '');
-    await createUpdate(u.id, `✅ RESUELTO — ${u.name}\nPor: ${r.name} · ${ds}`);
-    await refreshAll(); hideLoading(); toast('Resuelto ✅'); renderDetail(); renderUnits(S.units);
+    await saveIssues(u.id, arr);
+    if (nowFixed) await createUpdate(u.id, `✅ ARREGLADO — ${u.name}\nPor: ${r.name} · ${arr[i].fd}\n\n${arr[i].t}`);
+    await refreshAll(); hideLoading();
+    toast(nowFixed ? 'Marcado arreglado ✅' : 'Reabierto');
+    renderIssuesList(); renderDetail(); renderUnits(S.units);
+  } catch(e) { hideLoading(); toast('Error: '+e.message); }
+}
+
+async function deleteIssue(i) {
+  const u = S.current;
+  const arr = parseIssues(u);
+  if (!arr[i]) return;
+  if (S.role === 'admin' || (arr[i].role && arr[i].role !== S.role)) { toast('Solo el rol que lo reportó puede borrarlo'); return; }
+  arr.splice(i, 1);
+  showLoading('Borrando...');
+  try {
+    await saveIssues(u.id, arr);
+    await refreshAll(); hideLoading(); toast('Reporte borrado');
+    renderIssuesList(); renderDetail(); renderUnits(S.units);
   } catch(e) { hideLoading(); toast('Error: '+e.message); }
 }
 
@@ -950,7 +1150,7 @@ async function handleAction() {
   showLoading('Guardando...');
   try {
     const today = new Date().toISOString().split('T')[0];
-    await mutateColumn(u.id, r.col, { label: 'Done' });
+    await mutateColumn(u.id, r.col, { label: r.doneLabel });
     if (S.role === 'taller')              await mutateColumn(u.id, COL.fechaEntrega, { date: today });
     else if (S.role === 'instaladorTope') await mutateColumn(u.id, COL.fechaTopes,   { date: today });
 
