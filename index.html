@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1F3864">
-<title>Palacios del Este</title>
+<title>River States</title>
 <link rel="manifest" href="manifest.json">
 <style>
 :root {
@@ -223,6 +223,33 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 #photo-modal img { max-width: 95vw; max-height: 90vh; border-radius: 8px; object-fit: contain; }
 #photo-modal-close { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.2); border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer; }
 
+/* ── Plano del Proyecto ── */
+#screen-plano { background: var(--bg); }
+.plano-legend { display: flex; gap: 14px; justify-content: center; align-items: center; padding: 8px 12px; background: var(--brand); flex-wrap: wrap; }
+.plano-legend span { display: flex; align-items: center; gap: 6px; color: #fff; font-size: 12px; font-weight: 600; }
+.plano-legend i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.lg-done { background: var(--green); } .lg-prog { background: var(--orange); } .lg-pend { background: #9ca3af; }
+.plano-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--brand); }
+.plano-toolbar .sp { flex: 1; }
+.plano-zoom-btn, .plano-tool-btn { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 8px; height: 36px; min-width: 36px; padding: 0 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
+.plano-count { color: rgba(255,255,255,0.8); font-size: 12px; }
+.plano-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; background: #e9eef3; }
+.plano-stage { position: relative; width: 100%; }
+.plano-stage img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+.plano-markers { position: absolute; inset: 0; }
+.plano-dot { position: absolute; transform: translate(-50%,-50%); width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff; cursor: pointer; }
+.plano-dot.done { background: var(--green); } .plano-dot.progress { background: var(--orange); } .plano-dot.pending { background: #9ca3af; }
+.plano-dot.calib { background: var(--brand-mid); }
+.plano-stage.calibrating .plano-dot { pointer-events: none; }
+.plano-stage.calibrating img { cursor: crosshair; }
+.calib-bar { background: #111827; color: #fff; padding: 10px 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
+.calib-bar .calib-msg { flex: 1; font-size: 14px; font-weight: 700; min-width: 130px; }
+.calib-bar button { border: none; border-radius: 8px; padding: 8px 10px; font-size: 13px; font-weight: 700; cursor: pointer; color: #fff; }
+.plano-export { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1001; padding: 20px; }
+.plano-export.show { display: flex; }
+.plano-export-card { background: #fff; border-radius: 14px; padding: 18px; max-width: 520px; width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.plano-export-card textarea { width: 100%; height: 160px; font-family: monospace; font-size: 11px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px; resize: none; }
+
 @media (min-width: 480px) { .units-list { grid-template-columns: repeat(8, 1fr); } }
 </style>
 </head>
@@ -230,11 +257,11 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 
 <!-- ── Setup ─────────────────────────────────────────────────── -->
 <div id="screen-setup" class="screen">
-  <img src="logo blanco 14.png" class="setup-logo" onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'">
+  <img src="logo.png" class="setup-logo" onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'">
   <div id="logo-fallback" class="setup-logo-fallback" style="display:none">🏗️</div>
-  <div class="setup-title">Palacios del Este</div>
+  <div class="setup-title">River States</div>
   <div class="setup-brand">Wood Studio</div>
-  <div style="color:rgba(255,255,255,0.35);font-size:10px;margin-top:-18px;margin-bottom:18px;">v8</div>
+  <div style="color:rgba(255,255,255,0.35);font-size:10px;margin-top:-18px;margin-bottom:18px;">v1</div>
   <div class="setup-card">
     <label>Token API de Monday.com</label>
     <input type="password" id="api-token-input" placeholder="eyJhbGciOiJ..." autocomplete="off">
@@ -246,18 +273,18 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 <!-- ── Roles ─────────────────────────────────────────────────── -->
 <div id="screen-roles" class="screen">
   <div class="roles-header">
-    <img src="logo blanco 14.png" class="roles-header-logo" onerror="this.style.display='none'">
+    <img src="logo.png" class="roles-header-logo" onerror="this.style.display='none'">
     <div class="roles-header-text">
-      <h1>Palacios del Este</h1>
+      <h1>River States</h1>
       <p>Wood Studio · Selecciona tu rol</p>
     </div>
   </div>
   <div class="roles-grid">
     <div class="role-card taller"      onclick="goToPin('taller')">
-      <div class="role-icon">🔨</div><div class="role-name">TALLER</div><div class="role-sub">John</div>
+      <div class="role-icon">📐</div><div class="role-name">TALLER</div><div class="role-sub">Medidas</div>
     </div>
     <div class="role-card inst-cocina" onclick="goToPin('instaladorCocina')">
-      <div class="role-icon">🏠</div><div class="role-name">INST. COCINAS</div><div class="role-sub">Cocinas + Vanities</div>
+      <div class="role-icon">🏠</div><div class="role-name">INST. COCINAS</div><div class="role-sub">Entrega Cocina</div>
     </div>
     <div class="role-card inst-tope"   onclick="goToPin('instaladorTope')">
       <div class="role-icon">🪨</div><div class="role-name">INST. TOPES</div><div class="role-sub">Countertops</div>
@@ -267,6 +294,9 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
     </div>
     <div class="role-card admin" style="grid-column:1/-1;" onclick="goToPin('admin')">
       <div class="role-icon">👑</div><div class="role-name">ADMINISTRACIÓN</div><div class="role-sub">Ver todo · todos los problemas</div>
+    </div>
+    <div class="role-card" style="grid-column:1/-1;border-color:var(--green);" onclick="openPlano()">
+      <div class="role-icon">📍</div><div class="role-name">PLANO DEL PROYECTO</div><div class="role-sub">Mapa de casas en el sitio · sin código</div>
     </div>
     <div style="grid-column:1/-1;text-align:center;padding:4px 0;">
       <button onclick="showSetup()" style="background:none;border:none;color:var(--text-muted);font-size:12px;cursor:pointer;">⚙️ Configuración</button>
@@ -278,7 +308,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 <div id="screen-pin" class="screen" style="align-items:center;">
   <button class="pin-back" onclick="showRoles()">←</button>
   <div class="pin-role-label">Acceso</div>
-  <div class="pin-role-name" id="pin-role-name">Taller — John</div>
+  <div class="pin-role-name" id="pin-role-name">Taller</div>
   <div class="pin-dots">
     <span class="pin-dot" id="dot-0"></span>
     <span class="pin-dot" id="dot-1"></span>
@@ -307,11 +337,11 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
   <div class="app-header">
     <button class="back-btn" onclick="showRoles()">←</button>
     <div class="header-info">
-      <h2 id="units-header-title">Taller — John</h2>
-      <div class="header-sub" id="units-header-sub">Palacios del Este · 240 unidades</div>
+      <h2 id="units-header-title">Taller</h2>
+      <div class="header-sub" id="units-header-sub">River States · 128 unidades</div>
     </div>
     <button class="refresh-btn" id="refresh-btn" onclick="loadUnits()">↻</button>
-    <img src="logo blanco 14.png" class="header-logo" onerror="this.style.display='none'">
+    <img src="logo.png" class="header-logo" onerror="this.style.display='none'">
   </div>
   <div class="units-search">
     <input type="text" id="search-input" placeholder="🔍  Buscar unidad..." oninput="filterUnits(this.value)">
@@ -343,12 +373,62 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
       <h2 id="detail-title">Unidad 1</h2>
       <div class="header-sub" id="detail-role-label"></div>
     </div>
-    <img src="logo blanco 14.png" class="header-logo" onerror="this.style.display='none'">
+    <img src="logo.png" class="header-logo" onerror="this.style.display='none'">
   </div>
   <div class="detail-body" id="detail-body"></div>
   <div class="action-footer">
     <button class="btn-action" id="action-btn" onclick="handleAction()">Marcar como Lista</button>
     <button class="btn-undo"   id="undo-btn"   onclick="undoStatus()" style="display:none;">↩ Revertir a Pendiente</button>
+  </div>
+</div>
+
+<!-- ── Plano del Proyecto ─────────────────────────────────────── -->
+<div id="screen-plano" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="showRoles()">←</button>
+    <div class="header-info">
+      <h2>Plano del Proyecto</h2>
+      <div class="header-sub" id="plano-sub">River States · casas en el sitio</div>
+    </div>
+    <button class="refresh-btn" id="plano-refresh-btn" onclick="openPlano()">↻</button>
+    <img src="logo.png" class="header-logo" onerror="this.style.display='none'">
+  </div>
+  <div class="plano-legend">
+    <span><i class="lg-done"></i> Lista (cocina + topes)</span>
+    <span><i class="lg-prog"></i> En proceso</span>
+    <span><i class="lg-pend"></i> Pendiente</span>
+  </div>
+  <div class="calib-bar" id="calib-bar" style="display:none;">
+    <span class="calib-msg" id="calib-msg">Toca la casa #1</span>
+    <button onclick="calibBack()"   style="background:#374151;">← Atrás</button>
+    <button onclick="calibSkip()"   style="background:#374151;">Saltar</button>
+    <button onclick="calibExport()" style="background:var(--green);">Exportar</button>
+    <button onclick="stopCalibration()" style="background:#df2f4a;">Salir</button>
+  </div>
+  <div class="plano-toolbar">
+    <button class="plano-zoom-btn" onclick="planoZoom(-1)">−</button>
+    <button class="plano-zoom-btn" onclick="planoZoom(1)">+</button>
+    <span class="plano-count" id="plano-count">—</span>
+    <span class="sp"></span>
+    <button class="plano-tool-btn" id="calib-start-btn" onclick="startCalibration()">⚙️ Calibrar</button>
+  </div>
+  <div class="plano-scroll" id="plano-scroll">
+    <div class="plano-stage" id="plano-stage" onclick="planoStageClick(event)">
+      <img src="plano.png" id="plano-img" alt="Plano del proyecto" onerror="this.style.opacity='0.25'">
+      <div class="plano-markers" id="plano-markers"></div>
+    </div>
+  </div>
+</div>
+
+<div class="plano-export" id="plano-export">
+  <div class="plano-export-card">
+    <b style="font-size:15px;">📍 Posiciones del plano</b>
+    <p style="font-size:12px;color:#6b7280;margin:0;">Copia este texto y envíaselo a Claude para dejarlo fijo para todos los instaladores.</p>
+    <textarea id="plano-export-txt" readonly></textarea>
+    <div style="display:flex;gap:8px;">
+      <button onclick="copyPlanoExport()" style="flex:2;background:var(--green);color:#fff;border:none;border-radius:8px;padding:11px;font-weight:700;cursor:pointer;">📋 Copiar</button>
+      <button onclick="document.getElementById('plano-export').classList.remove('show')" style="flex:1;background:#e5e7eb;border:none;border-radius:8px;padding:11px;font-weight:700;cursor:pointer;">Cerrar</button>
+    </div>
   </div>
 </div>
 
@@ -376,7 +456,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 //  CONFIGURACIÓN — cambia aquí los PINs de cada rol
 // ═══════════════════════════════════════════════════════════════
 const PINS = {
-  taller:           '1111',   // ← PIN Taller (John)
+  taller:           '1111',   // ← PIN Taller (Medidas)
   instaladorCocina: '2222',   // ← PIN Instalador Cocinas
   instaladorTope:   '3333',   // ← PIN Instalador Topes
   encargado:        '4444',   // ← PIN Encargado
@@ -384,38 +464,43 @@ const PINS = {
 };
 // ═══════════════════════════════════════════════════════════════
 
-const BOARD_ID = 18417025952;
+const BOARD_ID = 10019027783;
 const API_URL  = 'https://api.monday.com/v2';
 const FILE_URL = '/monday-file'; // proxy Netlify → Monday (evita CORS)
 
 const COL = {
-  fabricacion:       'color_mm45sq7w',     // Fabricacion Cocina (Taller)
-  instalacionCocina: 'color_mm46atp1',     // Instalación Cocina/Vanity
-  instalacionTope:   'color_mm45qby6',     // Instalación Tope
-  aprobacion:        'color_mm456st1',     // Inspección Contratista (Encargado)
-  fechaMedidas:      'date_mm45pexh',      // Fecha Medidas
-  fechaEntrega:      'date_mm45rf2k',      // Fecha Entrega
-  fechaTopes:        'date_mm455ske',      // Fecha Topes
-  problemas:         'long_text_mm4m5nqv', // Reportes App (texto largo)
-  problemasCliente:  'text_mm45n0n5',      // Arreglos Cliente
+  fabricacion:       'color_mkvna34b',     // Rectificar Medidas (Taller)
+  instalacionCocina: 'status',             // Entrega Cocina (Inst. Cocinas)
+  instalacionTope:   'color_mkvn9ykp',     // Instalacion Tope (Inst. Topes)
+  aprobacion:        'color_mkvnec2y',     // Insp. Cliente (Encargado)
+  fechaMedidas:      'date_mkvngwbq',      // Fecha Medidas
+  fechaEntrega:      'date4',              // Fecha Entrega
+  fechaTopes:        'date_mkvnn92k',      // Fecha Topes
+  problemas:         'long_text_mkvnsrm6', // Arreglos Contratista
+  problemasCliente:  'long_text_mkvn6a7',  // Arreglos Cliente
 };
 
 const ROLES = {
-  taller:           { name: 'Taller — John',  col: COL.fabricacion,       cls: 'taller',      photos: false, sig: false, sigRequired: false, issues: true,  doneLabel: 'Done', action: 'Marcar como Fabricada ✔' },
-  instaladorCocina: { name: 'Inst. Cocinas',  col: COL.instalacionCocina, cls: 'inst-cocina', photos: true,  sig: true,  sigRequired: false, issues: true,  doneLabel: 'Done', action: 'Marcar Cocina/Vanity Instalada ✔' },
-  instaladorTope:   { name: 'Inst. Topes',    col: COL.instalacionTope,   cls: 'inst-tope',   photos: true,  sig: true,  sigRequired: false, issues: true,  doneLabel: 'Done', action: 'Marcar Topes Instalados ✔' },
-  encargado:        { name: 'Encargado',      col: COL.aprobacion,        cls: 'encargado',   photos: false, sig: true,  sigRequired: true,  issues: false, doneLabel: 'Done', action: 'Firmar y Aprobar ✔' },
+  taller:           { name: 'Taller',        col: COL.fabricacion,       cls: 'taller',      photos: false, sig: false, sigRequired: false, issues: true,  doneLabel: 'Terminado',  action: 'Marcar Medidas Realizadas ✔' },
+  instaladorCocina: { name: 'Inst. Cocinas', col: COL.instalacionCocina, cls: 'inst-cocina', photos: true,  sig: true,  sigRequired: false, issues: true,  doneLabel: 'Terminado',  action: 'Marcar Cocina Entregada ✔' },
+  instaladorTope:   { name: 'Inst. Topes',   col: COL.instalacionTope,   cls: 'inst-tope',   photos: true,  sig: true,  sigRequired: false, issues: true,  doneLabel: 'Terminado',  action: 'Marcar Topes Instalados ✔' },
+  encargado:        { name: 'Encargado',     col: COL.aprobacion,        cls: 'encargado',   photos: false, sig: true,  sigRequired: true,  issues: false, doneLabel: 'Satisfecho', action: 'Firmar y Aprobar ✔' },
   admin:            { name: 'Administración', col: COL.aprobacion,        cls: 'admin',       photos: true,  sig: false, sigRequired: false, issues: true,  doneLabel: '',           action: '' },
 };
+
+// ── Plano: posiciones fijas de cada casa [x%, y%] sobre plano.png ──
+// Se llenan con la calibración guiada (botón ⚙️ Calibrar) y se pegan aquí.
+const HOUSE_POS_BAKED = {};
 
 const S = {
   token: null, role: null, units: [], current: null,
   sigDrawn: false, sigConfirmed: false, sigActive: false,
   filter: 'all', pinBuffer: '', pinTargetRole: null, adminStage: 'fabricacion',
+  planoZoom: 1, calib: null,
 };
 
 window.addEventListener('load', () => {
-  S.token = localStorage.getItem('vsj_token');
+  S.token = localStorage.getItem('rs_token');
   showScreen(S.token ? 'roles' : 'setup');
 });
 
@@ -431,7 +516,7 @@ function saveToken() {
   const t = document.getElementById('api-token-input').value.trim();
   if (!t) { toast('Ingresa un token válido'); return; }
   S.token = t;
-  localStorage.setItem('vsj_token', t);
+  localStorage.setItem('rs_token', t);
   showScreen('roles');
 }
 
@@ -614,7 +699,7 @@ async function selectRole(roleId) {
   S.role = roleId; S.filter = 'all'; S.adminStage = 'fabricacion';
   const r = ROLES[roleId];
   document.getElementById('units-header-title').textContent = r.name;
-  document.getElementById('units-header-sub').textContent   = 'Palacios del Este · 240 unidades';
+  document.getElementById('units-header-sub').textContent   = 'River States · 128 unidades';
   // Barra de etapas: solo para Administración
   const stageBar = document.getElementById('admin-stage-bar');
   stageBar.style.display = roleId === 'admin' ? 'flex' : 'none';
@@ -727,10 +812,10 @@ function openUnit(itemId) {
 function renderDetail() {
   const r = ROLES[S.role], u = S.current;
   let html = `<div class="detail-status-card"><h3>Estado General</h3>
-    ${row('Fabricación',     getColStatus(u,COL.fabricacion),       getColText(u,COL.fabricacion)       || statusLabel(getColStatus(u,COL.fabricacion)))}
-    ${row('Cocina / Vanity', getColStatus(u,COL.instalacionCocina), getColText(u,COL.instalacionCocina) || statusLabel(getColStatus(u,COL.instalacionCocina)))}
-    ${row('Topes',           getColStatus(u,COL.instalacionTope),   getColText(u,COL.instalacionTope)   || statusLabel(getColStatus(u,COL.instalacionTope)))}
-    ${row('Aprobación',      getColStatus(u,COL.aprobacion),        getColText(u,COL.aprobacion)        || statusLabel(getColStatus(u,COL.aprobacion)))}
+    ${row('Rectificar Medidas', getColStatus(u,COL.fabricacion),       getColText(u,COL.fabricacion)       || statusLabel(getColStatus(u,COL.fabricacion)))}
+    ${row('Entrega Cocina',     getColStatus(u,COL.instalacionCocina), getColText(u,COL.instalacionCocina) || statusLabel(getColStatus(u,COL.instalacionCocina)))}
+    ${row('Instalación Tope',   getColStatus(u,COL.instalacionTope),   getColText(u,COL.instalacionTope)   || statusLabel(getColStatus(u,COL.instalacionTope)))}
+    ${row('Insp. Cliente',      getColStatus(u,COL.aprobacion),        getColText(u,COL.aprobacion)        || statusLabel(getColStatus(u,COL.aprobacion)))}
   </div>`;
 
   if (r.photos) html += `<div class="photos-card">
@@ -925,7 +1010,7 @@ function getSignatureBlob() {
 // ── IndexedDB — fotos locales ────────────────────────────────────
 async function dbOpen() {
   return new Promise((res, rej) => {
-    const req = indexedDB.open('pde-photos', 1);
+    const req = indexedDB.open('rs-photos', 1);
     req.onupgradeneeded = e => e.target.result.createObjectStore('photos', { keyPath: 'id', autoIncrement: true });
     req.onsuccess = e => res(e.target.result);
     req.onerror   = e => rej(e.target.error);
@@ -1151,8 +1236,9 @@ async function handleAction() {
   try {
     const today = new Date().toISOString().split('T')[0];
     await mutateColumn(u.id, r.col, { label: r.doneLabel });
-    if (S.role === 'taller')              await mutateColumn(u.id, COL.fechaEntrega, { date: today });
-    else if (S.role === 'instaladorTope') await mutateColumn(u.id, COL.fechaTopes,   { date: today });
+    if (S.role === 'taller')                await mutateColumn(u.id, COL.fechaMedidas, { date: today });
+    else if (S.role === 'instaladorCocina') await mutateColumn(u.id, COL.fechaEntrega, { date: today });
+    else if (S.role === 'instaladorTope')   await mutateColumn(u.id, COL.fechaTopes,   { date: today });
 
     await refreshAll(); hideLoading(); toast(`${u.name} completada ✅`);
     const ab = document.getElementById('action-btn');
@@ -1160,6 +1246,130 @@ async function handleAction() {
     document.getElementById('undo-btn').style.display = 'block';
     renderDetail(); renderUnits(S.units);
   } catch(e) { hideLoading(); toast('Error: '+e.message); }
+}
+
+// ── Plano del Proyecto ────────────────────────────────────────────
+function loadPlanoLocal() {
+  try { return JSON.parse(localStorage.getItem('rs_plano_pos')) || {}; } catch(e) { return {}; }
+}
+function getPlanoPos() { return Object.assign({}, HOUSE_POS_BAKED, loadPlanoLocal()); }
+
+// Verde = cocina Y topes instalados · Amarillo = algo avanzado · Gris = nada
+function planoStatus(unit) {
+  const c = getColStatus(unit, COL.instalacionCocina);
+  const t = getColStatus(unit, COL.instalacionTope);
+  if (c === 'done' && t === 'done') return 'done';
+  if (c === 'done' || t === 'done' || c === 'progress' || t === 'progress') return 'progress';
+  return 'pending';
+}
+
+async function openPlano() {
+  showScreen('plano');
+  applyPlanoZoom();
+  if (!S.token) { document.getElementById('plano-count').textContent = 'Configura el token'; renderPlano(); return; }
+  showLoading('Cargando estado...');
+  try { await refreshAll(); }
+  catch(e) { toast('No se pudo cargar Monday: ' + e.message); }
+  finally { hideLoading(); }
+  renderPlano();
+}
+
+function applyPlanoZoom() {
+  document.getElementById('plano-stage').style.width = (S.planoZoom * 100) + '%';
+}
+function planoZoom(d) {
+  S.planoZoom = Math.min(5, Math.max(1, (S.planoZoom || 1) + d * 0.5));
+  applyPlanoZoom();
+}
+
+function renderPlano() {
+  const pos = (S.calib && S.calib.active) ? S.calib.pos : getPlanoPos();
+  const byNum = {};
+  (S.units || []).forEach(u => { const n = (u.name.replace(/\D/g,'') || ''); if (n) byNum[n] = u; });
+  let placed = 0, html = '';
+  Object.keys(pos).forEach(n => {
+    const p = pos[n]; if (!p) return;
+    placed++;
+    let cls = 'pending';
+    if (S.calib && S.calib.active) cls = 'calib';
+    else if (byNum[n]) cls = planoStatus(byNum[n]);
+    html += `<div class="plano-dot ${cls}" style="left:${p[0]}%;top:${p[1]}%;" onclick="planoDotTap('${n}')">${n}</div>`;
+  });
+  document.getElementById('plano-markers').innerHTML = html;
+  if (!(S.calib && S.calib.active))
+    document.getElementById('plano-count').textContent = placed ? `${placed} casas ubicadas` : 'Casas sin ubicar — usa ⚙️ Calibrar';
+}
+
+function planoDotTap(n) {
+  if (S.calib && S.calib.active) return;
+  const u = (S.units || []).find(x => (x.name.replace(/\D/g,'')) === n);
+  if (!u) { toast('Casa ' + n); return; }
+  const c = getColStatus(u, COL.instalacionCocina) === 'done' ? '✅' : '⬜';
+  const t = getColStatus(u, COL.instalacionTope)   === 'done' ? '✅' : '⬜';
+  toast(`Casa ${n} — Cocina ${c}  Topes ${t}`);
+}
+
+// ── Calibración guiada ────────────────────────────────────────────
+function startCalibration() {
+  S.calib = { active: true, n: 1, pos: Object.assign({}, getPlanoPos()) };
+  document.getElementById('calib-bar').style.display = 'flex';
+  document.getElementById('calib-start-btn').style.display = 'none';
+  document.getElementById('plano-stage').classList.add('calibrating');
+  updateCalibUI();
+  renderPlano();
+  toast('Toca cada casa en el plano, en orden');
+}
+function stopCalibration() {
+  S.calib = null;
+  document.getElementById('calib-bar').style.display = 'none';
+  document.getElementById('calib-start-btn').style.display = '';
+  document.getElementById('plano-stage').classList.remove('calibrating');
+  renderPlano();
+}
+function updateCalibUI() {
+  const placed = Object.keys(S.calib.pos).length;
+  document.getElementById('calib-msg').textContent = S.calib.n <= 128
+    ? `Toca la casa #${S.calib.n}   (${placed}/128 ubicadas)`
+    : `¡Listo! ${placed}/128. Toca "Exportar" y envíame el texto.`;
+}
+function planoStageClick(e) {
+  if (!S.calib || !S.calib.active) return;
+  const img = document.getElementById('plano-img');
+  const rect = img.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width  * 100;
+  const y = (e.clientY - rect.top)  / rect.height * 100;
+  if (x < 0 || x > 100 || y < 0 || y > 100) return;
+  if (S.calib.n > 128) { toast('Ya ubicaste las 128. Toca Exportar.'); return; }
+  S.calib.pos[String(S.calib.n)] = [Math.round(x*10)/10, Math.round(y*10)/10];
+  localStorage.setItem('rs_plano_pos', JSON.stringify(S.calib.pos));
+  S.calib.n++;
+  updateCalibUI();
+  renderPlano();
+}
+function calibBack() {
+  if (!S.calib) return;
+  S.calib.n = Math.max(1, S.calib.n - 1);
+  delete S.calib.pos[String(S.calib.n)];
+  localStorage.setItem('rs_plano_pos', JSON.stringify(S.calib.pos));
+  updateCalibUI();
+  renderPlano();
+}
+function calibSkip() {
+  if (!S.calib) return;
+  S.calib.n = Math.min(129, S.calib.n + 1);
+  updateCalibUI();
+}
+function calibExport() {
+  if (!S.calib) return;
+  document.getElementById('plano-export-txt').value = JSON.stringify(S.calib.pos);
+  document.getElementById('plano-export').classList.add('show');
+}
+function copyPlanoExport() {
+  const ta = document.getElementById('plano-export-txt');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(ta.value).then(() => toast('✅ Copiado'))
+      .catch(() => { ta.select(); document.execCommand('copy'); toast('✅ Copiado'); });
+  } else { ta.select(); document.execCommand('copy'); toast('✅ Copiado'); }
 }
 
 // ── UI Helpers ────────────────────────────────────────────────────
