@@ -391,6 +391,8 @@ const FILE_URL = '/monday-file'; // proxy Netlify → Monday (evita CORS)
 const COL = {
   fabricacion:       'color_mm45sq7w',     // Fabricacion Cocina (Taller/John)
   materiales:        'long_text_mm4vwvtb', // Materiales a Comprar (To-Do) → dispara compra
+  inicioFab:         'date_mm4vr1p1',      // Inicio Fabricación (fecha+hora)
+  finFab:            'date_mm4vrqp8',      // Fin Fabricación (fecha+hora)
   instalacionCocina: 'color_mm46atp1',     // Instalación Cocina/Vanity
   instalacionTope:   'color_mm45qby6',     // Instalación Tope
   aprobacion:        'color_mm456st1',     // Inspección Contratista (Encargado)
@@ -1196,12 +1198,17 @@ async function handleAction() {
   // Rol de dos pasos (Fabricación: Empezar → Terminar)
   if (r.twoStep) {
     const ab = document.getElementById('action-btn');
-    const label = ab.dataset.step === 'start' ? r.startLabel : r.doneLabel;
+    const step = ab.dataset.step;
+    const label = step === 'start' ? r.startLabel : r.doneLabel;
+    const iso = new Date().toISOString();               // UTC → Monday la muestra en tu zona
+    const dt  = { date: iso.slice(0,10), time: iso.slice(11,19) };
     showLoading('Guardando...');
     try {
       await mutateColumn(u.id, r.col, { label });
+      if (step === 'start') await mutateColumn(u.id, COL.inicioFab, dt);
+      else                  await mutateColumn(u.id, COL.finFab,    dt);
       await refreshAll(); hideLoading();
-      toast(label === r.startLabel ? `${u.name}: fabricación comenzada ▶️` : `${u.name}: fabricación terminada ✅`);
+      toast(step === 'start' ? `${u.name}: fabricación comenzada ▶️` : `${u.name}: fabricación terminada ✅`);
       setTwoStepButton(ab, document.getElementById('undo-btn'), r, getColStatus(S.current, r.col));
       renderDetail(); renderUnits(S.units);
     } catch(e) { hideLoading(); toast('Error: '+e.message); }
