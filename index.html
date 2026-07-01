@@ -776,10 +776,14 @@ function renderDetail() {
 
   if (r.todo) {
     const matTxt = getColText(u, COL.materiales).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    const lista = matTxt
+      ? `<div style="white-space:pre-wrap;font-size:13px;line-height:1.5;background:#f6f7fb;border-radius:8px;padding:10px;margin-bottom:8px;">${matTxt}</div>`
+      : `<div class="issue-empty">Sin materiales pedidos aún.</div>`;
     html += `<div class="issue-card"><h3>📝 Materiales que faltan (To-Do)</h3>
-      <p style="font-size:12px;color:var(--text-muted);margin:0 0 8px;">Apunta lo que falta para fabricar. Al guardar, se le avisa a Compras (Yinessa).</p>
-      <textarea class="issue-textarea" id="todo-textarea" placeholder="Ej: Faltan bisagras x10, falta tablero blanco...">${matTxt}</textarea>
-      <button class="btn-issue" onclick="saveMateriales()">💾 Guardar lista</button>
+      <p style="font-size:12px;color:var(--text-muted);margin:0 0 8px;">Escribe UN material que falte y toca Agregar. Puedes seguir agregando más cuando descubras otros — no se borra lo anterior. Cada vez se le avisa a Compras (Yiny).</p>
+      ${lista}
+      <textarea class="issue-textarea" id="todo-textarea" placeholder="Ej: Faltan bisagras x10"></textarea>
+      <button class="btn-issue" onclick="addMaterial()">➕ Agregar y guardar</button>
     </div>`;
   }
 
@@ -1178,14 +1182,23 @@ function setTwoStepButton(actionBtn, undoBtn, r, st) {
   }
 }
 
-async function saveMateriales() {
+function fechaHoraLocal() {
+  const n = new Date(), p = x => String(x).padStart(2,'0');
+  return `${p(n.getDate())}/${p(n.getMonth()+1)}/${n.getFullYear()} ${p(n.getHours())}:${p(n.getMinutes())}`;
+}
+
+async function addMaterial() {
   const u = S.current;
-  const txt = document.getElementById('todo-textarea').value.trim();
+  const nuevo = document.getElementById('todo-textarea').value.trim();
+  if (!nuevo) { toast('Escribe qué material falta'); return; }
+  const prev  = getColText(u, COL.materiales);
+  const linea = `• ${fechaHoraLocal()} — ${nuevo}`;
+  const texto = prev ? (prev + '\n' + linea) : linea;
   showLoading('Guardando...');
   try {
-    await mutateColumn(u.id, COL.materiales, { text: txt });
+    await mutateColumn(u.id, COL.materiales, { text: texto });
     await refreshAll(); hideLoading();
-    toast(txt ? 'Lista guardada · avisamos a Compras' : 'Lista vacía guardada');
+    toast('Material agregado · avisamos a Compras');
     renderDetail(); renderUnits(S.units);
   } catch(e) { hideLoading(); toast('Error: '+e.message); }
 }
@@ -1202,11 +1215,15 @@ async function handleAction() {
     const label = step === 'start' ? r.startLabel : r.doneLabel;
     const iso = new Date().toISOString();               // UTC → Monday la muestra en tu zona
     const dt  = { date: iso.slice(0,10), time: iso.slice(11,19) };
+    const stamp = fechaHoraLocal();
     showLoading('Guardando...');
     try {
       await mutateColumn(u.id, r.col, { label });
       if (step === 'start') await mutateColumn(u.id, COL.inicioFab, dt);
       else                  await mutateColumn(u.id, COL.finFab,    dt);
+      await createUpdate(u.id, step === 'start'
+        ? `▶️ Fabricación COMENZADA — ${stamp}`
+        : `✅ Fabricación TERMINADA — ${stamp}`);
       await refreshAll(); hideLoading();
       toast(step === 'start' ? `${u.name}: fabricación comenzada ▶️` : `${u.name}: fabricación terminada ✅`);
       setTwoStepButton(ab, document.getElementById('undo-btn'), r, getColStatus(S.current, r.col));
