@@ -254,7 +254,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
   </div>
   <div class="roles-grid">
     <div class="role-card taller"      onclick="goToPin('taller')">
-      <div class="role-icon">🔨</div><div class="role-name">TALLER</div><div class="role-sub">John</div>
+      <div class="role-icon">🏭</div><div class="role-name">FABRICACIÓN</div><div class="role-sub">John</div>
     </div>
     <div class="role-card inst-cocina" onclick="goToPin('instaladorCocina')">
       <div class="role-icon">🏠</div><div class="role-name">INST. COCINAS</div><div class="role-sub">Cocinas + Vanities</div>
@@ -377,10 +377,10 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 // ═══════════════════════════════════════════════════════════════
 const PINS = {
   taller:           '1111',   // ← PIN Taller (John)
-  instaladorCocina: '3583',   // ← PIN Instalador Cocinas
-  instaladorTope:   '7073',   // ← PIN Instalador Topes
-  encargado:        '2021',   // ← PIN Encargado
-  admin:            '2021',   // ← PIN Administración (ve TODO)
+  instaladorCocina: '2222',   // ← PIN Instalador Cocinas
+  instaladorTope:   '3333',   // ← PIN Instalador Topes
+  encargado:        '4444',   // ← PIN Encargado
+  admin:            '5555',   // ← PIN Administración (ve TODO)
 };
 // ═══════════════════════════════════════════════════════════════
 
@@ -389,7 +389,8 @@ const API_URL  = 'https://api.monday.com/v2';
 const FILE_URL = '/monday-file'; // proxy Netlify → Monday (evita CORS)
 
 const COL = {
-  fabricacion:       'color_mm45sq7w',     // Fabricacion Cocina (Taller)
+  fabricacion:       'color_mm45sq7w',     // Fabricacion Cocina (Taller/John)
+  materiales:        'long_text_mm4vwvtb', // Materiales a Comprar (To-Do) → dispara compra
   instalacionCocina: 'color_mm46atp1',     // Instalación Cocina/Vanity
   instalacionTope:   'color_mm45qby6',     // Instalación Tope
   aprobacion:        'color_mm456st1',     // Inspección Contratista (Encargado)
@@ -401,7 +402,7 @@ const COL = {
 };
 
 const ROLES = {
-  taller:           { name: 'Taller — John',  col: COL.fabricacion,       cls: 'taller',      photos: false, sig: false, sigRequired: false, issues: true,  doneLabel: 'Done', action: 'Marcar como Fabricada ✔' },
+  taller:           { name: 'Fabricación — John', col: COL.fabricacion,   cls: 'taller',      photos: false, sig: false, sigRequired: false, issues: false, todo: true, twoStep: true, startLabel: 'Working on it', doneLabel: 'Done', action: 'Marcar Fabricación Terminada ✔' },
   instaladorCocina: { name: 'Inst. Cocinas',  col: COL.instalacionCocina, cls: 'inst-cocina', photos: true,  sig: true,  sigRequired: false, issues: true,  doneLabel: 'Done', action: 'Marcar Cocina/Vanity Instalada ✔' },
   instaladorTope:   { name: 'Inst. Topes',    col: COL.instalacionTope,   cls: 'inst-tope',   photos: true,  sig: true,  sigRequired: false, issues: true,  doneLabel: 'Done', action: 'Marcar Topes Instalados ✔' },
   encargado:        { name: 'Encargado',      col: COL.aprobacion,        cls: 'encargado',   photos: false, sig: true,  sigRequired: true,  issues: false, doneLabel: 'Done', action: 'Firmar y Aprobar ✔' },
@@ -707,14 +708,18 @@ function openUnit(itemId) {
     const actionBtn = document.getElementById('action-btn');
     const undoBtn   = document.getElementById('undo-btn');
     actionBtn.className   = `btn-action ${r.cls}`;
-    actionBtn.textContent = r.action;
     const st = getColStatus(S.current, r.col);
-    if (st === 'done') {
-      actionBtn.disabled = true; actionBtn.textContent = '✅ Ya Completado';
-      undoBtn.style.display = 'block';
+    if (r.twoStep) {
+      setTwoStepButton(actionBtn, undoBtn, r, st);
     } else {
-      actionBtn.disabled = false;
-      undoBtn.style.display = 'none';
+      actionBtn.textContent = r.action;
+      if (st === 'done') {
+        actionBtn.disabled = true; actionBtn.textContent = '✅ Ya Completado';
+        undoBtn.style.display = 'block';
+      } else {
+        actionBtn.disabled = false;
+        undoBtn.style.display = 'none';
+      }
     }
   }
 
@@ -765,6 +770,15 @@ function renderDetail() {
         <button class="btn-issue" onclick="reportIssue()">📤 Reportar Problema</button>
       </div>`;
     }
+  }
+
+  if (r.todo) {
+    const matTxt = getColText(u, COL.materiales).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    html += `<div class="issue-card"><h3>📝 Materiales que faltan (To-Do)</h3>
+      <p style="font-size:12px;color:var(--text-muted);margin:0 0 8px;">Apunta lo que falta para fabricar. Al guardar, se le avisa a Compras (Yinessa).</p>
+      <textarea class="issue-textarea" id="todo-textarea" placeholder="Ej: Faltan bisagras x10, falta tablero blanco...">${matTxt}</textarea>
+      <button class="btn-issue" onclick="saveMateriales()">💾 Guardar lista</button>
+    </div>`;
   }
 
   if (r.sig) {
@@ -1137,8 +1151,39 @@ async function undoStatus() {
     await mutateColumn(u.id, r.col, {});
     await refreshAll(); hideLoading(); toast(`${u.name} revertida a pendiente`);
     const ab = document.getElementById('action-btn');
-    ab.disabled = false; ab.textContent = r.action; ab.className = `btn-action ${r.cls}`;
-    document.getElementById('undo-btn').style.display = 'none';
+    ab.className = `btn-action ${r.cls}`;
+    if (r.twoStep) {
+      setTwoStepButton(ab, document.getElementById('undo-btn'), r, getColStatus(S.current, r.col));
+    } else {
+      ab.disabled = false; ab.textContent = r.action;
+      document.getElementById('undo-btn').style.display = 'none';
+    }
+    renderDetail(); renderUnits(S.units);
+  } catch(e) { hideLoading(); toast('Error: '+e.message); }
+}
+
+// ── Fabricación (rol de 2 pasos) + To-Do de materiales ────────────
+function setTwoStepButton(actionBtn, undoBtn, r, st) {
+  if (st === 'done') {                 // Terminado
+    actionBtn.disabled = true;  actionBtn.textContent = '✅ Ya Terminado';
+    actionBtn.dataset.step = 'done';   undoBtn.style.display = 'block';
+  } else if (st === 'progress') {      // Comenzado
+    actionBtn.disabled = false; actionBtn.textContent = '✔️ Marcar Terminado';
+    actionBtn.dataset.step = 'finish'; undoBtn.style.display = 'block';
+  } else {                              // Sin comenzar
+    actionBtn.disabled = false; actionBtn.textContent = '▶️ Empezar Fabricación';
+    actionBtn.dataset.step = 'start';  undoBtn.style.display = 'none';
+  }
+}
+
+async function saveMateriales() {
+  const u = S.current;
+  const txt = document.getElementById('todo-textarea').value.trim();
+  showLoading('Guardando...');
+  try {
+    await mutateColumn(u.id, COL.materiales, { text: txt });
+    await refreshAll(); hideLoading();
+    toast(txt ? 'Lista guardada · avisamos a Compras' : 'Lista vacía guardada');
     renderDetail(); renderUnits(S.units);
   } catch(e) { hideLoading(); toast('Error: '+e.message); }
 }
@@ -1147,6 +1192,22 @@ async function undoStatus() {
 async function handleAction() {
   const r = ROLES[S.role], u = S.current;
   if (r.sig && r.sigRequired && !S.sigConfirmed) { toast('Confirma tu firma primero'); return; }
+
+  // Rol de dos pasos (Fabricación: Empezar → Terminar)
+  if (r.twoStep) {
+    const ab = document.getElementById('action-btn');
+    const label = ab.dataset.step === 'start' ? r.startLabel : r.doneLabel;
+    showLoading('Guardando...');
+    try {
+      await mutateColumn(u.id, r.col, { label });
+      await refreshAll(); hideLoading();
+      toast(label === r.startLabel ? `${u.name}: fabricación comenzada ▶️` : `${u.name}: fabricación terminada ✅`);
+      setTwoStepButton(ab, document.getElementById('undo-btn'), r, getColStatus(S.current, r.col));
+      renderDetail(); renderUnits(S.units);
+    } catch(e) { hideLoading(); toast('Error: '+e.message); }
+    return;
+  }
+
   showLoading('Guardando...');
   try {
     const today = new Date().toISOString().split('T')[0];
