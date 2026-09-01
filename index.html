@@ -55,6 +55,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .role-name { font-size: 13px; font-weight: 700; text-align: center; color: var(--text); }
 .role-sub  { font-size: 11px; color: var(--text-muted); text-align: center; }
 .role-card.taller      { border-color: var(--brand-mid); }
+.role-card.fabricante  { border-color: #a45bd6; }
 .role-card.inst-cocina { border-color: var(--green); }
 .role-card.inst-tope   { border-color: var(--orange); }
 .role-card.encargado   { border-color: var(--red); }
@@ -133,6 +134,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .photo-thumb { width: 100%; aspect-ratio: 1; border-radius: 8px; object-fit: cover; cursor: pointer; display: block; }
 .photo-thumb.uploading    { opacity: 0.45; pointer-events: none; }
 .photo-thumb.upload-error { opacity: 0.45; outline: 2px solid var(--red); }
+.photo-thumb.pending      { opacity: 0.6;  outline: 2px dashed var(--orange); }
 .photo-add     { aspect-ratio: 1; border-radius: 8px; background: var(--brand-light); border: 2px dashed var(--brand-mid); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--brand-mid); font-size: 28px; }
 .photo-loading { aspect-ratio: 1; border-radius: 8px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
@@ -144,6 +146,12 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .sig-done-banner span { display: block; font-size: 11px; font-weight: 400; opacity: 0.75; margin-top: 3px; }
 .sig-done-banner img { display: block; max-width: 100%; border-radius: 6px; margin-top: 10px; background: #fff; }
 .sig-activate-btn { width: 100%; background: var(--brand-light); border: 2px dashed var(--brand-mid); color: var(--brand); border-radius: 10px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; text-align: center; }
+.sig-verify { background: #f8fafc; border: 1.5px solid var(--brand-mid); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+.sig-verify label { display: block; font-size: 12px; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+.sig-verify input { width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 11px; font-size: 18px; text-align: center; letter-spacing: 6px; outline: none; font-family: inherit; }
+.sig-verify input:focus { border-color: var(--brand-mid); }
+.sig-verify .hint { font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.4; }
+.sig-verified-tag { display: inline-block; background: #d6e4f0; color: var(--brand); border-radius: 20px; padding: 2px 9px; font-size: 10px; font-weight: 800; letter-spacing: 0.3px; margin-top: 6px; }
 .sig-activate-btn:active { opacity: 0.8; }
 .sig-canvas-wrap { border: 2px solid var(--brand-mid); border-radius: 10px; overflow: hidden; background: #fafafa; display: none; }
 #sig-canvas { display: block; width: 100%; touch-action: none; cursor: crosshair; }
@@ -205,6 +213,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .btn-action { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
 .btn-action:active { opacity: 0.85; transform: scale(0.98); }
 .btn-action.taller      { background: var(--brand); color: #fff; }
+.btn-action.fabricante  { background: #a45bd6; color: #fff; }
 .btn-action.inst-cocina { background: var(--green); color: #fff; }
 .btn-action.inst-tope   { background: var(--orange); color: #fff; }
 .btn-action.encargado   { background: var(--red); color: #fff; }
@@ -223,6 +232,34 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 #photo-modal img { max-width: 95vw; max-height: 90vh; border-radius: 8px; object-fit: contain; }
 #photo-modal-close { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.2); border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer; }
 
+/* ── Plano del Proyecto ── */
+#screen-plano { background: var(--bg); }
+.plano-legend { display: flex; gap: 14px; justify-content: center; align-items: center; padding: 8px 12px; background: var(--brand); flex-wrap: wrap; }
+.plano-legend span { display: flex; align-items: center; gap: 6px; color: #fff; font-size: 12px; font-weight: 600; }
+.plano-legend i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.lg-done { background: var(--green); } .lg-prog { background: var(--orange); } .lg-pend { background: #9ca3af; } .lg-gar { background: var(--red); }
+.plano-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--brand); }
+.plano-toolbar .sp { flex: 1; }
+.plano-zoom-btn, .plano-tool-btn { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 8px; height: 36px; min-width: 36px; padding: 0 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
+.plano-count { color: rgba(255,255,255,0.8); font-size: 12px; }
+.plano-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; background: #e9eef3; touch-action: pan-x pan-y; overscroll-behavior: contain; }
+.plano-stage { position: relative; width: 100%; }
+.plano-stage img, .plano-stage canvas { display: block; width: 100%; height: auto; background: #fff; user-select: none; -webkit-user-drag: none; }
+.plano-markers { position: absolute; inset: 0; }
+.plano-dot { position: absolute; transform: translate(-50%,-50%); width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff; cursor: pointer; }
+.plano-dot.done { background: var(--green); } .plano-dot.progress { background: var(--orange); } .plano-dot.pending { background: #9ca3af; }
+.plano-dot.garantia { background: var(--red); }
+.plano-dot.calib { background: var(--brand-mid); }
+.plano-stage.calibrating .plano-dot { pointer-events: none; }
+.plano-stage.calibrating img, .plano-stage.calibrating canvas { cursor: crosshair; }
+.calib-bar { background: #111827; color: #fff; padding: 10px 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
+.calib-bar .calib-msg { flex: 1; font-size: 14px; font-weight: 700; min-width: 130px; }
+.calib-bar button { border: none; border-radius: 8px; padding: 8px 10px; font-size: 13px; font-weight: 700; cursor: pointer; color: #fff; }
+.plano-export { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1001; padding: 20px; }
+.plano-export.show { display: flex; }
+.plano-export-card { background: #fff; border-radius: 14px; padding: 18px; max-width: 520px; width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.plano-export-card textarea { width: 100%; height: 160px; font-family: monospace; font-size: 11px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px; resize: none; }
+
 @media (min-width: 480px) { .units-list { grid-template-columns: repeat(8, 1fr); } }
 </style>
 </head>
@@ -234,7 +271,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
   <div id="logo-fallback" class="setup-logo-fallback" style="display:none">🏗️</div>
   <div class="setup-title">Palacios del Este</div>
   <div class="setup-brand">Wood Studio</div>
-  <div style="color:rgba(255,255,255,0.35);font-size:10px;margin-top:-18px;margin-bottom:18px;">v8</div>
+  <div style="color:rgba(255,255,255,0.35);font-size:10px;margin-top:-18px;margin-bottom:18px;">v1</div>
   <div class="setup-card">
     <label>Token API de Monday.com</label>
     <input type="password" id="api-token-input" placeholder="eyJhbGciOiJ..." autocomplete="off">
@@ -253,11 +290,11 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
     </div>
   </div>
   <div class="roles-grid">
-    <div class="role-card taller"      onclick="goToPin('taller')">
-      <div class="role-icon">🏭</div><div class="role-name">FABRICACIÓN</div><div class="role-sub">John</div>
+    <div class="role-card fabricante"  onclick="goToPin('fabricante')">
+      <div class="role-icon">🏭</div><div class="role-name">FABRICACIÓN</div><div class="role-sub">Cocinas · John</div>
     </div>
     <div class="role-card inst-cocina" onclick="goToPin('instaladorCocina')">
-      <div class="role-icon">🏠</div><div class="role-name">INST. COCINAS</div><div class="role-sub">Cocinas + Vanities</div>
+      <div class="role-icon">🏠</div><div class="role-name">INST. COCINAS</div><div class="role-sub">Cocina y vanity</div>
     </div>
     <div class="role-card inst-tope"   onclick="goToPin('instaladorTope')">
       <div class="role-icon">🪨</div><div class="role-name">INST. TOPES</div><div class="role-sub">Countertops</div>
@@ -265,8 +302,8 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
     <div class="role-card encargado"   onclick="goToPin('encargado')">
       <div class="role-icon">✅</div><div class="role-name">ENCARGADO</div><div class="role-sub">Aprobación final</div>
     </div>
-    <div class="role-card admin" style="grid-column:1/-1;" onclick="goToPin('admin')">
-      <div class="role-icon">👑</div><div class="role-name">ADMINISTRACIÓN</div><div class="role-sub">Ver todo · todos los problemas</div>
+    <div class="role-card" style="grid-column:1/-1;border-color:var(--green);" onclick="openPlano()">
+      <div class="role-icon">📍</div><div class="role-name">PLANO DEL PROYECTO</div><div class="role-sub">Mapa de casas en el sitio · sin código</div>
     </div>
     <div style="grid-column:1/-1;text-align:center;padding:4px 0;">
       <button onclick="showSetup()" style="background:none;border:none;color:var(--text-muted);font-size:12px;cursor:pointer;">⚙️ Configuración</button>
@@ -278,7 +315,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 <div id="screen-pin" class="screen" style="align-items:center;">
   <button class="pin-back" onclick="showRoles()">←</button>
   <div class="pin-role-label">Acceso</div>
-  <div class="pin-role-name" id="pin-role-name">Taller — John</div>
+  <div class="pin-role-name" id="pin-role-name">Taller</div>
   <div class="pin-dots">
     <span class="pin-dot" id="dot-0"></span>
     <span class="pin-dot" id="dot-1"></span>
@@ -307,7 +344,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
   <div class="app-header">
     <button class="back-btn" onclick="showRoles()">←</button>
     <div class="header-info">
-      <h2 id="units-header-title">Taller — John</h2>
+      <h2 id="units-header-title">Taller</h2>
       <div class="header-sub" id="units-header-sub">Palacios del Este · 240 unidades</div>
     </div>
     <button class="refresh-btn" id="refresh-btn" onclick="loadUnits()">↻</button>
@@ -352,6 +389,55 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
   </div>
 </div>
 
+<!-- ── Plano del Proyecto ─────────────────────────────────────── -->
+<div id="screen-plano" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="showRoles()">←</button>
+    <div class="header-info">
+      <h2>Plano del Proyecto</h2>
+      <div class="header-sub" id="plano-sub">Palacios del Este · casas en el sitio</div>
+    </div>
+    <button class="refresh-btn" id="plano-refresh-btn" onclick="openPlano()">↻</button>
+    <img src="logo blanco 14.png" class="header-logo" onerror="this.style.display='none'">
+  </div>
+  <div class="plano-legend">
+    <span><i class="lg-done"></i> Lista (cocina + topes)</span>
+    <span><i class="lg-prog"></i> En proceso</span>
+    <span><i class="lg-pend"></i> Pendiente</span>
+    <span><i class="lg-gar"></i> Garantía activa</span>
+  </div>
+  <div class="calib-bar" id="calib-bar" style="display:none;">
+    <span class="calib-msg" id="calib-msg">Toca la casa #1</span>
+    <button onclick="calibBack()"   style="background:#374151;">← Atrás</button>
+    <button onclick="calibSkip()"   style="background:#374151;">Saltar</button>
+    <button onclick="calibExport()" style="background:var(--green);">Exportar</button>
+    <button onclick="stopCalibration()" style="background:#df2f4a;">Salir</button>
+  </div>
+  <div class="plano-toolbar">
+    <button class="plano-zoom-btn" onclick="planoZoom(-1)">−</button>
+    <button class="plano-zoom-btn" onclick="planoZoom(1)">+</button>
+    <span class="plano-count" id="plano-count">—</span>
+  </div>
+  <div class="plano-scroll" id="plano-scroll">
+    <div class="plano-stage" id="plano-stage" onclick="planoStageClick(event)">
+      <canvas id="plano-canvas"></canvas>
+      <div class="plano-markers" id="plano-markers"></div>
+    </div>
+  </div>
+</div>
+
+<div class="plano-export" id="plano-export">
+  <div class="plano-export-card">
+    <b style="font-size:15px;">📍 Posiciones del plano</b>
+    <p style="font-size:12px;color:#6b7280;margin:0;">Copia este texto y envíaselo a Claude para dejarlo fijo para todos los instaladores.</p>
+    <textarea id="plano-export-txt" readonly></textarea>
+    <div style="display:flex;gap:8px;">
+      <button onclick="copyPlanoExport()" style="flex:2;background:var(--green);color:#fff;border:none;border-radius:8px;padding:11px;font-weight:700;cursor:pointer;">📋 Copiar</button>
+      <button onclick="document.getElementById('plano-export').classList.remove('show')" style="flex:1;background:#e5e7eb;border:none;border-radius:8px;padding:11px;font-weight:700;cursor:pointer;">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <input type="file" id="camera-input" accept="image/*" multiple onchange="handlePhotos(event)">
 
 <div id="photo-modal">
@@ -371,16 +457,28 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 <div id="toast"></div>
 <div id="loading"><div class="spinner"></div><p id="loading-text">Cargando...</p></div>
 
+<!-- PDF.js: para dibujar el plano (PDF vectorial) nítido a cualquier zoom -->
+<!-- El plano de Palacios es una imagen, no un PDF: no hace falta PDF.js.
+     Ventaja: el plano abre igual sin internet. -->
+
 <script>
 // ═══════════════════════════════════════════════════════════════
 //  CONFIGURACIÓN — cambia aquí los PINs de cada rol
 // ═══════════════════════════════════════════════════════════════
 const PINS = {
-  taller:           '1111',   // ← PIN Taller (John)
-  instaladorCocina: '2222',   // ← PIN Instalador Cocinas
-  instaladorTope:   '3333',   // ← PIN Instalador Topes
-  encargado:        '4444',   // ← PIN Encargado
-  admin:            '5555',   // ← PIN Administración (ve TODO)
+  fabricante:       '1111',   // ← Fabricación (el taller · John)
+  instaladorCocina: '3583',   // ← Instalador Cocinas
+  instaladorTope:   '7073',   // ← Instalador Topes
+  encargado:        '4444',   // ← Encargado (Ing. Jorge Díaz — firma las aprobaciones)
+};
+
+// ═══ FIRMANTES AUTORIZADOS ═══════════════════════════════════════
+//  PIN personal (secreto, de cada persona) → nombre que queda en el acta.
+//  SOLO estas personas pueden confirmar una firma de aprobación.
+//  Para añadir a alguien: agrega una línea 'PIN': 'Nombre Apellido',
+const FIRMANTES = {
+  '5171': 'Ing. Jorge Díaz',   // Único firmante autorizado en Palacios del Este.
+                               // Dale el PIN 5171 EN PERSONA, no por mensaje.
 };
 // ═══════════════════════════════════════════════════════════════
 
@@ -389,7 +487,8 @@ const API_URL  = 'https://api.monday.com/v2';
 const FILE_URL = '/monday-file'; // proxy Netlify → Monday (evita CORS)
 
 const COL = {
-  fabricacion:       'color_mm45sq7w',     // Fabricacion Cocina (Taller/John)
+  fabricacion:       'color_mm45xy2',      // Rectificar Medidas
+  fabricacionCocina: 'color_mm45sq7w',     // Fabricacion Cocina (John)
   materiales:        'long_text_mm4vwvtb', // Materiales a Comprar (To-Do) → dispara compra
   inicioFab:         'date_mm4vr1p1',      // Inicio Fabricación (fecha+hora)
   finFab:            'date_mm4vrqp8',      // Fin Fabricación (fecha+hora)
@@ -399,22 +498,30 @@ const COL = {
   fechaMedidas:      'date_mm45pexh',      // Fecha Medidas
   fechaEntrega:      'date_mm45rf2k',      // Fecha Entrega
   fechaTopes:        'date_mm455ske',      // Fecha Topes
-  problemas:         'long_text_mm4m5nqv', // Reportes App (texto largo)
+  problemas:         'long_text_mm4m5nqv', // Reportes App
   problemasCliente:  'text_mm45n0n5',      // Arreglos Cliente
+  garantias:         'long_text_mm6rh7tf', // Garantías del portal del cliente (JSON)
 };
 
 const ROLES = {
-  taller:           { name: 'Fabricación — John', col: COL.fabricacion,   cls: 'taller',      photos: false, sig: false, sigRequired: false, issues: false, todo: true, twoStep: true, startLabel: 'Working on it', doneLabel: 'Done', action: 'Marcar Fabricación Terminada ✔' },
-  instaladorCocina: { name: 'Inst. Cocinas',  col: COL.instalacionCocina, cls: 'inst-cocina', photos: true,  sig: true,  sigRequired: false, issues: true,  doneLabel: 'Done', action: 'Marcar Cocina/Vanity Instalada ✔' },
-  instaladorTope:   { name: 'Inst. Topes',    col: COL.instalacionTope,   cls: 'inst-tope',   photos: true,  sig: true,  sigRequired: false, issues: true,  doneLabel: 'Done', action: 'Marcar Topes Instalados ✔' },
-  encargado:        { name: 'Encargado',      col: COL.aprobacion,        cls: 'encargado',   photos: false, sig: true,  sigRequired: true,  issues: false, doneLabel: 'Done', action: 'Firmar y Aprobar ✔' },
-  admin:            { name: 'Administración', col: COL.aprobacion,        cls: 'admin',       photos: true,  sig: false, sigRequired: false, issues: true,  doneLabel: '',           action: '' },
+  taller:           { name: 'Taller',        col: COL.fabricacion,       cls: 'taller',      photos: false, sig: false, sigRequired: false, issues: true,  doneLabel: 'Done',  action: 'Marcar Medidas Realizadas ✔' },
+  fabricante:       { name: 'Fabricación',   col: COL.fabricacionCocina, cls: 'fabricante',  photos: false, sig: false, sigRequired: false, issues: false, todo: true, twoStep: true, startLabel: 'Working on it', doneLabel: 'Done', action: 'Marcar Fabricación Terminada ✔' },
+  instaladorCocina: { name: 'Inst. Cocinas', col: COL.instalacionCocina, cls: 'inst-cocina', photos: true,  sig: true,  sigRequired: false, issues: true,  doneLabel: 'Done',  action: 'Marcar Cocina/Vanity Instalada ✔' },
+  instaladorTope:   { name: 'Inst. Topes',   col: COL.instalacionTope,   cls: 'inst-tope',   photos: true,  sig: true,  sigRequired: false, issues: true,  doneLabel: 'Done',  action: 'Marcar Topes Instalados ✔' },
+  encargado:        { name: 'Encargado',     col: COL.aprobacion,        cls: 'encargado',   photos: false, sig: true,  sigRequired: true,  issues: false, doneLabel: 'Done',  action: 'Firmar y Aprobar ✔' },
+  admin:            { name: 'Administración', col: COL.aprobacion,       cls: 'admin',       photos: true,  sig: false, sigRequired: false, issues: true,  doneLabel: '',      action: '' },
 };
+
+// ── Plano: posiciones fijas de cada casa [x%, y%] sobre el plano ──
+// Extraídas del PDF "PLANO de SECUENCIA CONST - PALACIOS DEL ESTE" (2-jun-2026)
+// detectando los 240 círculos numerados. Verificadas 1-240, sin huecos ni repetidos.
+const HOUSE_POS_BAKED = {"1":[11.23,31.59],"2":[8.92,31.49],"3":[6.65,31.47],"4":[6.71,40.3],"5":[9.17,39.77],"6":[11.52,39.46],"7":[13.85,38.68],"8":[16.07,37.73],"9":[18.1,37.16],"10":[20.5,36.39],"11":[22.58,35.86],"12":[24.82,35.42],"13":[27.02,34.94],"14":[29.14,34.7],"15":[31.28,34.35],"16":[33.48,34.22],"17":[37.58,37.82],"18":[35.49,39.49],"19":[33.13,39.57],"20":[30.98,39.46],"21":[28.86,39.69],"22":[26.72,40.22],"23":[24.38,40.6],"24":[22.28,41.07],"25":[20.09,41.66],"26":[17.91,42.33],"27":[15.74,43.08],"28":[13.66,43.95],"29":[11.42,44.69],"30":[9.25,45.32],"31":[6.79,45.33],"32":[7.81,54.66],"33":[10.04,53.71],"34":[12.09,52.67],"35":[14.12,51.72],"36":[16.38,50.89],"37":[18.56,50.12],"38":[20.7,49.43],"39":[22.81,49],"40":[25.01,48.37],"41":[29.17,47.97],"42":[31.2,47.71],"43":[33.39,47.52],"44":[35.58,47.36],"45":[37.74,46.82],"46":[39.83,45.46],"47":[42.53,43.72],"48":[44.35,45.46],"49":[45.87,46.98],"50":[46.96,50.98],"51":[44.79,51.13],"52":[42.6,51.27],"53":[40.41,51.42],"54":[38.23,51.57],"55":[36.04,51.72],"56":[33.82,51.86],"57":[31.58,52.05],"58":[29.53,52.31],"59":[25.61,53.58],"60":[23.13,54.2],"61":[20.86,54.71],"62":[18.77,55.56],"63":[16.66,56.22],"64":[14.37,57.25],"65":[12.2,58.17],"66":[9.81,59.29],"67":[10.44,66.99],"68":[13.01,65.84],"69":[15.16,64.85],"70":[17.33,63.94],"71":[19.54,63.13],"72":[21.74,62.4],"73":[23.96,61.77],"74":[26.19,61.23],"75":[28.43,60.8],"76":[30.76,60.44],"77":[33.15,60.08],"78":[35.37,59.98],"79":[37.87,59.67],"80":[40.22,59.41],"81":[42.57,59.47],"82":[44.95,59.3],"83":[47.31,59.15],"84":[46.99,63.91],"85":[44.8,64.06],"86":[42.61,64.2],"87":[40.44,64.35],"88":[38.24,64.49],"89":[36.06,64.64],"90":[33.73,64.79],"91":[31.4,65.03],"92":[29.11,65.34],"93":[26.95,65.77],"94":[24.58,66.12],"95":[22.37,66.84],"96":[20.01,67.62],"97":[17.77,68.47],"98":[15.65,69.51],"99":[13.03,70.79],"100":[13.65,78.32],"101":[16.04,77.12],"102":[18.21,76.14],"103":[20.41,75.28],"104":[22.63,74.51],"105":[24.85,73.85],"106":[27.09,73.29],"107":[29.36,72.84],"108":[31.6,72.49],"109":[36.29,72.36],"110":[38.34,72.23],"111":[40.54,72.08],"112":[42.72,71.94],"113":[44.9,71.79],"114":[47.09,71.64],"115":[47.3,76.02],"116":[45.1,76.17],"117":[42.94,76.32],"118":[40.74,76.46],"119":[38.55,76.61],"120":[36.5,76.74],"121":[32.28,77.2],"122":[29.95,77.55],"123":[27.63,78.02],"124":[25.33,78.6],"125":[23.04,79.31],"126":[20.67,80.03],"127":[18.52,81.05],"128":[15.86,82.33],"129":[17.09,89.83],"130":[19.04,88.89],"131":[21.19,87.97],"132":[23.33,87.17],"133":[25.51,86.48],"134":[27.69,85.89],"135":[29.89,85.43],"136":[32.09,85.08],"137":[34.32,84.84],"138":[36.52,84.69],"139":[38.71,84.55],"140":[40.89,84.4],"141":[43.1,84.25],"142":[45.27,84.1],"143":[47.46,83.96],"144":[51.57,84.02],"145":[54.04,83.96],"146":[56.23,83.76],"147":[58.42,83.56],"148":[60.4,83.14],"149":[62.62,82.88],"150":[64.83,82.57],"151":[67.06,82.19],"152":[69.26,81.76],"153":[71.74,81.18],"154":[73.65,80.72],"155":[75.83,80.12],"156":[78,79.46],"157":[80.19,78.75],"158":[82.34,77.97],"159":[84.49,77.14],"160":[84.53,68.98],"161":[82.42,69.83],"162":[80.28,70.63],"163":[78.13,71.37],"164":[75.99,72.05],"165":[73.83,72.67],"166":[71.68,73.3],"167":[67.23,74.18],"168":[64.98,74.58],"169":[62.73,74.92],"170":[60.49,75.2],"171":[58.25,75.41],"172":[56.04,75.56],"173":[53.86,75.71],"174":[51.82,75.85],"175":[51.77,71.32],"176":[53.81,71.18],"177":[56.01,71.04],"178":[58.18,70.88],"179":[60.39,70.67],"180":[62.59,70.4],"181":[64.81,70.06],"182":[67,69.67],"183":[71.22,68.7],"184":[73.31,68.26],"185":[75.48,67.63],"186":[77.64,66.94],"187":[79.81,66.19],"188":[81.94,65.38],"189":[84.08,64.51],"190":[75.61,59.75],"191":[73.3,60.42],"192":[71.14,61.01],"193":[68.97,61.55],"194":[66.8,62.01],"195":[64.62,62.42],"196":[62.43,62.76],"197":[60.26,63.04],"198":[58.05,63.25],"199":[55.87,63.41],"200":[53.69,63.55],"201":[51.66,63.69],"202":[51.63,58.86],"203":[53.72,58.77],"204":[55.9,58.63],"205":[58.1,58.47],"206":[60.29,58.25],"207":[62.51,57.96],"208":[64.7,57.6],"209":[66.89,57.18],"210":[60.65,50.67],"211":[58.07,50.61],"212":[55.88,50.76],"213":[53.69,50.91],"214":[51.65,51.05],"215":[53.2,46.96],"216":[52.09,43.37],"217":[49.6,40.87],"218":[47.85,38.86],"219":[45.84,37.09],"220":[43.87,35.17],"221":[40.52,32.09],"222":[38.54,30.16],"223":[36.59,28.25],"224":[34.69,26.28],"225":[32.45,24.82],"226":[30.32,23.64],"227":[28.39,22.63],"228":[26.44,21.62],"229":[24.5,20.61],"230":[22.57,19.6],"231":[20.64,18.59],"232":[18.7,17.58],"233":[16.76,16.57],"234":[14.83,15.56],"235":[12.89,14.55],"236":[10.95,13.54],"237":[9.02,12.54],"238":[6.99,11.48],"239":[6.68,20.93],"240":[9.17,20.93]};
 
 const S = {
   token: null, role: null, units: [], current: null,
   sigDrawn: false, sigConfirmed: false, sigActive: false,
   filter: 'all', pinBuffer: '', pinTargetRole: null, adminStage: 'fabricacion',
+  planoZoom: 1, calib: null,
 };
 
 window.addEventListener('load', () => {
@@ -727,17 +834,18 @@ function openUnit(itemId) {
 
   renderDetail();
   showScreen('detail');
-  if (r.photos) loadLocalPhotos(itemId);   // fotos del dispositivo
+  if (r.photos) loadPhotos(itemId);        // fotos compartidas (Supabase) + pendientes
   if (r.photos || r.sig) loadDetailMedia(itemId); // fotos + firma de Monday
 }
 
 function renderDetail() {
   const r = ROLES[S.role], u = S.current;
   let html = `<div class="detail-status-card"><h3>Estado General</h3>
-    ${row('Fabricación',     getColStatus(u,COL.fabricacion),       getColText(u,COL.fabricacion)       || statusLabel(getColStatus(u,COL.fabricacion)))}
-    ${row('Cocina / Vanity', getColStatus(u,COL.instalacionCocina), getColText(u,COL.instalacionCocina) || statusLabel(getColStatus(u,COL.instalacionCocina)))}
-    ${row('Topes',           getColStatus(u,COL.instalacionTope),   getColText(u,COL.instalacionTope)   || statusLabel(getColStatus(u,COL.instalacionTope)))}
-    ${row('Aprobación',      getColStatus(u,COL.aprobacion),        getColText(u,COL.aprobacion)        || statusLabel(getColStatus(u,COL.aprobacion)))}
+    ${row('Rectificar Medidas', getColStatus(u,COL.fabricacion),       getColText(u,COL.fabricacion)       || statusLabel(getColStatus(u,COL.fabricacion)))}
+    ${row('Fabricación Cocina', getColStatus(u,COL.fabricacionCocina), getColText(u,COL.fabricacionCocina) || statusLabel(getColStatus(u,COL.fabricacionCocina)))}
+    ${row('Instalación Cocina', getColStatus(u,COL.instalacionCocina), getColText(u,COL.instalacionCocina) || statusLabel(getColStatus(u,COL.instalacionCocina)))}
+    ${row('Instalación Tope',   getColStatus(u,COL.instalacionTope),   getColText(u,COL.instalacionTope)   || statusLabel(getColStatus(u,COL.instalacionTope)))}
+    ${row('Insp. Contratista',  getColStatus(u,COL.aprobacion),        getColText(u,COL.aprobacion)        || statusLabel(getColStatus(u,COL.aprobacion)))}
   </div>`;
 
   if (r.photos) html += `<div class="photos-card">
@@ -795,6 +903,11 @@ function renderDetail() {
       <p>${sigSub}</p>
       <div id="sig-status"></div>
       <button id="sig-activate-btn" class="sig-activate-btn" onclick="activateSignature()">✍️ Activar Firma</button>
+      <div class="sig-verify" id="sig-verify" style="display:none;">
+        <label>🔐 PIN personal del firmante</label>
+        <input id="sig-pin" type="password" inputmode="numeric" maxlength="6" placeholder="••••" autocomplete="off">
+        <div class="hint">Identifica <b>quién</b> aprueba. Es tu PIN personal y secreto — no el del rol.</div>
+      </div>
       <div id="sig-canvas-wrap" class="sig-canvas-wrap"><canvas id="sig-canvas" height="160"></canvas></div>
       <div class="sig-actions" id="sig-actions" style="display:none;">
         <button class="btn-outline" onclick="clearSignature()">Limpiar</button>
@@ -819,9 +932,9 @@ async function loadDetailMedia(itemId) {
     const d = await gql(q, { id: String(itemId) });
     const updates = d.items?.[0]?.updates || [];
 
-    // Photos
-    const grid = document.getElementById('photo-grid');
-    document.getElementById('photos-loading')?.remove();
+    // Photos: ya NO se leen de Monday — la fuente es Supabase (ver loadPhotos).
+    // Se deja el código por si alguna vez hace falta volver atrás.
+    const grid = null;
     if (grid) {
       const imgExts = new Set(['jpg','jpeg','png','gif','webp','heic','heif']);
       const photoAssets = [];
@@ -846,18 +959,33 @@ async function loadDetailMedia(itemId) {
     if (sigStatus) {
       const sigUpd = updates.find(u => u.body?.includes('✍️'));
       if (sigUpd) {
-        const match = sigUpd.body.match(/✍️\s(.+?)\s—\sFirma.+\((.+)\)/);
-        const who  = match?.[1] || 'Encargado';
-        const when = match?.[2] || '';
+        // El body puede venir con HTML: lo pasamos a texto plano para leerlo bien.
+        const plain = String(sigUpd.body || '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n').replace(/<[^>]+>/g, '');
+        const verificada = /APROBACIÓN VERIFICADA/i.test(plain);
+        let who  = (plain.match(/Firmante:\s*(.+)/)      || [])[1];
+        let when = (plain.match(/Fecha:\s*([^(\n]+)/)    || [])[1];
+        const sello = (plain.match(/Sello de integridad:\s*(\w+)/) || [])[1];
+        const lugar = (plain.match(/Ubicación:\s*(.+)/)  || [])[1];
+        if (!who) {  // firmas viejas (formato anterior)
+          const m = plain.match(/✍️\s(.+?)\s—\sFirma.+\((.+)\)/);
+          who  = m?.[1]; when = when || m?.[2];
+        }
+        who  = (who  || 'Encargado').trim();
+        when = (when || '').trim();
         const sigAsset = sigUpd.assets?.find(a => (a.file_extension||'').toLowerCase() === 'png');
         let sigImgHtml = '';
         if (sigAsset) {
           const sigSrc = sigAsset.public_url || await fetchAsBlob(sigAsset.url);
           if (sigSrc) sigImgHtml = `<img src="${sigSrc}" alt="Firma">`;
         }
-        sigStatus.innerHTML = `<div class="sig-done-banner">✅ Firmado por ${who}${when?`<span>${when}</span>`:''}${sigImgHtml}</div>`;
-        // Ocultar botón de activar y canvas — ya está firmado
+        const extra = verificada
+          ? `<span>${lugar ? '📍 ' + lugar.trim() + '<br>' : ''}🔐 Sello: ${(sello||'').slice(0,16)}…</span>
+             <span class="sig-verified-tag">🔐 FIRMA VERIFICADA</span>`
+          : '';
+        sigStatus.innerHTML = `<div class="sig-done-banner">✅ Firmado por ${who}${when?`<span>${when}</span>`:''}${extra}${sigImgHtml}</div>`;
+        // Ocultar botón de activar, PIN y canvas — ya está firmado
         document.getElementById('sig-activate-btn')?.style && (document.getElementById('sig-activate-btn').style.display = 'none');
+        const sv = document.getElementById('sig-verify'); if (sv) sv.style.display = 'none';
         document.getElementById('sig-canvas-wrap').style.display  = 'none';
         document.getElementById('sig-actions').style.display      = 'none';
         S.sigConfirmed = true;
@@ -895,6 +1023,7 @@ function activateSignature() {
   if (S.sigConfirmed) return;
   S.sigActive = true;
   document.getElementById('sig-activate-btn').style.display = 'none';
+  document.getElementById('sig-verify').style.display       = 'block';
   document.getElementById('sig-canvas-wrap').style.display  = 'block';
   document.getElementById('sig-actions').style.display      = 'flex';
   // Re-init canvas size now that it's visible
@@ -910,26 +1039,90 @@ function clearSignature() {
   S.sigDrawn = false;
 }
 
+// ── Evidencia de la firma (todo gratis, sin servidor extra) ──────
+// Ubicación: mejor esfuerzo. Si el celular no da permiso o no hay señal, se anota y se firma igual.
+function getGeo() {
+  return new Promise(res => {
+    if (!navigator.geolocation) return res(null);
+    let done = false;
+    const finish = v => { if (!done) { done = true; res(v); } };
+    setTimeout(() => finish(null), 8000);
+    navigator.geolocation.getCurrentPosition(
+      p => finish({ lat: p.coords.latitude, lon: p.coords.longitude, acc: Math.round(p.coords.accuracy || 0) }),
+      () => finish(null),
+      { enableHighAccuracy: true, timeout: 7000, maximumAge: 0 }
+    );
+  });
+}
+const toHex = buf => Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+async function sha256Text(str) { return toHex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str))); }
+async function sha256Blob(blob) { return toHex(await crypto.subtle.digest('SHA-256', await blob.arrayBuffer())); }
+function deviceInfo() {
+  const ua = navigator.userAgent || '';
+  const os = /iPhone|iPad|iPod/.test(ua) ? 'iPhone/iPad' : /Android/.test(ua) ? 'Android'
+           : /Windows/.test(ua) ? 'Windows' : /Mac OS/.test(ua) ? 'Mac' : 'Otro';
+  const br = /CriOS|Chrome/.test(ua) ? 'Chrome' : /FxiOS|Firefox/.test(ua) ? 'Firefox'
+           : /Safari/.test(ua) ? 'Safari' : 'Navegador';
+  return `${os} · ${br}`;
+}
+
 async function confirmSignature() {
   if (!S.sigDrawn) { toast('Dibuja tu firma primero'); return; }
   if (S.sigConfirmed) return;
 
+  // Paso 1 — Identidad: PIN personal del firmante (no el PIN del rol)
+  const pinEl = document.getElementById('sig-pin');
+  const pin   = (pinEl && pinEl.value || '').trim();
+  if (!pin) { toast('Escribe tu PIN personal para firmar'); pinEl && pinEl.focus(); return; }
+  const firmante = FIRMANTES[pin];
+  if (!firmante) {
+    if (pinEl) pinEl.value = '';
+    toast('❌ PIN personal no autorizado — no se puede firmar');
+    return;
+  }
+
   const u = S.current, r = ROLES[S.role];
   const today = new Date().toISOString().split('T')[0];
-  showLoading('Guardando firma...');
+  showLoading('Verificando y guardando firma...');
   try {
     const blob = await getSignatureBlob();
-    const uid  = await createUpdate(u.id, `✍️ ${r.name} — Firma de aprobación ${u.name} (${today})`);
-    await uploadFileToUpdate(uid, blob, `firma_${u.name.replace(/ /g,'_')}_${today}.png`);
+
+    // Paso 2 — Evidencia: ubicación (opcional), dispositivo, hora
+    const geo   = await getGeo();
+    const geoTx = geo ? `${geo.lat.toFixed(6)}, ${geo.lon.toFixed(6)} (±${geo.acc} m)` : 'no disponible (permiso denegado o sin señal)';
+    const dev   = deviceInfo();
+    const fecha = new Date().toLocaleString('es-PR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+    // Paso 3 — Sello de integridad: huella de la firma + de todo el paquete
+    const firmaHash = await sha256Blob(blob);
+    const sello     = await sha256Text([firmante, S.role, u.id, u.name, fecha, geoTx, dev, firmaHash].join('|'));
+
+    const acta =
+`✍️ APROBACIÓN VERIFICADA — ${u.name}
+Firmante: ${firmante}
+Rol: ${r.name}
+Fecha: ${fecha} (hora del dispositivo)
+Ubicación: ${geoTx}
+Dispositivo: ${dev}
+Huella de la firma: ${firmaHash.slice(0,32)}
+Sello de integridad: ${sello}
+
+Verificación: PIN personal del firmante.
+El sello cubre firmante, unidad, fecha, ubicación y la imagen de la firma.
+La hora oficial es la de este registro en Monday (sello del servidor).`;
+
+    const uid = await createUpdate(u.id, acta);
+    await uploadFileToUpdate(uid, blob, `firma_${firmante.replace(/ /g,'_')}_${u.name.replace(/ /g,'_')}_${today}.png`);
 
     S.sigConfirmed = true;
     S.sigActive    = false;
 
     // Lock the canvas visually
+    document.getElementById('sig-verify').style.display = 'none';
     document.getElementById('sig-canvas-wrap').style.pointerEvents = 'none';
     document.getElementById('sig-canvas-wrap').style.opacity = '0.7';
     document.getElementById('sig-actions').innerHTML =
-      `<div style="color:var(--green);font-weight:700;font-size:14px;padding:8px 0;">✅ Firma confirmada y guardada en Monday</div>`;
+      `<div style="color:var(--green);font-weight:700;font-size:14px;padding:8px 0;">✅ Firma verificada de ${firmante} — guardada en Monday</div>`;
     hideLoading();
     toast('✅ Firma guardada en Monday');
   } catch(e) {
@@ -942,7 +1135,26 @@ function getSignatureBlob() {
   return new Promise(res => document.getElementById('sig-canvas').toBlob(res, 'image/png'));
 }
 
-// ── IndexedDB — fotos locales ────────────────────────────────────
+// ── Fotos ────────────────────────────────────────────────────────
+//  Las fotos viven en Supabase (Storage) → las ve CUALQUIER celular,
+//  no solo el que las tomó. Si no hay internet se guardan en una cola
+//  local (IndexedDB) y suben solas cuando vuelve la conexión.
+//  Copia adicional a Monday (best-effort) para que la oficina las vea ahí.
+const FOTOS_URL = '/.netlify/functions/fotos';
+
+async function fotosApi(action, payload) {
+  const res = await fetch(FOTOS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(Object.assign({ action, token: S.token }, payload || {}))
+  });
+  let data = {};
+  try { data = await res.json(); } catch(e) {}
+  if (!res.ok || data.error) throw new Error(data.error || ('HTTP ' + res.status));
+  return data;
+}
+
+// ── Cola local de pendientes (solo lo que aún no subió) ──────────
 async function dbOpen() {
   return new Promise((res, rej) => {
     const req = indexedDB.open('pde-photos', 1);
@@ -951,23 +1163,26 @@ async function dbOpen() {
     req.onerror   = e => rej(e.target.error);
   });
 }
-async function dbSavePhoto(unitId, dataUrl) {
+async function dbSavePending(rec) {
   const db = await dbOpen();
   return new Promise((res, rej) => {
     const tx = db.transaction('photos', 'readwrite');
-    tx.objectStore('photos').add({ unitId, dataUrl, ts: Date.now() });
+    tx.objectStore('photos').add(Object.assign({ ts: Date.now() }, rec));
     tx.oncomplete = res; tx.onerror = e => rej(e.target.error);
   });
 }
-async function dbLoadPhotos(unitId) {
+async function dbAllPending() {
   const db = await dbOpen();
   return new Promise((res, rej) => {
     const req = db.transaction('photos', 'readonly').objectStore('photos').getAll();
-    req.onsuccess = () => res(req.result.filter(p => p.unitId === unitId));
+    req.onsuccess = () => res(req.result || []);
     req.onerror   = e => rej(e.target.error);
   });
 }
-async function dbDeletePhoto(id) {
+async function dbPendingFor(unitId) {
+  return (await dbAllPending()).filter(p => String(p.unitId) === String(unitId));
+}
+async function dbDeletePending(id) {
   const db = await dbOpen();
   return new Promise((res, rej) => {
     const tx = db.transaction('photos', 'readwrite');
@@ -976,7 +1191,9 @@ async function dbDeletePhoto(id) {
   });
 }
 
-// ── Photos ───────────────────────────────────────────────────────
+function unitNum(u) { return (u.name || '').replace(/\D/g, '') || '0'; }
+
+// ── Subir fotos ──────────────────────────────────────────────────
 async function handlePhotos(event) {
   const files = Array.from(event.target.files);
   event.target.value = '';
@@ -990,24 +1207,32 @@ async function handlePhotos(event) {
     const img = document.createElement('img');
     img.src = previewUrl; img.className = 'photo-thumb uploading';
     grid.insertBefore(img, grid.lastElementChild);
-    toast('⏳ Guardando foto...');
+    toast('⏳ Subiendo foto...');
     try {
-      const jpeg = await fileToJpeg(file);
-
-      // 1. Guardar localmente (siempre funciona)
+      const jpeg    = await fileToJpeg(file);
       const dataUrl = await blobToDataUrl(jpeg);
-      await dbSavePhoto(u.id, dataUrl);
-      img.classList.remove('uploading');
-      img.onclick = () => openPhotoModal(previewUrl);
-      toast('✅ Foto guardada en el dispositivo');
+      const fname   = `unidad_${unitNum(u)}_${Date.now()}.jpg`;
+      const rec     = { unitId: u.id, unidad: unitNum(u), unidadNombre: u.name, rol: r.name, dataUrl, nombre: fname };
 
-      // 2. Intentar subir a Monday (best-effort, no bloquea)
+      try {
+        await fotosApi('upload', rec);
+        img.classList.remove('uploading');
+        img.onclick = () => openPhotoModal(previewUrl);
+        toast('✅ Foto guardada — la ven todos los equipos');
+      } catch(e) {
+        // Sin conexión (o función caída): a la cola, sube sola después.
+        await dbSavePending(rec);
+        img.classList.replace('uploading', 'pending');
+        img.onclick = () => openPhotoModal(previewUrl);
+        toast('📴 Sin conexión — la foto subirá sola cuando haya internet');
+        console.warn('foto a cola local:', e.message);
+      }
+
+      // Copia a Monday (no bloquea; si falla no pasa nada)
       const today = new Date().toISOString().split('T')[0];
-      const fname = `foto_${u.name.replace(/ /g,'_')}_${Date.now()}.jpg`;
       createUpdate(u.id, `📷 ${r.name} — Foto de instalación ${u.name} (${today})`)
         .then(uid => uploadFileToUpdate(uid, jpeg, fname))
-        .then(() => toast('☁️ Foto también sincronizada con Monday'))
-        .catch(e => console.warn('Monday upload failed (foto guardada local):', e.message));
+        .catch(e => console.warn('copia a Monday falló:', e.message));
 
     } catch(e) {
       img.classList.replace('uploading', 'upload-error');
@@ -1025,19 +1250,57 @@ function blobToDataUrl(blob) {
   });
 }
 
-async function loadLocalPhotos(unitId) {
+// ── Mostrar fotos de la unidad (Supabase + pendientes locales) ───
+async function loadPhotos(unitId) {
+  const grid = document.getElementById('photo-grid');
+  if (!grid) return;
+  const addThumb = (src, extraCls) => {
+    const img = document.createElement('img');
+    img.src = src;
+    img.className = 'photo-thumb' + (extraCls ? ' ' + extraCls : '');
+    img.onclick = () => openPhotoModal(src);
+    img.onerror = () => img.remove();
+    grid.insertBefore(img, grid.lastElementChild);
+  };
+
+  // 1) Pendientes de este equipo (se ven al instante aunque no hayan subido)
+  try { (await dbPendingFor(unitId)).forEach(p => addThumb(p.dataUrl, 'pending')); }
+  catch(e) { console.warn('pendientes:', e); }
+
+  // 2) Las de Supabase (compartidas)
   try {
-    const photos = await dbLoadPhotos(unitId);
-    const grid = document.getElementById('photo-grid');
-    if (!grid || !photos.length) return;
-    photos.forEach(p => {
-      const img = document.createElement('img');
-      img.src = p.dataUrl; img.className = 'photo-thumb';
-      img.onclick = () => openPhotoModal(p.dataUrl);
-      grid.insertBefore(img, grid.lastElementChild);
-    });
-  } catch(e) { console.warn('loadLocalPhotos:', e); }
+    const u = (S.units || []).find(x => String(x.id) === String(unitId)) || S.current;
+    const d = await fotosApi('list', { unidad: unitNum(u || { name: '' }) });
+    document.getElementById('photos-loading')?.remove();
+    (d.fotos || []).forEach(f => addThumb(f.url));
+  } catch(e) {
+    document.getElementById('photos-loading')?.remove();
+    console.warn('loadPhotos:', e.message);
+  }
+
+  retryPendingPhotos();   // aprovecha para vaciar la cola
 }
+
+// ── Reintento de la cola ─────────────────────────────────────────
+let retrying = false;
+async function retryPendingPhotos() {
+  if (retrying || !navigator.onLine || !S.token) return;
+  retrying = true;
+  try {
+    const pend = await dbAllPending();
+    for (const p of pend) {
+      try {
+        await fotosApi('upload', {
+          unitId: p.unitId, unidad: p.unidad, unidadNombre: p.unidadNombre,
+          rol: p.rol, dataUrl: p.dataUrl, nombre: p.nombre
+        });
+        await dbDeletePending(p.id);
+      } catch(e) { break; }   // sigue sin conexión: lo dejamos para después
+    }
+  } catch(e) { console.warn('retryPendingPhotos:', e); }
+  finally { retrying = false; }
+}
+window.addEventListener('online', retryPendingPhotos);
 
 function openPhotoModal(src)  { document.getElementById('photo-modal-img').src=src; document.getElementById('photo-modal').classList.add('show'); }
 function closePhotoModal()    { document.getElementById('photo-modal').classList.remove('show'); }
@@ -1236,8 +1499,9 @@ async function handleAction() {
   try {
     const today = new Date().toISOString().split('T')[0];
     await mutateColumn(u.id, r.col, { label: r.doneLabel });
-    if (S.role === 'taller')              await mutateColumn(u.id, COL.fechaEntrega, { date: today });
-    else if (S.role === 'instaladorTope') await mutateColumn(u.id, COL.fechaTopes,   { date: today });
+    if (S.role === 'taller')                await mutateColumn(u.id, COL.fechaMedidas, { date: today });
+    else if (S.role === 'instaladorCocina') await mutateColumn(u.id, COL.fechaEntrega, { date: today });
+    else if (S.role === 'instaladorTope')   await mutateColumn(u.id, COL.fechaTopes,   { date: today });
 
     await refreshAll(); hideLoading(); toast(`${u.name} completada ✅`);
     const ab = document.getElementById('action-btn');
@@ -1245,6 +1509,185 @@ async function handleAction() {
     document.getElementById('undo-btn').style.display = 'block';
     renderDetail(); renderUnits(S.units);
   } catch(e) { hideLoading(); toast('Error: '+e.message); }
+}
+
+// ── Plano del Proyecto ────────────────────────────────────────────
+function loadPlanoLocal() {
+  try { return JSON.parse(localStorage.getItem('pde_plano_pos')) || {}; } catch(e) { return {}; }
+}
+function getPlanoPos() { return Object.assign({}, HOUSE_POS_BAKED, loadPlanoLocal()); }
+
+// Verde = cocina Y topes instalados · Amarillo = algo avanzado · Gris = nada
+function planoStatus(unit) {
+  const c = getColStatus(unit, COL.instalacionCocina);
+  const t = getColStatus(unit, COL.instalacionTope);
+  if (c === 'done' && t === 'done') return 'done';
+  if (c === 'done' || t === 'done' || c === 'progress' || t === 'progress') return 'progress';
+  return 'pending';
+}
+// Garantía activa (reportada en el portal del cliente y aún sin arreglar) → punto ROJO
+function unitGarantiaActiva(unit) {
+  const raw = getColText(unit, COL.garantias).trim();
+  if (!raw) return false;
+  try { const a = JSON.parse(raw); return Array.isArray(a) && a.some(g => !g.fixed); } catch(e) { return false; }
+}
+
+// Dibuja el PDF del plano en alta resolución sobre el canvas (vectorial = nítido al hacer zoom)
+const PLANO_IMG = 'plano-palacios.jpg';   // plano de secuencia de entrega, 3600px
+let planoPdfRendered = false;
+async function renderPlanoPdf() {
+  if (planoPdfRendered) return;
+  showLoading('Dibujando plano...');
+  try {
+    const img = await new Promise((ok, err) => {
+      const i = new Image();
+      i.onload  = () => ok(i);
+      i.onerror = () => err(new Error('no se encontró ' + PLANO_IMG));
+      i.src = encodeURI(PLANO_IMG);
+    });
+    const canvas = document.getElementById('plano-canvas');
+    canvas.width  = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    canvas.getContext('2d').drawImage(img, 0, 0);
+    planoPdfRendered = true;
+  } catch(e) {
+    console.warn('renderPlano:', e);
+    toast('No se pudo dibujar el plano: ' + e.message);
+  } finally { hideLoading(); }
+}
+
+async function openPlano() {
+  showScreen('plano');
+  applyPlanoZoom();
+  await renderPlanoPdf();
+  if (!S.token) { document.getElementById('plano-count').textContent = 'Configura el token'; renderPlano(); return; }
+  showLoading('Cargando estado...');
+  try { await refreshAll(); }
+  catch(e) { toast('No se pudo cargar Monday: ' + e.message); }
+  finally { hideLoading(); }
+  renderPlano();
+}
+
+function applyPlanoZoom() {
+  document.getElementById('plano-stage').style.width = (S.planoZoom * 100) + '%';
+}
+function planoZoom(d) {
+  S.planoZoom = Math.min(5, Math.max(1, (S.planoZoom || 1) + d * 0.5));
+  applyPlanoZoom();
+}
+function setPlanoZoom(k) {
+  S.planoZoom = Math.min(5, Math.max(1, k));
+  applyPlanoZoom();
+}
+// Pellizco con dos dedos (celular) + Ctrl+rueda (computadora) + doble toque = reiniciar.
+// Escala el stage completo (plano + puntos juntos), igual que los botones +/−.
+(function initPlanoPinch() {
+  const sc = document.getElementById('plano-scroll');
+  if (!sc) return;
+  let startDist = 0, startScale = 1;
+  const dist = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+  sc.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) { startDist = dist(e.touches); startScale = S.planoZoom || 1; }
+  }, { passive: true });
+  sc.addEventListener('touchmove', e => {
+    if (e.touches.length === 2 && startDist) { e.preventDefault(); setPlanoZoom(startScale * dist(e.touches) / startDist); }
+  }, { passive: false });
+  sc.addEventListener('touchend', () => { startDist = 0; });
+  sc.addEventListener('wheel', e => {
+    if (e.ctrlKey) { e.preventDefault(); setPlanoZoom((S.planoZoom || 1) - e.deltaY * 0.003); }
+  }, { passive: false });
+  sc.addEventListener('dblclick', () => setPlanoZoom(1));
+})();
+
+function renderPlano() {
+  const pos = (S.calib && S.calib.active) ? S.calib.pos : getPlanoPos();
+  const byNum = {};
+  (S.units || []).forEach(u => { const n = (u.name.replace(/\D/g,'') || ''); if (n) byNum[n] = u; });
+  let placed = 0, html = '';
+  Object.keys(pos).forEach(n => {
+    const p = pos[n]; if (!p) return;
+    placed++;
+    let cls = 'pending';
+    if (S.calib && S.calib.active) cls = 'calib';
+    else if (byNum[n]) cls = unitGarantiaActiva(byNum[n]) ? 'garantia' : planoStatus(byNum[n]);
+    html += `<div class="plano-dot ${cls}" style="left:${p[0]}%;top:${p[1]}%;" onclick="planoDotTap('${n}')">${n}</div>`;
+  });
+  document.getElementById('plano-markers').innerHTML = html;
+  if (!(S.calib && S.calib.active))
+    document.getElementById('plano-count').textContent = placed ? `${placed} casas ubicadas` : 'Casas sin ubicar';
+}
+
+function planoDotTap(n) {
+  if (S.calib && S.calib.active) return;
+  const u = (S.units || []).find(x => (x.name.replace(/\D/g,'')) === n);
+  if (!u) { toast('Casa ' + n); return; }
+  const c = getColStatus(u, COL.instalacionCocina) === 'done' ? '✅' : '⬜';
+  const t = getColStatus(u, COL.instalacionTope)   === 'done' ? '✅' : '⬜';
+  const g = unitGarantiaActiva(u) ? '  ·  🛠️ Garantía activa' : '';
+  toast(`Casa ${n} — Cocina ${c}  Topes ${t}${g}`);
+}
+
+// ── Calibración guiada ────────────────────────────────────────────
+function startCalibration() {
+  S.calib = { active: true, n: 1, pos: Object.assign({}, getPlanoPos()) };
+  document.getElementById('calib-bar').style.display = 'flex';
+  document.getElementById('calib-start-btn').style.display = 'none';
+  document.getElementById('plano-stage').classList.add('calibrating');
+  updateCalibUI();
+  renderPlano();
+  toast('Toca cada casa en el plano, en orden');
+}
+function stopCalibration() {
+  S.calib = null;
+  document.getElementById('calib-bar').style.display = 'none';
+  document.getElementById('calib-start-btn').style.display = '';
+  document.getElementById('plano-stage').classList.remove('calibrating');
+  renderPlano();
+}
+function updateCalibUI() {
+  const placed = Object.keys(S.calib.pos).length;
+  document.getElementById('calib-msg').textContent = S.calib.n <= 240
+    ? `Toca la casa #${S.calib.n}   (${placed}/240 ubicadas)`
+    : `¡Listo! ${placed}/240. Toca "Exportar" y envíame el texto.`;
+}
+function planoStageClick(e) {
+  if (!S.calib || !S.calib.active) return;
+  const img = document.getElementById('plano-canvas');
+  const rect = img.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width  * 100;
+  const y = (e.clientY - rect.top)  / rect.height * 100;
+  if (x < 0 || x > 100 || y < 0 || y > 100) return;
+  if (S.calib.n > 240) { toast('Ya ubicaste las 240. Toca Exportar.'); return; }
+  S.calib.pos[String(S.calib.n)] = [Math.round(x*10)/10, Math.round(y*10)/10];
+  localStorage.setItem('pde_plano_pos', JSON.stringify(S.calib.pos));
+  S.calib.n++;
+  updateCalibUI();
+  renderPlano();
+}
+function calibBack() {
+  if (!S.calib) return;
+  S.calib.n = Math.max(1, S.calib.n - 1);
+  delete S.calib.pos[String(S.calib.n)];
+  localStorage.setItem('pde_plano_pos', JSON.stringify(S.calib.pos));
+  updateCalibUI();
+  renderPlano();
+}
+function calibSkip() {
+  if (!S.calib) return;
+  S.calib.n = Math.min(241, S.calib.n + 1);
+  updateCalibUI();
+}
+function calibExport() {
+  if (!S.calib) return;
+  document.getElementById('plano-export-txt').value = JSON.stringify(S.calib.pos);
+  document.getElementById('plano-export').classList.add('show');
+}
+function copyPlanoExport() {
+  const ta = document.getElementById('plano-export-txt');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(ta.value).then(() => toast('✅ Copiado'))
+      .catch(() => { ta.select(); document.execCommand('copy'); toast('✅ Copiado'); });
+  } else { ta.select(); document.execCommand('copy'); toast('✅ Copiado'); }
 }
 
 // ── UI Helpers ────────────────────────────────────────────────────

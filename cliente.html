@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Palacios del Este — Portal del Cliente</title>
+<!-- El plano de Palacios es una imagen, no un PDF: no hace falta PDF.js. -->
+<style>
+  :root{ --brand:#1F3864; --brand-mid:#2e4d85; --green:#00c875; --yellow:#fdab3d; --gray:#c4c4c4;
+    --red:#df2f4a; --text:#1c1f26; --text-muted:#6b7280; --bg:#eef1f6; --card:#fff; --border:#e3e7ee; }
+  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  body{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  .screen{ display:none; min-height:100vh; } .screen.active{ display:block; }
+  .wrap{ max-width:920px; margin:0 auto; padding:16px; }
+
+  /* Login */
+  #screen-login{ display:none; place-items:center; min-height:100vh; padding:20px; }
+  #screen-login.active{ display:grid; }
+  .login-card{ background:var(--card); border-radius:18px; padding:32px 26px; width:100%; max-width:380px; text-align:center; box-shadow:0 10px 40px rgba(31,56,100,.15); }
+  .login-card img{ width:150px; margin-bottom:8px; }
+  .login-card h1{ font-size:20px; color:var(--brand); margin-bottom:4px; }
+  .login-card p{ color:var(--text-muted); font-size:13px; margin-bottom:20px; }
+  .code-input{ width:100%; font-size:22px; text-align:center; letter-spacing:4px; padding:14px; border:2px solid var(--border); border-radius:12px; margin-bottom:14px; }
+  .code-input:focus{ outline:none; border-color:var(--brand); }
+  .btn{ width:100%; background:var(--brand); color:#fff; border:none; border-radius:12px; padding:14px; font-size:16px; font-weight:700; cursor:pointer; }
+  .btn:disabled{ opacity:.6; }
+  .login-err{ color:var(--red); font-size:13px; min-height:18px; margin-top:8px; }
+
+  /* Header */
+  .top{ background:var(--brand); color:#fff; padding:16px; position:sticky; top:0; z-index:10; }
+  .top .wrap{ padding:0 16px; display:flex; align-items:center; justify-content:space-between; }
+  .top h1{ font-size:17px; } .top .role-tag{ font-size:11px; opacity:.8; }
+  .top .logout{ background:rgba(255,255,255,.15); border:none; color:#fff; border-radius:8px; padding:7px 12px; font-size:12px; cursor:pointer; }
+
+  /* KPIs */
+  .kpis{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:14px 0; }
+  .kpi{ background:var(--card); border-radius:14px; padding:14px 8px; text-align:center; border:1px solid var(--border); }
+  .kpi .n{ font-size:24px; font-weight:800; } .kpi .l{ font-size:11px; color:var(--text-muted); margin-top:2px; }
+  .kpi.big .n{ color:var(--brand); } .kpi.done .n{ color:var(--green); } .kpi.prog .n{ color:var(--yellow); } .kpi.pend .n{ color:var(--text-muted); }
+  @media(max-width:560px){ .kpis{ grid-template-columns:repeat(2,1fr);} }
+
+  /* Card */
+  .card{ background:var(--card); border-radius:16px; padding:16px; border:1px solid var(--border); margin-bottom:14px; }
+  .card h2{ font-size:15px; margin-bottom:10px; color:var(--brand); }
+
+  /* Plano */
+  .legend{ display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--text-muted); margin-bottom:10px; }
+  .legend i{ width:12px; height:12px; border-radius:50%; display:inline-block; vertical-align:-1px; margin-right:4px; }
+  .plano-scroll{ overflow:auto; border:1px solid var(--border); border-radius:12px; background:#fff; max-height:70vh; touch-action:pan-x pan-y; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+  .plano-stage{ position:relative; width:100%; }
+  #plano-canvas{ display:block; width:100%; height:auto; }
+  .marker{ position:absolute; width:22px; height:22px; border-radius:50%; border:2px solid #fff; transform:translate(-50%,-50%); box-shadow:0 1px 3px rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; color:#fff; cursor:pointer; user-select:none; }
+
+  /* Donas de facturación (admin) */
+  .donuts{ display:flex; gap:22px; justify-content:center; flex-wrap:wrap; margin-top:14px; }
+  .donut{ width:124px; height:124px; border-radius:50%; background:conic-gradient(var(--col) calc(var(--pct)*1%), #e3e7ee 0); display:grid; place-items:center; }
+  .donut-hole{ width:88px; height:88px; border-radius:50%; background:var(--card); display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .donut-hole b{ font-size:24px; line-height:1; } .donut-hole span{ font-size:11px; color:var(--text-muted); margin-top:2px; }
+  .donut-label{ text-align:center; font-size:12px; font-weight:700; color:var(--text-muted); margin-top:7px; }
+  .billing-lock{ width:100%; background:var(--brand); color:#fff; border:none; border-radius:12px; padding:16px; font-size:16px; font-weight:800; cursor:pointer; display:flex; flex-direction:column; gap:4px; align-items:center; }
+  .billing-lock span{ font-size:12px; font-weight:400; opacity:.8; }
+  .plano-tools{ display:flex; gap:8px; margin-top:8px; }
+  .plano-tools button{ background:var(--brand); color:#fff; border:none; border-radius:8px; width:40px; height:36px; font-size:18px; cursor:pointer; }
+
+  /* Units list */
+  .search{ width:100%; padding:11px 12px; border:1px solid var(--border); border-radius:10px; margin-bottom:10px; font-size:14px; }
+  .units{ display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:8px; }
+  .unit{ position:relative; border:1px solid var(--border); border-radius:12px; padding:12px 6px; text-align:center; cursor:pointer; background:#fff; }
+  .unit .dot{ width:10px; height:10px; border-radius:50%; display:inline-block; margin-bottom:4px; }
+  .unit .u-name{ font-weight:700; font-size:15px; } .unit .u-pct{ font-size:11px; color:var(--text-muted); }
+  .unit .u-warn{ position:absolute; top:5px; right:6px; font-size:12px; }
+
+  /* Modal */
+  .modal{ display:none; position:fixed; inset:0; background:rgba(20,25,40,.55); z-index:50; padding:16px; overflow:auto; }
+  .modal.active{ display:block; }
+  .modal-card{ background:#fff; border-radius:18px; max-width:560px; margin:24px auto; padding:20px; }
+  .modal-card h2{ color:var(--brand); font-size:19px; margin-bottom:2px; }
+  .modal-close{ float:right; background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-muted); line-height:1; }
+  .stage-row{ display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--border); font-size:14px; }
+  .badge{ font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; color:#fff; }
+  .badge.done{ background:var(--green);} .badge.progress{ background:var(--yellow);} .badge.pending{ background:var(--gray); color:#555;}
+  .g-item{ border:1px solid var(--border); border-radius:12px; padding:12px; margin-top:10px; }
+  .g-item.fixed{ border-color:var(--green); background:#f2fdf7; }
+  .g-desc{ font-weight:600; font-size:14px; } .g-meta{ font-size:12px; color:var(--text-muted); margin-top:4px; line-height:1.5; }
+  .g-check{ color:var(--green); font-weight:700; font-size:13px; }
+  .g-checkbox{ width:28px; height:28px; border:2px solid var(--gray); border-radius:8px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:800; color:#fff; cursor:pointer; background:#fff; user-select:none; }
+  .g-checkbox.on{ background:var(--green); border-color:var(--green); }
+  .g-ini-badge{ display:inline-flex; align-items:center; gap:6px; background:#eafaf1; border:1.5px solid var(--green); color:#00794a; border-radius:9px; padding:6px 10px; font-size:13px; font-weight:700; margin-top:8px; }
+  label{ font-size:12px; color:var(--text-muted); display:block; margin:8px 0 3px; }
+  input,textarea{ width:100%; border:1px solid var(--border); border-radius:9px; padding:10px; font-size:14px; font-family:inherit; }
+  textarea{ min-height:70px; resize:vertical; }
+  .row2{ display:flex; gap:8px; } .row2>div{ flex:1; }
+  .btn-sm{ background:var(--brand); color:#fff; border:none; border-radius:9px; padding:10px 14px; font-weight:700; cursor:pointer; font-size:14px; }
+  .btn-green{ background:var(--green); } .btn-ghost{ background:#eef1f6; color:var(--brand); }
+  .hint{ font-size:12px; color:var(--text-muted); margin:2px 0 8px; }
+
+  #loading{ display:none; position:fixed; inset:0; background:rgba(255,255,255,.7); z-index:99; place-items:center; }
+  #loading.active{ display:grid; } .spin{ width:40px; height:40px; border:4px solid var(--border); border-top-color:var(--brand); border-radius:50%; animation:s 1s linear infinite; }
+  @keyframes s{ to{ transform:rotate(360deg);} }
+  #toast{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1c1f26; color:#fff; padding:11px 18px; border-radius:10px; font-size:13px; z-index:100; opacity:0; transition:.3s; pointer-events:none; }
+  #toast.show{ opacity:1; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="screen-login" class="screen active">
+  <div class="login-card">
+    <img src="logo.png" alt="Wood Studio">
+    <h1>Palacios del Este</h1>
+    <p>Portal de seguimiento · ingresa tu código de acceso</p>
+    <input id="code" class="code-input" type="password" inputmode="numeric" placeholder="• • • •" autocomplete="off">
+    <button class="btn" id="login-btn" onclick="login()">Entrar</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="screen-dash" class="screen">
+  <div class="top"><div class="wrap">
+    <div><h1 id="proj-name">Palacios del Este</h1><div class="role-tag" id="role-tag"></div></div>
+    <button class="logout" onclick="logout()">Salir</button>
+  </div></div>
+  <div class="wrap">
+    <div class="kpis">
+      <div class="kpi big"><div class="n" id="k-pct">—</div><div class="l">Avance general</div></div>
+      <div class="kpi done"><div class="n" id="k-done">—</div><div class="l">Listas</div></div>
+      <div class="kpi prog"><div class="n" id="k-prog">—</div><div class="l">En proceso</div></div>
+      <div class="kpi pend"><div class="n" id="k-pend">—</div><div class="l">Pendientes</div></div>
+    </div>
+
+    <div class="card" id="billing-card" style="display:none;">
+      <div id="billing-locked">
+        <button class="billing-lock" onclick="toggleBillingPrompt()">🔒 Facturación<span>Toca para ver · requiere código de administración</span></button>
+        <div id="billing-prompt" style="display:none; margin-top:12px;">
+          <label>Vuelve a escribir tu código de administración</label>
+          <div class="row2" style="align-items:flex-end;">
+            <div><input id="billing-code" type="password" inputmode="numeric" placeholder="••••" onkeydown="if(event.key==='Enter')unlockBilling()"></div>
+            <button class="btn-sm" onclick="unlockBilling()">Ver facturación</button>
+          </div>
+        </div>
+      </div>
+      <div id="billing-content" style="display:none;">
+      <h2>💰 Facturación <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(solo administración)</span></h2>
+      <div class="donuts">
+        <div>
+          <div class="donut" id="d-fact" style="--pct:0;--col:var(--green);"><div class="donut-hole"><b id="d-fact-n">—</b><span id="d-fact-p">—</span></div></div>
+          <div class="donut-label">✅ Casas facturadas</div>
+        </div>
+        <div>
+          <div class="donut" id="d-pend" style="--pct:0;--col:var(--yellow);"><div class="donut-hole"><b id="d-pend-n">—</b><span id="d-pend-p">—</span></div></div>
+          <div class="donut-label">🧾 Faltan por facturar</div>
+        </div>
+      </div>
+      <div class="kpis" style="margin:14px 0 0;">
+        <div class="kpi big"><div class="n" id="b-total">—</div><div class="l">Total a facturar</div></div>
+        <div class="kpi done"><div class="n" id="b-fact">—</div><div class="l">Facturado</div></div>
+        <div class="kpi prog"><div class="n" id="b-pend">—</div><div class="l">Pendiente</div></div>
+        <div class="kpi"><div class="n" id="b-count">—</div><div class="l">Casas con monto</div></div>
+      </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📍 Plano del proyecto</h2>
+      <div class="legend">
+        <span><i style="background:var(--green)"></i>Lista</span>
+        <span><i style="background:var(--yellow)"></i>En proceso</span>
+        <span><i style="background:var(--gray)"></i>Pendiente</span>
+        <span><i style="background:var(--red)"></i>Garantía activa</span>
+      </div>
+      <div class="plano-scroll" id="plano-scroll">
+        <div class="plano-stage" id="plano-stage"><canvas id="plano-canvas"></canvas></div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-top:8px;">
+        <button class="btn-sm btn-ghost" style="width:46px;font-size:20px;line-height:1;" onclick="applyPlanoScale(planoScale-0.5)">−</button>
+        <button class="btn-sm btn-ghost" style="width:46px;font-size:20px;line-height:1;" onclick="applyPlanoScale(planoScale+0.5)">+</button>
+      </div>
+      <p class="hint" style="text-align:center;margin-top:6px;">📱 En el celular: pellizca con dos dedos · 💻 en computadora: usa + / − (o Ctrl+rueda) · doble toque = reiniciar</p>
+    </div>
+
+    <div class="card">
+      <h2>🏠 Unidades</h2>
+      <input class="search" id="search" placeholder="Buscar unidad (ej: 42)" oninput="renderUnits()">
+      <div class="units" id="units"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL UNIDAD -->
+<div class="modal" id="modal"><div class="modal-card">
+  <button class="modal-close" onclick="closeModal()">×</button>
+  <h2 id="m-title">Unidad</h2>
+  <div id="m-stages"></div>
+  <div id="m-billing"></div>
+  <div id="m-garantias"></div>
+  <div id="m-fotos"></div>
+</div></div>
+
+<div id="loading"><div class="spin"></div></div>
+<div id="toast"></div>
+
+<script>
+const API = '/.netlify/functions/portal';
+const S = { code:null, role:null, units:[], current:null, planoZoom:1, billingUnlocked:false };
+
+// Posiciones de las 240 casas [x%, y%] — extraídas del PDF de secuencia de entrega
+// Etiquetas de la columna Factura que cuentan como "ya facturada".
+const FACTURADO = ['DONE', 'FACTURADO', 'FACTURADA'];
+const HOUSE_POS = {"1":[11.23,31.59],"2":[8.92,31.49],"3":[6.65,31.47],"4":[6.71,40.3],"5":[9.17,39.77],"6":[11.52,39.46],"7":[13.85,38.68],"8":[16.07,37.73],"9":[18.1,37.16],"10":[20.5,36.39],"11":[22.58,35.86],"12":[24.82,35.42],"13":[27.02,34.94],"14":[29.14,34.7],"15":[31.28,34.35],"16":[33.48,34.22],"17":[37.58,37.82],"18":[35.49,39.49],"19":[33.13,39.57],"20":[30.98,39.46],"21":[28.86,39.69],"22":[26.72,40.22],"23":[24.38,40.6],"24":[22.28,41.07],"25":[20.09,41.66],"26":[17.91,42.33],"27":[15.74,43.08],"28":[13.66,43.95],"29":[11.42,44.69],"30":[9.25,45.32],"31":[6.79,45.33],"32":[7.81,54.66],"33":[10.04,53.71],"34":[12.09,52.67],"35":[14.12,51.72],"36":[16.38,50.89],"37":[18.56,50.12],"38":[20.7,49.43],"39":[22.81,49],"40":[25.01,48.37],"41":[29.17,47.97],"42":[31.2,47.71],"43":[33.39,47.52],"44":[35.58,47.36],"45":[37.74,46.82],"46":[39.83,45.46],"47":[42.53,43.72],"48":[44.35,45.46],"49":[45.87,46.98],"50":[46.96,50.98],"51":[44.79,51.13],"52":[42.6,51.27],"53":[40.41,51.42],"54":[38.23,51.57],"55":[36.04,51.72],"56":[33.82,51.86],"57":[31.58,52.05],"58":[29.53,52.31],"59":[25.61,53.58],"60":[23.13,54.2],"61":[20.86,54.71],"62":[18.77,55.56],"63":[16.66,56.22],"64":[14.37,57.25],"65":[12.2,58.17],"66":[9.81,59.29],"67":[10.44,66.99],"68":[13.01,65.84],"69":[15.16,64.85],"70":[17.33,63.94],"71":[19.54,63.13],"72":[21.74,62.4],"73":[23.96,61.77],"74":[26.19,61.23],"75":[28.43,60.8],"76":[30.76,60.44],"77":[33.15,60.08],"78":[35.37,59.98],"79":[37.87,59.67],"80":[40.22,59.41],"81":[42.57,59.47],"82":[44.95,59.3],"83":[47.31,59.15],"84":[46.99,63.91],"85":[44.8,64.06],"86":[42.61,64.2],"87":[40.44,64.35],"88":[38.24,64.49],"89":[36.06,64.64],"90":[33.73,64.79],"91":[31.4,65.03],"92":[29.11,65.34],"93":[26.95,65.77],"94":[24.58,66.12],"95":[22.37,66.84],"96":[20.01,67.62],"97":[17.77,68.47],"98":[15.65,69.51],"99":[13.03,70.79],"100":[13.65,78.32],"101":[16.04,77.12],"102":[18.21,76.14],"103":[20.41,75.28],"104":[22.63,74.51],"105":[24.85,73.85],"106":[27.09,73.29],"107":[29.36,72.84],"108":[31.6,72.49],"109":[36.29,72.36],"110":[38.34,72.23],"111":[40.54,72.08],"112":[42.72,71.94],"113":[44.9,71.79],"114":[47.09,71.64],"115":[47.3,76.02],"116":[45.1,76.17],"117":[42.94,76.32],"118":[40.74,76.46],"119":[38.55,76.61],"120":[36.5,76.74],"121":[32.28,77.2],"122":[29.95,77.55],"123":[27.63,78.02],"124":[25.33,78.6],"125":[23.04,79.31],"126":[20.67,80.03],"127":[18.52,81.05],"128":[15.86,82.33],"129":[17.09,89.83],"130":[19.04,88.89],"131":[21.19,87.97],"132":[23.33,87.17],"133":[25.51,86.48],"134":[27.69,85.89],"135":[29.89,85.43],"136":[32.09,85.08],"137":[34.32,84.84],"138":[36.52,84.69],"139":[38.71,84.55],"140":[40.89,84.4],"141":[43.1,84.25],"142":[45.27,84.1],"143":[47.46,83.96],"144":[51.57,84.02],"145":[54.04,83.96],"146":[56.23,83.76],"147":[58.42,83.56],"148":[60.4,83.14],"149":[62.62,82.88],"150":[64.83,82.57],"151":[67.06,82.19],"152":[69.26,81.76],"153":[71.74,81.18],"154":[73.65,80.72],"155":[75.83,80.12],"156":[78,79.46],"157":[80.19,78.75],"158":[82.34,77.97],"159":[84.49,77.14],"160":[84.53,68.98],"161":[82.42,69.83],"162":[80.28,70.63],"163":[78.13,71.37],"164":[75.99,72.05],"165":[73.83,72.67],"166":[71.68,73.3],"167":[67.23,74.18],"168":[64.98,74.58],"169":[62.73,74.92],"170":[60.49,75.2],"171":[58.25,75.41],"172":[56.04,75.56],"173":[53.86,75.71],"174":[51.82,75.85],"175":[51.77,71.32],"176":[53.81,71.18],"177":[56.01,71.04],"178":[58.18,70.88],"179":[60.39,70.67],"180":[62.59,70.4],"181":[64.81,70.06],"182":[67,69.67],"183":[71.22,68.7],"184":[73.31,68.26],"185":[75.48,67.63],"186":[77.64,66.94],"187":[79.81,66.19],"188":[81.94,65.38],"189":[84.08,64.51],"190":[75.61,59.75],"191":[73.3,60.42],"192":[71.14,61.01],"193":[68.97,61.55],"194":[66.8,62.01],"195":[64.62,62.42],"196":[62.43,62.76],"197":[60.26,63.04],"198":[58.05,63.25],"199":[55.87,63.41],"200":[53.69,63.55],"201":[51.66,63.69],"202":[51.63,58.86],"203":[53.72,58.77],"204":[55.9,58.63],"205":[58.1,58.47],"206":[60.29,58.25],"207":[62.51,57.96],"208":[64.7,57.6],"209":[66.89,57.18],"210":[60.65,50.67],"211":[58.07,50.61],"212":[55.88,50.76],"213":[53.69,50.91],"214":[51.65,51.05],"215":[53.2,46.96],"216":[52.09,43.37],"217":[49.6,40.87],"218":[47.85,38.86],"219":[45.84,37.09],"220":[43.87,35.17],"221":[40.52,32.09],"222":[38.54,30.16],"223":[36.59,28.25],"224":[34.69,26.28],"225":[32.45,24.82],"226":[30.32,23.64],"227":[28.39,22.63],"228":[26.44,21.62],"229":[24.5,20.61],"230":[22.57,19.6],"231":[20.64,18.59],"232":[18.7,17.58],"233":[16.76,16.57],"234":[14.83,15.56],"235":[12.89,14.55],"236":[10.95,13.54],"237":[9.02,12.54],"238":[6.99,11.48],"239":[6.68,20.93],"240":[9.17,20.93]};
+const PLANO_IMG = 'plano-palacios.jpg';   // plano de secuencia de entrega, 3600px
+
+
+
+// ── Helpers de estado ──
+function stStatus(t){ t=(t||'').toLowerCase();
+  if(['terminado','satisfecho','done'].includes(t)) return 'done';
+  if(['','sin comenzar','sin realizar','a realizar','a comenzar','sin empezar'].includes(t)) return 'pending';
+  return 'progress'; }
+function stLabel(s){ return s==='done'?'Completado':s==='progress'?'En proceso':'Pendiente'; }
+const STAGES = [['fabricacion','Fabricación'],['cocina','Instalación Cocina'],['tope','Instalación Tope'],['inspContrat','Insp. Contratista'],['inspCliente','Insp. Cliente']];
+function unitPct(u){ let d=0; STAGES.forEach(([k])=>{ if(stStatus(u[k])==='done') d++; }); return Math.round(d/STAGES.length*100); }
+function planoColor(u){ const c=stStatus(u.cocina), t=stStatus(u.tope);
+  if(c==='done'&&t==='done') return 'var(--green)';
+  if(c==='done'||t==='done'||c==='progress'||t==='progress'||stStatus(u.fabricacion)!=='pending') return 'var(--yellow)';
+  return 'var(--gray)'; }
+// Garantía activa = reportada y aún no arreglada → el punto se pinta ROJO en el mapa
+function hasGarantiaActiva(u){ return (u.garantias||[]).some(g=>!g.fixed); }
+function markerColor(u){ return hasGarantiaActiva(u) ? 'var(--red)' : planoColor(u); }
+
+// ── API ──
+async function api(action, extra){
+  const res = await fetch(API,{ method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(Object.assign({ action, code:S.code }, extra||{})) });
+  const j = await res.json();
+  if(!res.ok) throw new Error(j.error||'Error');
+  return j;
+}
+
+// ── Login ──
+async function login(){
+  const code = document.getElementById('code').value.trim();
+  if(!code){ return; }
+  const btn=document.getElementById('login-btn'); btn.disabled=true;
+  document.getElementById('login-err').textContent='';
+  try{
+    const j = await api('login', { code });
+    S.code=code; S.role=j.role;
+    localStorage.setItem('pde_portal_code', code);
+    document.getElementById('role-tag').textContent = j.role==='admin' ? 'Administración · Wood Studio' : 'Cliente';
+    show('dash'); await loadData();
+  }catch(e){ document.getElementById('login-err').textContent = e.message; }
+  finally{ btn.disabled=false; }
+}
+function logout(){ localStorage.removeItem('pde_portal_code'); S.code=null; S.role=null; S.billingUnlocked=false; show('login'); document.getElementById('code').value=''; }
+
+async function loadData(){
+  loading(true);
+  try{
+    const j = await api('data');
+    S.units = j.units.sort((a,b)=>(parseInt(a.name.replace(/\D/g,''))||0)-(parseInt(b.name.replace(/\D/g,''))||0));
+    document.getElementById('proj-name').textContent = j.project || 'Palacios del Este';
+    renderKPIs(); renderBilling(); renderUnits(); renderPlano(); initPlanoPinch();
+  }catch(e){ toast(e.message); }
+  finally{ loading(false); }
+}
+
+// ── KPIs ──
+function renderKPIs(){
+  let done=0,prog=0,pend=0,sum=0;
+  S.units.forEach(u=>{ const p=unitPct(u); sum+=p; const col=planoColor(u);
+    if(col.includes('green')) done++; else if(col.includes('yellow')) prog++; else pend++; });
+  document.getElementById('k-pct').textContent = (S.units.length? Math.round(sum/S.units.length):0)+'%';
+  document.getElementById('k-done').textContent = done;
+  document.getElementById('k-prog').textContent = prog;
+  document.getElementById('k-pend').textContent = pend;
+}
+
+// ── Facturación (solo admin) ──
+const money = n => '$'+(Math.round(n)).toLocaleString('en-US');
+function renderBilling(){
+  const card=document.getElementById('billing-card');
+  if(S.role!=='admin'){ card.style.display='none'; return; }
+  card.style.display='';
+  // Bloqueado hasta que se vuelva a escribir el código de administración
+  document.getElementById('billing-locked').style.display  = S.billingUnlocked ? 'none' : '';
+  document.getElementById('billing-content').style.display = S.billingUnlocked ? '' : 'none';
+  if(!S.billingUnlocked) return;
+  let total=0, fact=0, count=0, casasFact=0;
+  S.units.forEach(u=>{ const m=parseFloat(String(u.monto||'').replace(/[^0-9.]/g,''))||0;
+    if(m>0) count++; total+=m;
+    if(FACTURADO.includes(String(u.factura||'').trim().toUpperCase())){ fact+=m; casasFact++; } });
+  document.getElementById('b-total').textContent=money(total);
+  document.getElementById('b-fact').textContent =money(fact);
+  document.getElementById('b-pend').textContent =money(total-fact);
+  document.getElementById('b-count').textContent=count;
+
+  // Donas: casas facturadas vs. faltan por facturar (por CANTIDAD de casas)
+  const nUnits=S.units.length||1, casasPend=(S.units.length||0)-casasFact;
+  const pF=Math.round(casasFact/nUnits*100), pP=Math.round(casasPend/nUnits*100);
+  document.getElementById('d-fact').style.setProperty('--pct', pF);
+  document.getElementById('d-fact-n').textContent=casasFact;
+  document.getElementById('d-fact-p').textContent=pF+'% de '+S.units.length;
+  document.getElementById('d-pend').style.setProperty('--pct', pP);
+  document.getElementById('d-pend-n').textContent=casasPend;
+  document.getElementById('d-pend-p').textContent=pP+'% de '+S.units.length;
+}
+function toggleBillingPrompt(){
+  const p=document.getElementById('billing-prompt');
+  const abrir = p.style.display==='none';
+  p.style.display = abrir ? '' : 'none';
+  if(abrir){ const i=document.getElementById('billing-code'); i.value=''; setTimeout(()=>i.focus(),60); }
+}
+function unlockBilling(){
+  const v=(document.getElementById('billing-code').value||'').trim();
+  if(v && v===S.code){ S.billingUnlocked=true; renderBilling(); toast('Facturación desbloqueada 🔓'); }
+  else{ document.getElementById('billing-code').value=''; toast('Código incorrecto'); }
+}
+
+// ── Unidades ──
+function renderUnits(){
+  const q=(document.getElementById('search').value||'').toLowerCase();
+  const list = q? S.units.filter(u=>u.name.toLowerCase().includes(q)) : S.units;
+  document.getElementById('units').innerHTML = list.map(u=>{
+    const pend = (u.garantias||[]).filter(g=>!g.fixed).length;
+    return `<div class="unit" onclick="openUnit('${u.id}')">
+      ${pend?`<span class="u-warn" title="Garantías pendientes">🛠️${pend}</span>`:''}
+      <span class="dot" style="background:${markerColor(u)}"></span>
+      <div class="u-name">${u.name}</div><div class="u-pct">${unitPct(u)}%</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Plano ──
+let planoRendered=false;
+async function renderPlano(){
+  drawMarkers();
+  if(planoRendered) return;
+  try{
+    const img = await new Promise((ok,err)=>{
+      const i=new Image();
+      i.onload=()=>ok(i);
+      i.onerror=()=>err(new Error('no se encontró '+PLANO_IMG));
+      i.src=encodeURI(PLANO_IMG);
+    });
+    const canvas = document.getElementById('plano-canvas');
+    canvas.width=img.naturalWidth; canvas.height=img.naturalHeight;
+    canvas.getContext('2d').drawImage(img,0,0);
+    planoRendered=true; drawMarkers();
+  }catch(e){ /* si no carga la imagen: se ven solo los puntos */ }
+}
+function drawMarkers(){
+  const stage=document.getElementById('plano-stage');
+  stage.querySelectorAll('.marker').forEach(m=>m.remove());
+  S.units.forEach(u=>{ const n=u.name.replace(/\D/g,''); const p=HOUSE_POS[n]; if(!p) return;
+    const d=document.createElement('div'); d.className='marker'; d.style.left=p[0]+'%'; d.style.top=p[1]+'%';
+    d.style.background=markerColor(u); d.title='Unidad '+u.name+(hasGarantiaActiva(u)?' · 🛠️ garantía activa':''); d.textContent=n; d.onclick=()=>openUnit(u.id);
+    stage.appendChild(d); });
+}
+// Zoom del plano con pellizco (pinch). Escala el STAGE completo (canvas + puntos juntos),
+// así los números y los marcadores quedan siempre alineados.
+let planoScale = 1;
+function applyPlanoScale(k){
+  planoScale = Math.min(5, Math.max(1, k));
+  document.getElementById('plano-stage').style.width = (planoScale*100)+'%';
+}
+function initPlanoPinch(){
+  const sc = document.getElementById('plano-scroll');
+  if(!sc || sc._pinchInit) return; sc._pinchInit = true;
+  let startDist=0, startScale=1;
+  const dist = t => Math.hypot(t[0].clientX-t[1].clientX, t[0].clientY-t[1].clientY);
+  sc.addEventListener('touchstart', e=>{ if(e.touches.length===2){ startDist=dist(e.touches); startScale=planoScale; } }, {passive:true});
+  sc.addEventListener('touchmove', e=>{ if(e.touches.length===2 && startDist){ e.preventDefault(); applyPlanoScale(startScale * dist(e.touches)/startDist); } }, {passive:false});
+  sc.addEventListener('wheel', e=>{ if(e.ctrlKey){ e.preventDefault(); applyPlanoScale(planoScale - e.deltaY*0.003); } }, {passive:false});   // desktop: Ctrl+rueda
+  sc.addEventListener('dblclick', ()=> applyPlanoScale(1));                                                                                  // doble clic/toque: reiniciar
+}
+
+// ── Modal unidad ──
+function openUnit(id){
+  S.current = S.units.find(u=>u.id===id); if(!S.current) return;
+  document.getElementById('m-title').textContent = 'Unidad '+S.current.name+' · '+unitPct(S.current)+'% avance';
+  document.getElementById('m-stages').innerHTML = STAGES.map(([k,lbl])=>{
+    const s=stStatus(S.current[k]);
+    return `<div class="stage-row"><span>${lbl}</span><span class="badge ${s}">${stLabel(s)}</span></div>`;
+  }).join('');
+  renderModalBilling();
+  renderGarantias();
+  loadFotos();
+  document.getElementById('modal').classList.add('active');
+}
+function closeModal(){ document.getElementById('modal').classList.remove('active'); }
+
+function renderModalBilling(){
+  const el=document.getElementById('m-billing');
+  if(S.role!=='admin'){ el.innerHTML=''; return; }
+  if(!S.billingUnlocked){
+    el.innerHTML = `<p class="hint" style="margin-top:14px;">🔒 Para ver o editar el monto de esta casa, desbloquea <b>Facturación</b> en la pantalla principal.</p>`;
+    return;
+  }
+  const u=S.current;
+  el.innerHTML = `<h2 style="margin-top:18px;">💰 Facturación <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(interno)</span></h2>
+    <div class="stage-row"><span>Estado factura</span><span>${esc(u.factura||'—')}</span></div>
+    <label>Monto por casa ($)</label>
+    <div class="row2" style="align-items:flex-end;">
+      <div><input id="monto-input" inputmode="decimal" placeholder="Ej: 12000" value="${esc(u.monto||'')}"></div>
+      <button class="btn-sm" onclick="saveMonto()">Guardar monto</button>
+    </div>`;
+}
+async function saveMonto(){
+  loading(true);
+  try{ await api('setMonto',{ unitId:S.current.id, monto:document.getElementById('monto-input').value });
+    await refreshUnit(); toast('Monto guardado'); }
+  catch(e){ toast(e.message); } finally{ loading(false); }
+}
+
+function renderGarantias(){
+  const u=S.current, list=u.garantias||[];
+  let html = `<h2 style="margin-top:18px;">🛠️ Garantías</h2>`;
+  html += list.length ? list.map(g=>{
+    const visita = g.visitDate ? `📅 Visita: ${g.visitDate}${g.visitTime?' '+g.visitTime:''}` : '⏳ Visita por programar';
+    const repara = g.repairDate ? `🔧 Reparación: ${g.repairDate}${g.repairTime?' '+g.repairTime:''}` : '🔧 Reparación por programar';
+    let admin='';
+    if(S.role==='admin'){
+      admin = `<div class="row2" style="margin-top:8px;">
+          <div><label>Fecha visita</label><input type="date" value="${g.visitDate||''}" id="vd-${g.id}"></div>
+          <div><label>Hora</label><input type="time" value="${g.visitTime||''}" id="vt-${g.id}"></div>
+        </div>
+        <div class="row2" style="margin-top:8px;">
+          <div><label>Fecha reparación (empleados)</label><input type="date" value="${g.repairDate||''}" id="rd-${g.id}"></div>
+          <div><label>Hora</label><input type="time" value="${g.repairTime||''}" id="rt-${g.id}"></div>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button class="btn-sm btn-ghost" onclick="saveVisit('${g.id}')">Guardar fechas</button>
+          ${g.fixed
+            ? `<button class="btn-sm btn-ghost" onclick="toggleFixed('${g.id}',false)">Reabrir</button>`
+            : `<button class="btn-sm btn-green" onclick="toggleFixed('${g.id}',true)">✓ Marcar arreglado</button>`}
+        </div>`;
+    }
+    // Recuadro (checkmark): verde cuando ya se hizo. Admin lo puede tocar para marcar/desmarcar.
+    const checkbox = `<div class="g-checkbox ${g.fixed?'on':''}"
+        onclick="${S.role==='admin' ? `toggleFixed('${g.id}',${g.fixed?'false':'true'})` : `toast('Administración la marca cuando esté arreglada')`}"
+        title="${g.fixed?'Arreglada ✓':'Pendiente'}">${g.fixed?'✓':''}</div>`;
+    // Confirmación del cliente con sus iniciales (solo cuando ya está arreglada)
+    let iniciales = '';
+    if (g.fixed) {
+      iniciales = g.clientInitials
+        ? `<div class="g-ini-badge">✍️ Cliente satisfecho · Iniciales: ${esc(g.clientInitials)}${g.initialsDate?' · '+String(g.initialsDate).slice(0,10):''}</div>`
+        : `<div class="row2" style="margin-top:8px; align-items:flex-end;">
+             <div><label>✍️ Iniciales del cliente (confirmo que quedó bien)</label>
+               <input id="ini-${g.id}" maxlength="5" placeholder="Ej: CR" style="text-transform:uppercase;"></div>
+             <button class="btn-sm btn-green" onclick="confirmSatisfaccion('${g.id}')">Confirmar</button>
+           </div>`;
+    }
+    return `<div class="g-item ${g.fixed?'fixed':''}">
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        ${checkbox}
+        <div style="flex:1; min-width:0;">
+          <div class="g-desc">${esc(g.desc)}</div>
+          <div class="g-meta">
+            ${g.recibe?`Recibe: ${esc(g.recibe)}`:''}${g.tel?` · ☎ ${esc(g.tel)}`:''}<br>
+            ${visita}<br>${repara}${g.fixed?`<br><span class="g-check">✓ Arreglada${g.fixedDate?' · '+g.fixedDate.slice(0,10):''}</span>`:''}
+          </div>
+        </div>
+      </div>${iniciales}${admin}
+    </div>`;
+  }).join('') : `<p class="hint">Aún no hay garantías reportadas para esta unidad.</p>`;
+
+  // Cliente y admin pueden reportar
+  html += `<div class="g-item" style="border-style:dashed; margin-top:14px;">
+    <label>Reportar una garantía nueva</label>
+    <textarea id="g-desc" placeholder="Describe el problema (ej: gotea el fregadero de la cocina)"></textarea>
+    <div class="row2">
+      <div><label>Quién nos recibe</label><input id="g-recibe" placeholder="Nombre"></div>
+      <div><label>Teléfono</label><input id="g-tel" inputmode="tel" placeholder="787-000-0000"></div>
+    </div>
+    <div class="row2">
+      <div><label>📆 Fecha para la reparación</label><input type="date" id="g-rdate"></div>
+      <div><label>Hora</label><input type="time" id="g-rtime"></div>
+    </div>
+    <p class="hint" style="margin:6px 0 0;">Elige el día y la hora en que podemos visitar la casa para corregir la garantía.</p>
+    <button class="btn-sm" style="margin-top:10px;" onclick="reportGarantia()">📩 Enviar garantía</button>
+  </div>`;
+  document.getElementById('m-garantias').innerHTML = html;
+}
+
+async function reportGarantia(){
+  const desc=document.getElementById('g-desc').value.trim();
+  if(!desc){ toast('Escribe la descripción'); return; }
+  loading(true);
+  try{
+    await api('addGarantia',{ unitId:S.current.id, desc,
+      recibe:document.getElementById('g-recibe').value.trim(), tel:document.getElementById('g-tel').value.trim(),
+      repairDate:document.getElementById('g-rdate').value, repairTime:document.getElementById('g-rtime').value });
+    await refreshUnit(); toast('Garantía enviada ✅');
+  }catch(e){ toast(e.message); } finally{ loading(false); }
+}
+async function saveVisit(gid){
+  loading(true);
+  try{ await api('updateGarantia',{ unitId:S.current.id, garantiaId:gid,
+      visitDate:document.getElementById('vd-'+gid).value,  visitTime:document.getElementById('vt-'+gid).value,
+      repairDate:document.getElementById('rd-'+gid).value, repairTime:document.getElementById('rt-'+gid).value });
+    await refreshUnit(); toast('Fechas guardadas'); }
+  catch(e){ toast(e.message); } finally{ loading(false); }
+}
+async function toggleFixed(gid, val){
+  loading(true);
+  try{ await api('updateGarantia',{ unitId:S.current.id, garantiaId:gid, fixed:val });
+    await refreshUnit(); toast(val?'Marcada como arreglada ✓':'Reabierta'); }
+  catch(e){ toast(e.message); } finally{ loading(false); }
+}
+async function confirmSatisfaccion(gid){
+  const inp=document.getElementById('ini-'+gid);
+  const ini=(inp && inp.value || '').trim().toUpperCase();
+  if(!ini){ toast('Escribe tus iniciales'); return; }
+  loading(true);
+  try{ await api('confirmGarantia',{ unitId:S.current.id, garantiaId:gid, initials:ini });
+    await refreshUnit(); toast('¡Gracias! Satisfacción confirmada ✍️'); }
+  catch(e){ toast(e.message); } finally{ loading(false); }
+}
+async function refreshUnit(){
+  const j = await api('data');
+  S.units = j.units.sort((a,b)=>(parseInt(a.name.replace(/\D/g,''))||0)-(parseInt(b.name.replace(/\D/g,''))||0));
+  S.current = S.units.find(u=>u.id===S.current.id);
+  renderKPIs(); renderBilling(); renderUnits(); drawMarkers(); renderModalBilling(); renderGarantias();
+}
+
+// ── Fotos de garantía ──
+async function loadFotos(){
+  const el=document.getElementById('m-fotos');
+  el.innerHTML = `<h2 style="margin-top:18px;">📷 Fotos y archivos</h2><p class="hint">Cargando…</p>`+fotoUploadHTML();
+  try{ const j=await api('fotos',{ unitId:S.current.id }); renderFotos(j.photos||[]); }
+  catch(e){ renderFotos([]); }
+}
+function fotoUploadHTML(){
+  return `<div class="g-item" style="border-style:dashed;margin-top:10px;">
+    <label>Subir foto o archivo de la garantía</label>
+    <input type="file" id="foto-input" accept="image/*,.pdf,.doc,.docx,.txt" onchange="subirFoto()">
+    <p class="hint">Una foto (cámara/galería) o un archivo (PDF, Word, escrito…). Se guarda en Monday. Máx ~5 MB.</p>
+  </div>`;
+}
+function renderFotos(items){
+  const el=document.getElementById('m-fotos');
+  const isImg = n => /\.(jpe?g|png|gif|webp|heic|bmp)$/i.test(n||'');
+  const cells = items.length
+    ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">`+
+      items.map(p=> isImg(p.name)
+        ? `<a href="${p.url}" target="_blank" rel="noopener"><img src="${p.url}" alt="${esc(p.name||'')}" style="width:82px;height:82px;object-fit:cover;border-radius:8px;border:1px solid var(--border);"></a>`
+        : `<a href="${p.url}" target="_blank" rel="noopener" style="width:82px;height:82px;border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-decoration:none;color:var(--brand);padding:4px;text-align:center;"><span style="font-size:24px;">📄</span><span style="margin-top:2px;font-size:10px;word-break:break-all;line-height:1.1;">${esc((p.name||'archivo').slice(0,16))}</span></a>`
+      ).join('')+`</div>`
+    : `<p class="hint">Aún no hay fotos ni archivos.</p>`;
+  el.innerHTML = `<h2 style="margin-top:18px;">📷 Fotos y archivos</h2>${cells}${fotoUploadHTML()}`;
+}
+async function subirFoto(){
+  const inp=document.getElementById('foto-input');
+  const file=inp && inp.files && inp.files[0]; if(!file) return;
+  loading(true);
+  try{
+    const b64=await fileToB64(file);
+    if(b64.length > 5500000){ toast('El archivo es muy grande (máx ~5 MB)'); return; }
+    await api('uploadFoto',{ unitId:S.current.id, filename:(file.name||'archivo'), dataBase64:b64 });
+    toast('Subido ✅'); await loadFotos();
+  }catch(e){ toast(e.message||'Error subiendo el archivo'); } finally{ loading(false); }
+}
+function fileToB64(file){
+  if(file.type && file.type.startsWith('image/')) return compressImage(file);   // fotos: se comprimen
+  return new Promise((resolve,reject)=>{                                          // otros archivos: tal cual
+    const r=new FileReader();
+    r.onload=()=>resolve(String(r.result).split(',')[1]);
+    r.onerror=()=>reject(new Error('No se pudo leer el archivo'));
+    r.readAsDataURL(file);
+  });
+}
+function compressImage(file){
+  return new Promise((resolve,reject)=>{
+    const img=new Image(), u=URL.createObjectURL(file);
+    img.onload=()=>{ const MAX=1400; let w=img.naturalWidth,h=img.naturalHeight;
+      if(w>MAX||h>MAX){ const r=Math.min(MAX/w,MAX/h); w=Math.round(w*r); h=Math.round(h*r); }
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h); URL.revokeObjectURL(u);
+      resolve(c.toDataURL('image/jpeg',0.82).split(',')[1]); };
+    img.onerror=()=>{ URL.revokeObjectURL(u); reject(new Error('No se pudo leer la imagen')); };
+    img.src=u;
+  });
+}
+
+// ── UI utils ──
+function show(name){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active'); }
+function loading(on){ document.getElementById('loading').classList.toggle('active', on); }
+let toastT; function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2600); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+// Auto-login si ya entró antes
+window.addEventListener('load', ()=>{
+  const saved = localStorage.getItem('pde_portal_code');
+  if(saved){ document.getElementById('code').value=saved; login(); }
+  document.getElementById('code').addEventListener('keydown', e=>{ if(e.key==='Enter') login(); });
+});
+</script>
+</body>
+</html>
