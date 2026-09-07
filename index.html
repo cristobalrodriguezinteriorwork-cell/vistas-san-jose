@@ -516,7 +516,10 @@ const API_URL  = 'https://api.monday.com/v2';
 const FILE_URL = '/monday-file'; // proxy Netlify → Monday (evita CORS)
 
 const COL = {
-  fabricacion:       'color_mm45xy2',      // Rectificar Medidas
+  // Rectificar Medidas: etapa RETIRADA (sep-2026, decisión de Cristóbal).
+  // El id se deja aquí solo para que no falle el rol viejo 'taller', que ya
+  // no tiene tarjeta ni PIN. La etapa no se muestra en ninguna pantalla.
+  fabricacion:       'color_mm45xy2',      // Rectificar Medidas (sin uso)
   fabricacionCocina: 'color_mm45sq7w',     // Fabricacion Cocina (John)
   materiales:        'long_text_mm4vwvtb', // Materiales a Comprar (To-Do) → dispara compra
   inicioFab:         'date_mm4vr1p1',      // Inicio Fabricación (fecha+hora)
@@ -552,6 +555,7 @@ const S = {
   filter: 'all', pinBuffer: '', pinTargetRole: null, adminStage: 'fabricacion',
   planoZoom: 1, calib: null,
   issueFotoTarget: null,   // a qué reporte se le está añadiendo una foto
+  fotosNuevoReporte: [],   // fotos adjuntadas antes de pulsar "Reportar"
 };
 
 window.addEventListener('load', () => {
@@ -837,6 +841,7 @@ function openUnit(itemId) {
   S.sigDrawn     = false;
   S.sigConfirmed = false;
   S.sigActive    = false;
+  S.fotosNuevoReporte = [];   // que no se arrastren fotos de otra unidad
   if (!S.current) return;
   const r = ROLES[S.role];
 
@@ -876,7 +881,6 @@ function openUnit(itemId) {
 function renderDetail() {
   const r = ROLES[S.role], u = S.current;
   let html = `<div class="detail-status-card"><h3>Estado General</h3>
-    ${row('Rectificar Medidas', getColStatus(u,COL.fabricacion),       getColText(u,COL.fabricacion)       || statusLabel(getColStatus(u,COL.fabricacion)))}
     ${row('Fabricación Cocina', getColStatus(u,COL.fabricacionCocina), getColText(u,COL.fabricacionCocina) || statusLabel(getColStatus(u,COL.fabricacionCocina)))}
     ${row('Instalación Cocina', getColStatus(u,COL.instalacionCocina), getColText(u,COL.instalacionCocina) || statusLabel(getColStatus(u,COL.instalacionCocina)))}
     ${row('Instalación Tope',   getColStatus(u,COL.instalacionTope),   getColText(u,COL.instalacionTope)   || statusLabel(getColStatus(u,COL.instalacionTope)))}
@@ -912,6 +916,10 @@ function renderDetail() {
       html += `<div class="issue-card"><h3>⚠️ Reportar Daño / Faltante</h3>
         ${issues.length ? box : ''}
         <textarea class="issue-textarea" id="issue-textarea" placeholder="Ej: Se rompió una puerta, falta una pata..."></textarea>
+        <div class="issue-fotos" id="nuevo-reporte-fotos">
+          <div class="issue-foto-add" onclick="anadirFotoNueva()"><span>📷</span><span>Foto</span></div>
+        </div>
+        <div class="issue-fotos-msg">Puedes adjuntar fotos del daño antes de reportarlo.</div>
         <button class="btn-issue" onclick="reportIssue()">📤 Reportar Problema</button>
       </div>`;
     }
@@ -1369,8 +1377,28 @@ async function reportIssue() {
     arr.push({ id: nuevoId, t: text, by: r.name, role: S.role, d: `${ds} ${ts}`, fixed: false });
     await saveIssues(u.id, arr);
     await createUpdate(u.id, `⚠️ PROBLEMA — ${u.name}\nPor: ${r.name} · ${ds} ${ts}\n\n${text}`);
-    await refreshAll(); hideLoading(); toast('Problema reportado ⚠️'); renderDetail(); renderUnits(S.units);
-    // Se abre la lista para que pueda añadirle fotos ahí mismo
+
+    // Las fotos que adjuntó antes de reportar ya tienen a dónde ir
+    const pend = S.fotosNuevoReporte.slice();
+    if (pend.length) {
+      showLoading(`Subiendo ${pend.length} foto(s)...`);
+      for (const f of pend) {
+        const fname = `problema_${unitNum(u)}_${Date.now()}.jpg`;
+        const rec = { unitId: u.id, unidad: unitNum(u), unidadNombre: u.name, rol: r.name,
+                      dataUrl: f.dataUrl, nombre: fname, tipo: 'problema', issueId: nuevoId };
+        try { await fotosApi('upload', rec); }
+        catch(e) { await dbSavePending(rec); }   // sin internet: sube sola después
+        createUpdate(u.id, `🛠️ FOTO DE PROBLEMA — ${u.name}\nPor: ${r.name} · ${fechaHoraLocal()}`)
+          .then(uid => uploadFileToUpdate(uid, f.jpeg, fname))
+          .catch(e => console.warn('copia a Monday falló:', e.message));
+      }
+    }
+    limpiarFotosNuevoReporte();
+
+    await refreshAll(); hideLoading();
+    toast(pend.length ? `Problema reportado con ${pend.length} foto(s) ⚠️` : 'Problema reportado ⚠️');
+    renderDetail(); renderUnits(S.units);
+    // Se abre la lista para verlo y poder añadirle más fotos
     openIssuesModal();
   } catch(e) { hideLoading(); toast('Error: '+e.message); }
 }
@@ -1411,11 +1439,48 @@ function addIssuePhoto(gid) {
   document.getElementById('issue-camera-input').click();
 }
 
+// ── Fotos adjuntadas ANTES de reportar ───────────────────────────
+//  Se guardan en el aire hasta que el reporte existe (necesitan su id).
+//  Al pulsar "Reportar Problema" se suben ya pegadas a ese reporte.
+function anadirFotoNueva() {
+  S.issueFotoTarget = 'NUEVO';
+  document.getElementById('issue-camera-input').click();
+}
+
+async function guardarFotoNueva(file) {
+  const tira = document.getElementById('nuevo-reporte-fotos');
+  const previewUrl = URL.createObjectURL(file);
+  const img = document.createElement('img');
+  img.src = previewUrl; img.className = 'issue-foto pending';
+  img.title = 'Se subirá al reportar';
+  img.onclick = () => openPhotoModal(previewUrl);
+  if (tira) tira.appendChild(img);
+  const jpeg = await fileToJpeg(file);
+  S.fotosNuevoReporte.push({ dataUrl: await blobToDataUrl(jpeg), jpeg, img });
+}
+
+function limpiarFotosNuevoReporte() {
+  S.fotosNuevoReporte = [];
+  const tira = document.getElementById('nuevo-reporte-fotos');
+  if (tira) tira.querySelectorAll('img.issue-foto').forEach(i => i.remove());
+}
+
 async function handleIssuePhotos(event) {
   const files = Array.from(event.target.files);
   event.target.value = '';
   const gid = S.issueFotoTarget;
   if (!files.length || !S.current || !gid) return;
+
+  // Fotos adjuntadas antes de reportar: se quedan esperando al reporte.
+  if (gid === 'NUEVO') {
+    for (const file of files) {
+      try { await guardarFotoNueva(file); }
+      catch(e) { toast('❌ No se pudo preparar la foto: ' + e.message); }
+    }
+    toast(`📎 ${S.fotosNuevoReporte.length} foto(s) lista(s) — se suben al reportar`);
+    return;
+  }
+
   const u = S.current, r = ROLES[S.role];
   const tira = document.getElementById('gf-' + gid);
   if (!tira) return;
@@ -1760,7 +1825,6 @@ function openCasaModal(u, n) {
     (unitGarantiaActiva(u) ? `<div class="casa-gar">🛠️ Tiene una garantía sin arreglar</div>` : '') +
     `<div class="detail-status-card"><h3>Cómo va</h3>
        ${etapa('Fabricación',        COL.fabricacionCocina)}
-       ${etapa('Rectificar Medidas', COL.fabricacion)}
        ${etapa('Instalación Cocina', COL.instalacionCocina)}
        ${etapa('Instalación Tope',   COL.instalacionTope)}
        ${etapa('Insp. Contratista',  COL.aprobacion)}
