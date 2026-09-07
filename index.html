@@ -136,6 +136,8 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .photo-thumb.upload-error { opacity: 0.45; outline: 2px solid var(--red); }
 .photo-thumb.pending      { opacity: 0.6;  outline: 2px dashed var(--orange); }
 .photo-add     { aspect-ratio: 1; border-radius: 8px; background: var(--brand-light); border: 2px dashed var(--brand-mid); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--brand-mid); font-size: 28px; }
+/* Los selectores de archivo se disparan por código: nunca se ven. */
+#camera-input, #issue-camera-input { display: none; }
 .photo-loading { aspect-ratio: 1; border-radius: 8px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
 /* ── Signature ── */
@@ -200,6 +202,13 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .issue-item-meta { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
 .issue-item-fix { width: 100%; margin-top: 12px; border: none; border-radius: 10px; padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer; background: var(--green); color: #fff; }
 .issue-item-fix.on { background: #e5e7eb; color: var(--text); }
+/* ── Fotos del propio reporte (aparte de las fotos del trabajo) ── */
+.issue-fotos { display: flex; gap: 6px; overflow-x: auto; margin-top: 10px; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
+.issue-foto { width: 68px; height: 68px; flex: 0 0 auto; border-radius: 8px; object-fit: cover; cursor: pointer; border: 1.5px solid var(--orange); }
+.issue-foto.uploading { opacity: 0.45; }
+.issue-foto.pending   { opacity: 0.6; border-style: dashed; }
+.issue-foto-add { width: 68px; height: 68px; flex: 0 0 auto; border-radius: 8px; background: #fff; border: 2px dashed var(--orange); color: var(--orange); font-size: 12px; font-weight: 700; line-height: 1.2; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.issue-fotos-msg { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
 .issue-empty { font-size: 13px; color: var(--text-muted); padding: 6px 2px; }
 .issue-group-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--brand); margin: 6px 2px 2px; padding-top: 6px; border-top: 1px solid #e5e7eb; }
 .issue-group-title:first-child { border-top: none; padding-top: 0; }
@@ -439,6 +448,8 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 </div>
 
 <input type="file" id="camera-input" accept="image/*" multiple onchange="handlePhotos(event)">
+<!-- Fotos que se pegan a UN reporte de daño/faltante concreto -->
+<input type="file" id="issue-camera-input" accept="image/*" multiple onchange="handleIssuePhotos(event)">
 
 <div id="photo-modal">
   <button id="photo-modal-close" onclick="closePhotoModal()">✕</button>
@@ -522,6 +533,7 @@ const S = {
   sigDrawn: false, sigConfirmed: false, sigActive: false,
   filter: 'all', pinBuffer: '', pinTargetRole: null, adminStage: 'fabricacion',
   planoZoom: 1, calib: null,
+  issueFotoTarget: null,   // a qué reporte se le está añadiendo una foto
 };
 
 window.addEventListener('load', () => {
@@ -699,6 +711,11 @@ function parseIssues(unit) {
     if (Array.isArray(arr)) return arr;
   } catch (e) { /* formato viejo */ }
   return [{ t: raw, by: '', d: '', fixed: false }];
+}
+// Identificador estable del reporte: es lo que amarra sus fotos.
+// Los reportes viejos (sin id) usan uno derivado de la unidad + su posición.
+function issueId(unit, it, idx) {
+  return it.id || ('v' + (unit.name || '').replace(/\D/g, '') + '-' + idx);
 }
 // Reportes que le corresponden a un rol. Admin ve todos. Los viejos (sin .role) solo admin.
 function issuesForRole(unit, role) {
@@ -1212,7 +1229,7 @@ async function handlePhotos(event) {
       const jpeg    = await fileToJpeg(file);
       const dataUrl = await blobToDataUrl(jpeg);
       const fname   = `unidad_${unitNum(u)}_${Date.now()}.jpg`;
-      const rec     = { unitId: u.id, unidad: unitNum(u), unidadNombre: u.name, rol: r.name, dataUrl, nombre: fname };
+      const rec     = { unitId: u.id, unidad: unitNum(u), unidadNombre: u.name, rol: r.name, dataUrl, nombre: fname, tipo: 'trabajo' };
 
       try {
         await fotosApi('upload', rec);
@@ -1263,14 +1280,19 @@ async function loadPhotos(unitId) {
     grid.insertBefore(img, grid.lastElementChild);
   };
 
-  // 1) Pendientes de este equipo (se ven al instante aunque no hayan subido)
-  try { (await dbPendingFor(unitId)).forEach(p => addThumb(p.dataUrl, 'pending')); }
-  catch(e) { console.warn('pendientes:', e); }
+  // 1) Pendientes de este equipo (se ven al instante aunque no hayan subido).
+  //    Solo las de trabajo: las de problemas viven dentro de su reporte.
+  try {
+    (await dbPendingFor(unitId))
+      .filter(p => (p.tipo || 'trabajo') === 'trabajo')
+      .forEach(p => addThumb(p.dataUrl, 'pending'));
+  } catch(e) { console.warn('pendientes:', e); }
 
   // 2) Las de Supabase (compartidas)
   try {
     const u = (S.units || []).find(x => String(x.id) === String(unitId)) || S.current;
-    const d = await fotosApi('list', { unidad: unitNum(u || { name: '' }) });
+    // tipo 'trabajo': las de los reportes de problema NO salen aquí
+    const d = await fotosApi('list', { unidad: unitNum(u || { name: '' }), tipo: 'trabajo' });
     document.getElementById('photos-loading')?.remove();
     (d.fotos || []).forEach(f => addThumb(f.url));
   } catch(e) {
@@ -1292,7 +1314,8 @@ async function retryPendingPhotos() {
       try {
         await fotosApi('upload', {
           unitId: p.unitId, unidad: p.unidad, unidadNombre: p.unidadNombre,
-          rol: p.rol, dataUrl: p.dataUrl, nombre: p.nombre
+          rol: p.rol, dataUrl: p.dataUrl, nombre: p.nombre,
+          tipo: p.tipo || 'trabajo', issueId: p.issueId || ''
         });
         await dbDeletePending(p.id);
       } catch(e) { break; }   // sigue sin conexión: lo dejamos para después
@@ -1323,10 +1346,14 @@ async function reportIssue() {
   showLoading('Reportando...');
   try {
     const arr = parseIssues(u);
-    arr.push({ t: text, by: r.name, role: S.role, d: `${ds} ${ts}`, fixed: false });
+    // id único: es lo que amarra las fotos a ESTE reporte
+    const nuevoId = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    arr.push({ id: nuevoId, t: text, by: r.name, role: S.role, d: `${ds} ${ts}`, fixed: false });
     await saveIssues(u.id, arr);
     await createUpdate(u.id, `⚠️ PROBLEMA — ${u.name}\nPor: ${r.name} · ${ds} ${ts}\n\n${text}`);
     await refreshAll(); hideLoading(); toast('Problema reportado ⚠️'); renderDetail(); renderUnits(S.units);
+    // Se abre la lista para que pueda añadirle fotos ahí mismo
+    openIssuesModal();
   } catch(e) { hideLoading(); toast('Error: '+e.message); }
 }
 
@@ -1340,6 +1367,7 @@ function openIssuesModal() {
 function closeIssuesModal() { document.getElementById('issues-modal').classList.remove('show'); }
 
 function issueItemHtml(it, realIdx, editable) {
+  const gid = issueId(S.current, it, realIdx);
   return `<div class="issue-item ${it.fixed ? 'fixed' : ''}">
       <div class="issue-item-top">
         <span class="issue-item-num">#${realIdx+1}</span>
@@ -1348,10 +1376,83 @@ function issueItemHtml(it, realIdx, editable) {
       </div>
       <div class="issue-item-text">${escHtml(it.t)}</div>
       ${(it.by || it.d) ? `<div class="issue-item-meta">${escHtml(it.by)}${it.by && it.d ? ' · ' : ''}${escHtml(it.d)}</div>` : ''}
+      <div class="issue-fotos" id="gf-${gid}" data-gid="${gid}">
+        ${editable ? `<div class="issue-foto-add" onclick="addIssuePhoto('${gid}')"><span>📷</span><span>Foto</span></div>` : ''}
+      </div>
       ${editable ? `<button class="issue-item-fix ${it.fixed ? 'on' : ''}" onclick="toggleIssueFixed(${realIdx})">
         ${it.fixed ? '↩ Marcar como pendiente' : '✅ Marcar como arreglado'}
       </button>` : ''}
     </div>`;
+}
+
+// ── Fotos de un reporte concreto ─────────────────────────────────
+//  Van aparte de las fotos del trabajo: se guardan con tipo 'problema'
+//  y el id del reporte, así que NUNCA salen en el recuadro de fotos.
+function addIssuePhoto(gid) {
+  S.issueFotoTarget = gid;
+  document.getElementById('issue-camera-input').click();
+}
+
+async function handleIssuePhotos(event) {
+  const files = Array.from(event.target.files);
+  event.target.value = '';
+  const gid = S.issueFotoTarget;
+  if (!files.length || !S.current || !gid) return;
+  const u = S.current, r = ROLES[S.role];
+  const tira = document.getElementById('gf-' + gid);
+  if (!tira) return;
+
+  for (const file of files) {
+    const previewUrl = URL.createObjectURL(file);
+    const img = document.createElement('img');
+    img.src = previewUrl; img.className = 'issue-foto uploading';
+    tira.appendChild(img);
+    toast('⏳ Subiendo foto del problema...');
+    try {
+      const jpeg    = await fileToJpeg(file);
+      const dataUrl = await blobToDataUrl(jpeg);
+      const fname   = `problema_${unitNum(u)}_${Date.now()}.jpg`;
+      const rec = { unitId: u.id, unidad: unitNum(u), unidadNombre: u.name, rol: r.name,
+                    dataUrl, nombre: fname, tipo: 'problema', issueId: gid };
+      try {
+        await fotosApi('upload', rec);
+        img.classList.remove('uploading');
+        img.onclick = () => openPhotoModal(previewUrl);
+        toast('✅ Foto añadida al reporte');
+      } catch(e) {
+        await dbSavePending(rec);
+        img.classList.replace('uploading', 'pending');
+        img.onclick = () => openPhotoModal(previewUrl);
+        toast('📴 Sin conexión — subirá sola cuando haya internet');
+      }
+      // Copia a Monday, marcada como foto de PROBLEMA (no de instalación)
+      createUpdate(u.id, `🛠️ FOTO DE PROBLEMA — ${u.name}\nPor: ${r.name} · ${fechaHoraLocal()}`)
+        .then(uid => uploadFileToUpdate(uid, jpeg, fname))
+        .catch(e => console.warn('copia a Monday falló:', e.message));
+    } catch(e) {
+      img.classList.replace('uploading', 'upload-error');
+      toast('❌ Error: ' + e.message);
+    }
+  }
+}
+
+// Carga las fotos de cada reporte visible en el modal
+async function loadIssuePhotos() {
+  const tiras = document.querySelectorAll('#issues-sheet-body .issue-fotos');
+  for (const tira of tiras) {
+    const gid = tira.dataset.gid;
+    if (!gid) continue;
+    try {
+      const d = await fotosApi('list', { unidad: unitNum(S.current), tipo: 'problema', issueId: gid });
+      (d.fotos || []).forEach(f => {
+        const img = document.createElement('img');
+        img.src = f.url; img.className = 'issue-foto';
+        img.onclick = () => openPhotoModal(f.url);
+        img.onerror = () => img.remove();
+        tira.insertBefore(img, tira.firstChild);
+      });
+    } catch(e) { console.warn('fotos del reporte ' + gid + ':', e.message); }
+  }
 }
 
 function renderIssuesList() {
@@ -1377,6 +1478,7 @@ function renderIssuesList() {
     if (!mine.length) { closeIssuesModal(); renderDetail(); return; }
     body.innerHTML = mine.map(x => issueItemHtml(x.it, x.i, true)).join('');
   }
+  loadIssuePhotos();   // cada reporte trae sus propias fotos
 }
 
 async function toggleIssueFixed(i) {

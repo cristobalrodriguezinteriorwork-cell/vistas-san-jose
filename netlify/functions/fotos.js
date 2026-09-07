@@ -79,9 +79,13 @@ async function sbInsert(fila) {
   return (await r.json())[0];
 }
 
-async function sbSelect(unidad) {
-  const q = `proyecto=eq.${PROYECTO}&unidad=eq.${encodeURIComponent(unidad)}` +
-            `&order=created_at.asc&select=id,ruta,rol,autor,created_at`;
+// tipo: 'trabajo' (fotos normales) | 'problema' (fotos de un reporte concreto)
+async function sbSelect(unidad, tipo, issueId) {
+  let q = `proyecto=eq.${PROYECTO}&unidad=eq.${encodeURIComponent(unidad)}` +
+          `&tipo=eq.${encodeURIComponent(tipo)}` +
+          `&order=created_at.asc&select=id,ruta,rol,autor,tipo,issue_id,created_at`;
+  // Las de un reporte se piden por su id; las de trabajo no llevan reporte.
+  if (tipo === 'problema') q += `&issue_id=eq.${encodeURIComponent(issueId)}`;
   const r = await fetch(`${SUPABASE_URL}/rest/v1/fotos?${q}`, { headers: sbHeaders() });
   if (!r.ok) throw new Error('BD: ' + (await r.text()).slice(0, 200));
   return r.json();
@@ -105,7 +109,10 @@ exports.handler = async (event) => {
     if (body.action === 'list') {
       const unidad = String(body.unidad || '').replace(/\D/g, '');
       if (!unidad) return json(400, { error: 'Falta la unidad' });
-      const filas = await sbSelect(unidad);
+      const tipo    = body.tipo === 'problema' ? 'problema' : 'trabajo';
+      const issueId = String(body.issueId || '');
+      if (tipo === 'problema' && !issueId) return json(400, { error: 'Falta el reporte' });
+      const filas = await sbSelect(unidad, tipo, issueId);
       const fotos = [];
       for (const f of filas) {
         const url = await sbSignedUrl(f.ruta);
@@ -125,8 +132,14 @@ exports.handler = async (event) => {
       const buffer = Buffer.from(m[2], 'base64');
       if (buffer.length > 8 * 1024 * 1024) return json(413, { error: 'La foto pesa demasiado' });
 
+      const tipo    = body.tipo === 'problema' ? 'problema' : 'trabajo';
+      const issueId = String(body.issueId || '').slice(0, 60);
+      if (tipo === 'problema' && !issueId) return json(400, { error: 'Falta el reporte al que pertenece la foto' });
+
       const ext  = mime === 'image/png' ? 'png' : 'jpg';
-      const ruta = `${PROYECTO}/unidad-${unidad.padStart(3, '0')}/` +
+      // Las de problemas van en su propia subcarpeta: se ven aparte también en Storage.
+      const carpeta = tipo === 'problema' ? `problemas/${issueId}/` : '';
+      const ruta = `${PROYECTO}/unidad-${unidad.padStart(3, '0')}/${carpeta}` +
                    `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
       await sbUpload(ruta, buffer, mime);
@@ -138,6 +151,8 @@ exports.handler = async (event) => {
         ruta:            ruta,
         rol:             String(body.rol || '').slice(0, 60),
         autor:           String(body.autor || '').slice(0, 80),
+        tipo:            tipo,
+        issue_id:        tipo === 'problema' ? issueId : null,
         mime:            mime,
         bytes:           buffer.length
       });
