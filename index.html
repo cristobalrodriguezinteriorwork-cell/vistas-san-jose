@@ -191,6 +191,11 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .casa-msg { font-size: 13px; color: var(--text-muted); text-align: center; padding: 10px 0; }
 .casa-gar { background: #fff1f1; border: 1.5px solid var(--red); color: #a11; border-radius: 10px; padding: 10px 12px; font-size: 13px; font-weight: 700; }
 .casa-marq { background: var(--brand-light); border: 1.5px solid var(--brand-mid); color: var(--brand); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+/* Pedidos de material ya enviados a Compras */
+.pedido-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
+.pedido-item:last-child { border-bottom: none; }
+.pedido-txt { flex: 1; font-size: 14px; color: var(--text); word-break: break-word; }
+.pedido-f   { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
 .issues-sheet { background: var(--bg); width: 100%; max-width: 520px; max-height: 90vh; border-radius: 20px 20px 0 0; display: flex; flex-direction: column; }
 .issues-sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 18px 12px; border-bottom: 1px solid #e5e7eb; }
 .issues-sheet-header h3 { font-size: 16px; font-weight: 800; color: var(--text); }
@@ -522,7 +527,8 @@ const COL = {
   // no tiene tarjeta ni PIN. La etapa no se muestra en ninguna pantalla.
   fabricacion:       'color_mm45xy2',      // Rectificar Medidas (sin uso)
   fabricacionCocina: 'color_mm45sq7w',     // Fabricacion Cocina (John)
-  materiales:        'long_text_mm4vwvtb', // Materiales a Comprar (To-Do) → dispara compra
+  // (Materiales a Comprar salió de aquí: ahora cada pedido es una línea
+  //  en el tablero "Compras — Palacios del Este". Ver const COMPRAS.)
   inicioFab:         'date_mm4vr1p1',      // Inicio Fabricación (fecha+hora)
   finFab:            'date_mm4vrqp8',      // Fin Fabricación (fecha+hora)
   instalacionCocina: 'color_mm46atp1',     // Instalación Cocina/Vanity
@@ -892,6 +898,7 @@ function openUnit(itemId) {
   renderDetail();
   showScreen('detail');
   if (r.photos) loadPhotos(itemId);        // fotos compartidas (Supabase) + pendientes
+  if (r.todo)   cargarPedidos(S.current);  // lo que esta casa ya pidió a Compras
   if (r.photos || r.sig) loadDetailMedia(itemId); // fotos + firma de Monday
 }
 
@@ -943,15 +950,11 @@ function renderDetail() {
   }
 
   if (r.todo) {
-    const matTxt = getColText(u, COL.materiales).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-    const lista = matTxt
-      ? `<div style="white-space:pre-wrap;font-size:13px;line-height:1.5;background:#f6f7fb;border-radius:8px;padding:10px;margin-bottom:8px;">${matTxt}</div>`
-      : `<div class="issue-empty">Sin materiales pedidos aún.</div>`;
     html += `<div class="issue-card"><h3>📝 Materiales que faltan (To-Do)</h3>
-      <p style="font-size:12px;color:var(--text-muted);margin:0 0 8px;">Escribe UN material que falte y toca Agregar. Puedes seguir agregando más cuando descubras otros — no se borra lo anterior. Cada vez se le avisa a Compras (Yiny).</p>
-      ${lista}
+      <p style="font-size:12px;color:var(--text-muted);margin:0 0 8px;">Escribe UN material que falte y toca Agregar. Cada pedido se va al tablero de Compras y le llega el aviso a Yiny.</p>
+      <div id="pedidos-lista"><div class="issue-empty">Cargando pedidos...</div></div>
       <textarea class="issue-textarea" id="todo-textarea" placeholder="Ej: Faltan bisagras x10"></textarea>
-      <button class="btn-issue" onclick="addMaterial()">➕ Agregar y guardar</button>
+      <button class="btn-issue" onclick="addMaterial()">➕ Pedir a Compras</button>
     </div>`;
   }
 
@@ -1652,20 +1655,66 @@ function fechaHoraLocal() {
   return `${p(n.getDate())}/${p(n.getMonth()+1)}/${n.getFullYear()} ${p(n.getHours())}:${p(n.getMinutes())}`;
 }
 
+// ── Pedidos de material → tablero "Compras — Palacios del Este" ──
+//  Cada material que falta es una LÍNEA en ese tablero, no una nota
+//  dentro de la casa: así la oficina lo ve todo junto en un solo sitio.
+const COMPRAS = {
+  board:  18438349820,
+  casa:   'text_mm8rnpsw',       // Casa
+  por:    'text_mm8rpqk',        // Pedido por
+  fecha:  'date_mm8ryysf',       // Fecha del pedido
+  estado: 'color_mm8rz103',      // Estado Compra
+};
+
 async function addMaterial() {
-  const u = S.current;
-  const nuevo = document.getElementById('todo-textarea').value.trim();
+  const u = S.current, r = ROLES[S.role];
+  const el = document.getElementById('todo-textarea');
+  const nuevo = (el && el.value || '').trim();
   if (!nuevo) { toast('Escribe qué material falta'); return; }
-  const prev  = getColText(u, COL.materiales);
-  const linea = `• ${fechaHoraLocal()} — ${nuevo}`;
-  const texto = prev ? (prev + '\n' + linea) : linea;
-  showLoading('Guardando...');
+  const hoy = new Date().toISOString().slice(0, 10);
+  const vals = {
+    [COMPRAS.casa]:   'Unidad ' + unitNum(u),
+    [COMPRAS.por]:    r.name,
+    [COMPRAS.fecha]:  { date: hoy },
+    [COMPRAS.estado]: { label: 'Pendiente' },
+  };
+  showLoading('Enviando a Compras...');
   try {
-    await mutateColumn(u.id, COL.materiales, { text: texto });
-    await refreshAll(); hideLoading();
-    toast('Material agregado · avisamos a Compras');
-    renderDetail(); renderUnits(S.units);
-  } catch(e) { hideLoading(); toast('Error: '+e.message); }
+    const q = `mutation($bid:ID!,$name:String!,$vals:JSON!){
+      create_item(board_id:$bid, item_name:$name, column_values:$vals){ id } }`;
+    await gql(q, { bid: String(COMPRAS.board), name: nuevo.slice(0, 250), vals: JSON.stringify(vals) });
+    if (el) el.value = '';
+    hideLoading();
+    toast('✅ Pedido enviado a Compras');
+    cargarPedidos(u);
+  } catch(e) { hideLoading(); toast('Error: ' + e.message); }
+}
+
+// Lo que esta casa ya pidió, para que John no lo pida dos veces
+async function cargarPedidos(u) {
+  const caja = document.getElementById('pedidos-lista');
+  if (!caja) return;
+  try {
+    const q = `query($bid:ID!,$casa:CompareValue!){
+      boards(ids:[$bid]){ items_page(limit:50, query_params:{rules:[{column_id:"${COMPRAS.casa}", compare_value:[$casa], operator:contains_text}]}){
+        items { id name column_values(ids:["${COMPRAS.estado}","${COMPRAS.fecha}"]){ id text } } } } }`;
+    const d = await gql(q, { bid: String(COMPRAS.board), casa: 'Unidad ' + unitNum(u) });
+    const items = d.boards?.[0]?.items_page?.items || [];
+    if (!items.length) { caja.innerHTML = '<div class="issue-empty">Sin pedidos para esta casa.</div>'; return; }
+    caja.innerHTML = items.map(it => {
+      const est = (it.column_values.find(c => c.id === COMPRAS.estado) || {}).text || 'Pendiente';
+      const f   = (it.column_values.find(c => c.id === COMPRAS.fecha)  || {}).text || '';
+      const cls = est === 'Comprado' ? 'done' : 'pend';
+      return `<div class="pedido-item">
+        <span class="issue-badge ${cls}">${escHtml(est)}</span>
+        <span class="pedido-txt">${escHtml(it.name)}</span>
+        <span class="pedido-f">${escHtml(fechaCorta(f))}</span>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    caja.innerHTML = '<div class="issue-empty">No se pudo cargar la lista de pedidos.</div>';
+    console.warn('cargarPedidos:', e.message);
+  }
 }
 
 // ── Main Action ───────────────────────────────────────────────────
