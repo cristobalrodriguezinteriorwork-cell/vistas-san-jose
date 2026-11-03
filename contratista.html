@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1F3864">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Palacios del Este — Portal del Contratista</title>
+<link rel="apple-touch-icon" href="logo blanco 14.png">
+<style>
+:root{
+  --brand:#1F3864; --brand-mid:#2E75B6; --brand-light:#D6E4F0;
+  --bg:#f4f6fa; --card:#fff; --text:#1f2430; --text-muted:#6b7280;
+  --green:#00c875; --orange:#fdab3d; --red:#e2445c; --grey:#c4c9d4;
+  --radius:14px; --shadow:0 2px 10px rgba(31,56,100,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden}
+.screen.active{display:flex}
+
+/* Login */
+#s-login{background:var(--brand);align-items:center;justify-content:center;padding:32px 24px}
+.lg-logo{width:84px;height:84px;object-fit:contain;border-radius:14px;margin-bottom:14px}
+.lg-t{color:#fff;font-size:24px;font-weight:800;text-align:center}
+.lg-s{color:rgba(255,255,255,.65);font-size:13px;text-align:center;margin:6px 0 26px;letter-spacing:.5px}
+.lg-card{background:#fff;border-radius:var(--radius);padding:22px;width:100%;max-width:380px;box-shadow:var(--shadow)}
+.lg-card label{display:block;font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.lg-card input{width:100%;border:1.5px solid #d7dbe3;border-radius:10px;padding:14px;font-size:17px;font-family:inherit;outline:none;text-align:center;letter-spacing:1px}
+.lg-card input:focus{border-color:var(--brand-mid)}
+.btn{width:100%;background:var(--brand);color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;margin-top:14px;font-family:inherit}
+.btn:disabled{opacity:.5}
+.lg-err{color:var(--red);font-size:13px;text-align:center;margin-top:10px;min-height:18px}
+
+/* Cabecera */
+.hd{background:var(--brand);color:#fff;padding:48px 16px 14px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.hd h1{font-size:17px;font-weight:800}
+.hd p{font-size:12px;color:rgba(255,255,255,.7)}
+.hd-info{flex:1;min-width:0}
+.hd-btn{background:rgba(255,255,255,.15);border:none;color:#fff;width:38px;height:38px;border-radius:50%;font-size:17px;cursor:pointer;flex-shrink:0}
+.buscar{padding:12px 16px;background:var(--brand)}
+.buscar input{width:100%;border:none;border-radius:10px;padding:12px 14px;font-size:15px;font-family:inherit;outline:none}
+
+/* Lista de casas */
+.lista{flex:1;overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px;align-content:start}
+.casa{background:var(--card);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;box-shadow:var(--shadow);border:2px solid transparent}
+.casa:active{transform:scale(.97)}
+.casa.congar{border-color:var(--red)}
+.casa-n{font-size:16px;font-weight:800}
+.casa-s{font-size:10px;color:var(--text-muted);margin-top:2px}
+.casa-b{display:inline-block;margin-top:6px;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;background:#fde2e7;color:#b11231}
+
+/* Hoja de la casa */
+#s-casa{background:var(--bg)}
+.cuerpo{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.card h3{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:12px;font-weight:700}
+.fila{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6}
+.fila:last-child{border-bottom:none}
+.pto{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.pto.done{background:var(--green)} .pto.progress{background:var(--orange)} .pto.pending{background:var(--grey)}
+.fila-l{flex:1;font-size:14px}
+.fila-v{font-size:12px;color:var(--text-muted);font-weight:500}
+.vacio{font-size:13px;color:var(--text-muted);text-align:center;padding:14px 0}
+
+/* Garantías */
+.g{background:#fff8f0;border:1.5px solid var(--orange);border-radius:12px;padding:14px;margin-bottom:10px}
+.g.ok{background:#f1f5f3;border-color:#b9e3cd}
+.g-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.g-n{font-size:12px;font-weight:800;color:var(--text-muted)}
+.g-tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;background:#fff3cd;color:#92400e}
+.g-tag.ok{background:#d6f5e3;color:#00794a}
+.g-quien{font-size:11px;font-weight:800;padding:3px 8px;border-radius:20px;background:var(--brand-light);color:var(--brand)}
+.g-que{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--orange);margin-bottom:4px}
+.g.ok .g-que{color:#00794a}
+.g-txt{font-size:15px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.g.ok .g-txt{text-decoration:line-through;color:var(--text-muted)}
+.g-meta{font-size:12px;color:var(--text-muted);margin-top:6px}
+.g-ft{font-size:11px;font-weight:700;color:var(--text-muted);margin-top:10px}
+.tira{display:flex;gap:6px;overflow-x:auto;margin-top:5px;padding-bottom:2px}
+.ft{width:66px;height:66px;flex:0 0 auto;border-radius:8px;object-fit:cover;cursor:pointer;border:1.5px solid var(--orange)}
+.ft.sube{opacity:.45}
+.ft-add{width:66px;height:66px;flex:0 0 auto;border-radius:8px;background:#fff;border:2px dashed var(--orange);color:var(--orange);font-size:12px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2}
+
+/* Formulario */
+.form-t{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:10px}
+.row{display:flex;gap:8px;margin-bottom:8px}
+.sel{flex:1;min-width:0;border:1.5px solid #d7dbe3;border-radius:10px;padding:12px 8px;font-size:14px;font-family:inherit;background:#fff;color:var(--text)}
+.ta{width:100%;border:1.5px solid var(--orange);border-radius:10px;padding:12px;font-size:15px;font-family:inherit;resize:vertical;min-height:84px;outline:none}
+.btn-nar{width:100%;background:var(--orange);color:#fff;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;margin-top:10px;font-family:inherit}
+.hint{font-size:11px;color:var(--text-muted);margin-top:6px}
+
+/* Visor y avisos */
+#visor{position:fixed;inset:0;background:rgba(0,0,0,.93);display:none;align-items:center;justify-content:center;z-index:1002}
+#visor.show{display:flex}
+#visor img{max-width:96%;max-height:90%;border-radius:8px}
+#visor button{position:absolute;top:calc(env(safe-area-inset-top) + 14px);right:16px;background:rgba(255,255,255,.2);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:19px;cursor:pointer}
+#aviso{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--text);color:#fff;padding:13px 22px;border-radius:24px;font-size:14px;z-index:1003;transition:transform .25s;max-width:88%;text-align:center}
+#aviso.show{transform:translateX(-50%) translateY(0)}
+#cargando{position:fixed;inset:0;background:rgba(31,56,100,.85);display:none;align-items:center;justify-content:center;z-index:1001;flex-direction:column;gap:14px;color:#fff}
+#cargando.show{display:flex}
+.spin{width:38px;height:38px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:gira .8s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
+input[type=file]{display:none}
+</style>
+</head>
+<body>
+
+<!-- ── Entrar ───────────────────────────────────────────────── -->
+<div id="s-login" class="screen active">
+  <img src="logo blanco 14.png" class="lg-logo" onerror="this.style.display='none'">
+  <div class="lg-t">Palacios del Este</div>
+  <div class="lg-s">PORTAL DEL CONTRATISTA</div>
+  <div class="lg-card">
+    <label for="codigo">Tu código de acceso</label>
+    <input id="codigo" type="text" autocomplete="off" autocapitalize="none" placeholder="código" onkeydown="if(event.key==='Enter')entrar()">
+    <button class="btn" id="btn-entrar" onclick="entrar()">Entrar</button>
+    <div class="lg-err" id="lg-err"></div>
+  </div>
+</div>
+
+<!-- ── Las casas ────────────────────────────────────────────── -->
+<div id="s-casas" class="screen">
+  <div class="hd">
+    <div class="hd-info"><h1>Palacios del Este</h1><p id="hd-sub">Garantías y piezas faltantes</p></div>
+    <button class="hd-btn" onclick="cargarCasas()">↻</button>
+    <button class="hd-btn" onclick="salir()" title="Salir">⏻</button>
+  </div>
+  <div class="buscar"><input id="buscar" type="search" placeholder="Buscar casa..." oninput="pintarCasas()"></div>
+  <div class="lista" id="lista"></div>
+</div>
+
+<!-- ── Una casa ─────────────────────────────────────────────── -->
+<div id="s-casa" class="screen">
+  <div class="hd">
+    <button class="hd-btn" onclick="verCasas()">←</button>
+    <div class="hd-info"><h1 id="casa-t">Casa</h1><p id="casa-s"></p></div>
+  </div>
+  <div class="cuerpo" id="casa-cuerpo"></div>
+</div>
+
+<input type="file" id="foto-input" accept="image/*" multiple onchange="subirFotos(event)">
+<div id="visor"><button onclick="cerrarVisor()">✕</button><img id="visor-img" src="" alt=""></div>
+<div id="aviso"></div>
+<div id="cargando"><div class="spin"></div><p id="cargando-t">Cargando...</p></div>
+
+<script>
+const API = '/.netlify/functions/portal';
+const TIPOS = ['Pieza faltante', 'Daño o guayazo', 'Ajuste', 'Otro'];
+const AREAS = ['Cocina', 'Vanity', 'Topes'];
+
+const S = { codigo: null, quien: null, casas: [], casa: null, destinoFoto: null, fotosNueva: [] };
+
+// ── Utilidades ───────────────────────────────────────────────────
+const esc = s => (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function fechaCorta(s) {
+  if (!s) return '';
+  const p = String(s).slice(0, 10).split('-');
+  if (p.length !== 3) return s;
+  const m = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][+p[1] - 1] || '';
+  return `${+p[2]} ${m} ${p[0]}`;
+}
+let avisoT;
+function aviso(t) {
+  const el = document.getElementById('aviso');
+  el.textContent = t; el.classList.add('show');
+  clearTimeout(avisoT); avisoT = setTimeout(() => el.classList.remove('show'), 3200);
+}
+function cargando(t) {
+  document.getElementById('cargando-t').textContent = t || 'Cargando...';
+  document.getElementById('cargando').classList.add('show');
+}
+const listo = () => document.getElementById('cargando').classList.remove('show');
+function pantalla(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function verVisor(src) { document.getElementById('visor-img').src = src; document.getElementById('visor').classList.add('show'); }
+function cerrarVisor() { document.getElementById('visor').classList.remove('show'); }
+
+async function api(action, extra) {
+  const r = await fetch(API, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(Object.assign({ action, codigo: S.codigo }, extra || {})),
+  });
+  let d = {};
+  try { d = await r.json(); } catch (e) {}
+  if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+  return d;
+}
+
+// Encoge la foto antes de mandarla, para que suba rápido con poca señal
+function aJpeg(file) {
+  return new Promise(res => {
+    const img = new Image(), u = URL.createObjectURL(file);
+    img.onload = () => {
+      const MAX = 1400;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if (w > MAX || h > MAX) { const r = Math.min(MAX / w, MAX / h); w = Math.round(w * r); h = Math.round(h * r); }
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(u);
+      c.toBlob(b => res(b || file), 'image/jpeg', 0.82);
+    };
+    img.onerror = () => { URL.revokeObjectURL(u); res(file); };
+    img.src = u;
+  });
+}
+const aDataUrl = blob => new Promise((res, rej) => {
+  const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob);
+});
+
+// ── Entrar y salir ───────────────────────────────────────────────
+async function entrar() {
+  const c = document.getElementById('codigo').value.trim();
+  const err = document.getElementById('lg-err');
+  if (!c) { err.textContent = 'Escribe tu código'; return; }
+  const btn = document.getElementById('btn-entrar');
+  btn.disabled = true; err.textContent = '';
+  try {
+    S.codigo = c;
+    const d = await api('login');
+    S.quien = d.quien;
+    localStorage.setItem('pde_contratista', c);
+    document.getElementById('hd-sub').textContent =
+      'Garantías y piezas faltantes · ' + (d.quien === 'contratista' ? 'Contratista' : 'Desarrollador');
+    await cargarCasas();
+  } catch (e) {
+    S.codigo = null;
+    err.textContent = e.message === 'Código incorrecto' ? 'Ese código no es válido' : e.message;
+  } finally { btn.disabled = false; }
+}
+function salir() {
+  localStorage.removeItem('pde_contratista');
+  S.codigo = null; S.casas = [];
+  document.getElementById('codigo').value = '';
+  pantalla('s-login');
+}
+
+// ── Las casas ────────────────────────────────────────────────────
+async function cargarCasas() {
+  cargando('Cargando casas...');
+  try {
+    const d = await api('casas');
+    S.casas = d.casas || [];
+    pantalla('s-casas');
+    pintarCasas();
+  } catch (e) { aviso('Error: ' + e.message); }
+  finally { listo(); }
+}
+
+const pendientes = c => (c.garantias || []).filter(g => !g.fixed).length;
+
+function pintarCasas() {
+  const q = (document.getElementById('buscar').value || '').trim().toLowerCase();
+  const vis = S.casas.filter(c => !q || String(c.num) === q || c.nombre.toLowerCase().includes(q));
+  const el = document.getElementById('lista');
+  if (!vis.length) { el.innerHTML = '<div class="vacio" style="grid-column:1/-1">No encontré esa casa.</div>'; return; }
+  el.innerHTML = vis.map(c => {
+    const p = pendientes(c);
+    return `<div class="casa ${p ? 'congar' : ''}" onclick="verCasa('${c.id}')">
+      <div class="casa-n">${c.num || esc(c.nombre)}</div>
+      <div class="casa-s">${c.marquesina ? (c.marquesina === 'IZQUIERDA' ? 'Marq. izq.' : 'Marq. der.') : '&nbsp;'}</div>
+      ${p ? `<span class="casa-b">${p} sin arreglar</span>` : ''}
+    </div>`;
+  }).join('');
+}
+function verCasas() { pantalla('s-casas'); pintarCasas(); }
+
+// ── Una casa ─────────────────────────────────────────────────────
+function verCasa(id) {
+  const c = S.casas.find(x => String(x.id) === String(id));
+  if (!c) return;
+  S.casa = c; S.fotosNueva = [];
+  document.getElementById('casa-t').textContent = c.nombre;
+  document.getElementById('casa-s').textContent =
+    c.marquesina ? 'Marquesina a la ' + c.marquesina.toLowerCase() : '';
+
+  const et = (l, k) => `<div class="fila"><div class="pto ${c.etapas[k]}"></div>
+    <span class="fila-l">${l}</span>
+    <span class="fila-v">${c.etapas[k] === 'done' ? 'Terminado' : c.etapas[k] === 'progress' ? 'En proceso' : 'Pendiente'}</span></div>`;
+
+  const gs = c.garantias || [];
+  document.getElementById('casa-cuerpo').innerHTML = `
+    <div class="card"><h3>Cómo va la casa</h3>
+      ${et('Fabricación', 'fabricacion')}
+      ${et('Instalación cocina', 'cocina')}
+      ${et('Instalación topes', 'tope')}
+      ${et('Inspección contratista', 'inspContrat')}
+    </div>
+    <div class="card"><h3>🛠️ Garantías y piezas faltantes</h3>
+      ${gs.length ? gs.map((g, i) => garHtml(g, i)).join('') : '<div class="vacio">Esta casa no tiene nada reportado.</div>'}
+    </div>
+    <div class="card"><h3>➕ Reportar algo nuevo</h3>
+      <div class="form-t">¿Qué pasa y dónde?</div>
+      <div class="row">
+        <select class="sel" id="f-tipo">${TIPOS.map(t => `<option>${t}</option>`).join('')}</select>
+        <select class="sel" id="f-area">${AREAS.map(t => `<option>${t}</option>`).join('')}</select>
+      </div>
+      <textarea class="ta" id="f-desc" placeholder="Ej: Falta el tirador de la gaveta de arriba"></textarea>
+      <div class="tira" id="tira-nueva">
+        <div class="ft-add" onclick="pedirFoto('NUEVA')"><span>📷</span><span>Foto</span></div>
+      </div>
+      <div class="hint">Saca fotos del daño antes de enviarlo. Ayuda mucho a saber qué llevar.</div>
+      <button class="btn-nar" onclick="enviarGarantia()">Enviar a Wood Studio</button>
+    </div>`;
+
+  pantalla('s-casa');
+  cargarFotos();
+}
+
+function garHtml(g, i) {
+  const gid = g.id || ('v' + i);
+  const quien = g.origen === 'cliente' ? '🏠 Cliente'
+              : g.origen === 'desarrollador' ? '🏢 Desarrollador' : '🏗️ Contratista';
+  return `<div class="g ${g.fixed ? 'ok' : ''}">
+    <div class="g-top">
+      <span class="g-n">#${i + 1}</span>
+      <span class="g-quien">${quien}</span>
+      <span class="g-tag ${g.fixed ? 'ok' : ''}">${g.fixed ? '✅ Arreglada' : '⚠️ Pendiente'}</span>
+    </div>
+    ${g.tipo ? `<div class="g-que">${esc(g.tipo)}${g.area ? ' · ' + esc(g.area) : ''}</div>` : ''}
+    <div class="g-txt">${esc(g.desc || '')}</div>
+    <div class="g-meta">Reportada el ${esc(fechaCorta(g.d))}${g.fixed && g.fd ? ' · Arreglada el ' + esc(fechaCorta(g.fd)) : ''}</div>
+    <div class="g-ft">📷 Foto del daño</div>
+    <div class="tira" data-gid="${gid}" data-m="dano">
+      <div class="ft-add" onclick="pedirFoto('${gid}','dano')"><span>📷</span><span>Foto</span></div>
+    </div>
+    ${g.fixed ? `<div class="g-ft">🔧 Foto del arreglo</div>
+    <div class="tira" data-gid="${gid}" data-m="fix"></div>` : ''}
+  </div>`;
+}
+
+// ── Fotos ────────────────────────────────────────────────────────
+function pedirFoto(gid, momento) {
+  S.destinoFoto = { gid, momento: momento || 'dano' };
+  document.getElementById('foto-input').click();
+}
+
+async function subirFotos(ev) {
+  const files = Array.from(ev.target.files);
+  ev.target.value = '';
+  const t = S.destinoFoto;
+  if (!files.length || !t || !S.casa) return;
+
+  // Antes de enviar la garantía: se quedan esperando
+  if (t.gid === 'NUEVA') {
+    const tira = document.getElementById('tira-nueva');
+    for (const f of files) {
+      const u = URL.createObjectURL(f);
+      const img = document.createElement('img');
+      img.src = u; img.className = 'ft sube'; img.onclick = () => verVisor(u);
+      if (tira) tira.appendChild(img);
+      S.fotosNueva.push(await aDataUrl(await aJpeg(f)));
+    }
+    aviso(`📎 ${S.fotosNueva.length} foto(s) lista(s) — se envían con el reporte`);
+    return;
+  }
+
+  const tira = document.querySelector(`.tira[data-gid="${t.gid}"][data-m="${t.momento}"]`);
+  for (const f of files) {
+    const u = URL.createObjectURL(f);
+    const img = document.createElement('img');
+    img.src = u; img.className = 'ft sube';
+    if (tira) tira.appendChild(img);
+    aviso('⏳ Subiendo foto...');
+    try {
+      await api('subir', {
+        unidad: S.casa.num, itemId: S.casa.id,
+        issueId: t.gid + (t.momento === 'fix' ? '-fix' : ''),
+        dataUrl: await aDataUrl(await aJpeg(f)),
+      });
+      img.classList.remove('sube');
+      img.onclick = () => verVisor(u);
+      aviso('✅ Foto subida');
+    } catch (e) { img.remove(); aviso('❌ ' + e.message); }
+  }
+}
+
+async function cargarFotos() {
+  const tiras = document.querySelectorAll('#casa-cuerpo .tira[data-gid]');
+  for (const tira of tiras) {
+    const gid = tira.dataset.gid;
+    const suf = tira.dataset.m === 'fix' ? '-fix' : '';
+    try {
+      const d = await api('fotos', { unidad: S.casa.num, issueId: gid + suf });
+      (d.fotos || []).forEach(f => {
+        const img = document.createElement('img');
+        img.src = f.url; img.className = 'ft';
+        img.onclick = () => verVisor(f.url);
+        img.onerror = () => img.remove();
+        tira.insertBefore(img, tira.firstChild);
+      });
+    } catch (e) { /* sin fotos o sin señal: se deja la tira vacía */ }
+  }
+}
+
+// ── Enviar una garantía ──────────────────────────────────────────
+async function enviarGarantia() {
+  const desc = (document.getElementById('f-desc').value || '').trim();
+  if (!desc) { aviso('Escribe qué hay que arreglar'); return; }
+  const tipo = document.getElementById('f-tipo').value;
+  const area = document.getElementById('f-area').value;
+  cargando('Enviando...');
+  try {
+    const d = await api('nueva', { itemId: S.casa.id, tipo, area, desc });
+    const pend = S.fotosNueva.slice();
+    for (const dataUrl of pend) {
+      try { await api('subir', { unidad: S.casa.num, itemId: S.casa.id, issueId: d.id, dataUrl }); }
+      catch (e) { /* la garantía ya quedó; la foto se puede volver a intentar */ }
+    }
+    S.fotosNueva = [];
+    await cargarCasas();
+    const c = S.casas.find(x => String(x.id) === String(S.casa.id));
+    listo();
+    aviso(pend.length ? `Enviado con ${pend.length} foto(s) ✅` : 'Enviado a Wood Studio ✅');
+    if (c) verCasa(c.id);
+  } catch (e) { listo(); aviso('Error: ' + e.message); }
+}
+
+// ── Arranque: si ya entró antes, no le pedimos el código otra vez ─
+(function () {
+  const g = localStorage.getItem('pde_contratista');
+  if (g) { document.getElementById('codigo').value = g; entrar(); }
+})();
+</script>
+</body>
+</html>
