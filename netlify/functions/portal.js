@@ -11,6 +11,7 @@
 //    PORTAL_CONTRATISTA_CODE      → código del contratista
 //    PORTAL_DESARROLLADOR_CODE    → código del desarrollador
 //    PORTAL_WOOD_CODE             → código nuestro (Wood Studio)
+//    PORTAL_INFORME_CODE          → código del informe diario (SOLO LECTURA)
 //    SUPABASE_URL                 → https://xxxx.supabase.co
 //    SUPABASE_SERVICE_ROLE_KEY    → llave secreta (las fotos)
 // ════════════════════════════════════════════════════════════════
@@ -28,6 +29,25 @@ const COL = {
   inspContrat: 'color_mm456st1',      // ✅ Insp. Contratista (app)
   garantias:   'long_text_mm6rh7tf',  // Garantías (lista JSON)
   marquesina:  'color_mm8rmkv5',
+  // solo para el informe automatico (rol 'robot')
+  inicioFab:   'date_mm4vr1p1',      // Inicio Fabricacion
+  finFab:      'date_mm4vrqp8',      // Fin Fabricacion
+  realCocina:  'date_mm45rf2k',      // Real: Fin Cocina
+  realTopes:   'date_mm455ske',      // Real: Fin Topes
+  fechaContrat:'date_mm459c9p',      // Fecha Insp. Contratista
+  planCocIni:  'date_mm8rsfgh',      // Plan VRM: Inicio Cocina
+  planCocFin:  'date_mm8r876g',      // Plan VRM: Fin Cocina
+  planTopIni:  'date_mm8rjjbw',      // Plan VRM: Inicio Topes
+  planTopFin:  'date_mm8r8c44',      // Plan VRM: Fin Topes
+};
+
+// Tablero de compras (pedidos de material del proyecto)
+const COMPRAS = {
+  board:  18438349820,
+  casa:   'text_mm8rnpsw',
+  por:    'text_mm8rpqk',
+  fecha:  'date_mm8ryysf',
+  estado: 'color_mm8rz103',
 };
 
 const json = (code, obj) => ({
@@ -43,9 +63,11 @@ function quienEs(codigo) {
   const con = (process.env.PORTAL_CONTRATISTA_CODE   || '').trim().toLowerCase();
   const des = (process.env.PORTAL_DESARROLLADOR_CODE || '').trim().toLowerCase();
   const wds = (process.env.PORTAL_WOOD_CODE          || '').trim().toLowerCase();
+  const bot = (process.env.PORTAL_INFORME_CODE       || '').trim().toLowerCase();
   if (con && c === con) return 'contratista';
   if (des && c === des) return 'desarrollador';
   if (wds && c === wds) return 'woodstudio';
+  if (bot && c === bot) return 'robot';   // solo lectura, para el informe diario
   return null;
 }
 
@@ -162,6 +184,11 @@ exports.handler = async (event) => {
     }
 
     // ── Levantar una garantía ─────────────────────────────────────
+    // El robot del informe solo lee: nunca levanta garantias ni sube fotos.
+    if (quien === 'robot' && b.action !== 'informe' && b.action !== 'login') {
+      return json(403, { error: 'Ese código es de solo lectura' });
+    }
+
     if (b.action === 'nueva') {
       const itemId = String(b.itemId || '');
       const desc   = String(b.desc || '').trim();
@@ -236,6 +263,56 @@ exports.handler = async (event) => {
         tipo: 'garantia', issue_id: issueId, mime: m[1], bytes: buffer.length,
       });
       return json(200, { ok: true, url: await sbEnlace(ruta) });
+    }
+
+    // ── Informe diario (rol robot) ────────────────────────────────
+    //  Todo lo que el seguimiento automatico necesita, en una llamada.
+    //  NO incluye factura ni monto por casa: eso no sale de la app.
+    if (b.action === 'informe') {
+      if (quien !== 'robot' && quien !== 'woodstudio') {
+        return json(403, { error: 'Solo para uso interno' });
+      }
+      const ids = [
+        COL.fabricacion, COL.cocina, COL.tope, COL.inspContrat,
+        COL.garantias, COL.marquesina,
+        COL.inicioFab, COL.finFab, COL.realCocina, COL.realTopes, COL.fechaContrat,
+        COL.planCocIni, COL.planCocFin, COL.planTopIni, COL.planTopFin,
+      ];
+      const q = `query($bid:ID!,$cols:[String!]){ boards(ids:[$bid]){ items_page(limit:500){
+        items { id name column_values(ids:$cols){ id text } } } } }`;
+      const d = await monday(q, { bid: String(BOARD_ID), cols: ids });
+      const casas = ((d.boards?.[0]?.items_page?.items) || []).map(it => ({
+        num: parseInt(String(it.name).replace(/D/g, ''), 10) || 0,
+        nombre: it.name,
+        marquesina: colText(it, COL.marquesina),
+        fab:    { estado: estado(it, COL.fabricacion), ini: colText(it, COL.inicioFab), fin: colText(it, COL.finFab) },
+        cocina: { estado: estado(it, COL.cocina), planIni: colText(it, COL.planCocIni), planFin: colText(it, COL.planCocFin), real: colText(it, COL.realCocina) },
+        topes:  { estado: estado(it, COL.tope),   planIni: colText(it, COL.planTopIni), planFin: colText(it, COL.planTopFin), real: colText(it, COL.realTopes) },
+        inspContrat: { estado: estado(it, COL.inspContrat), fecha: colText(it, COL.fechaContrat) },
+        garantias: leerGarantias(it),
+      })).sort((a, c) => a.num - c.num);
+
+      // Pedidos de material (tablero aparte)
+      let compras = [];
+      try {
+        const qc = `query($bid:ID!,$cols:[String!]){ boards(ids:[$bid]){ items_page(limit:200){
+          items { id name column_values(ids:$cols){ id text } } } } }`;
+        const dc = await monday(qc, { bid: String(COMPRAS.board),
+          cols: [COMPRAS.casa, COMPRAS.por, COMPRAS.fecha, COMPRAS.estado] });
+        compras = ((dc.boards?.[0]?.items_page?.items) || []).map(it => ({
+          que:    it.name,
+          casa:   colText(it, COMPRAS.casa),
+          por:    colText(it, COMPRAS.por),
+          pedido: colText(it, COMPRAS.fecha),
+          estado: colText(it, COMPRAS.estado),
+        }));
+      } catch (e) { compras = [{ error: e.message }]; }
+
+      return json(200, {
+        proyecto: 'Palacios del Este',
+        generado: new Date().toISOString(),
+        casas, compras,
+      });
     }
 
     return json(400, { error: 'Acción desconocida' });
