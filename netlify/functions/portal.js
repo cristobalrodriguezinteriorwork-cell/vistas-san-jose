@@ -282,7 +282,7 @@ exports.handler = async (event) => {
         items { id name column_values(ids:$cols){ id text } } } } }`;
       const d = await monday(q, { bid: String(BOARD_ID), cols: ids });
       const casas = ((d.boards?.[0]?.items_page?.items) || []).map(it => ({
-        num: parseInt(String(it.name).replace(/D/g, ''), 10) || 0,
+        num: parseInt(String(it.name).replace(/\D/g, ''), 10) || 0,
         nombre: it.name,
         marquesina: colText(it, COL.marquesina),
         fab:    { estado: estado(it, COL.fabricacion), ini: colText(it, COL.inicioFab), fin: colText(it, COL.finFab) },
