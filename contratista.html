@@ -150,6 +150,7 @@ const API = '/.netlify/functions/portal';
 const TIPOS = ['Pieza faltante', 'Daño o guayazo', 'Ajuste', 'Otro'];
 const AREAS = ['Cocina', 'Vanity', 'Topes'];
 
+const QUIEN_TXT = { contratista: 'Contratista', desarrollador: 'Desarrollador', woodstudio: 'Wood Studio' };
 const S = { codigo: null, quien: null, casas: [], casa: null, destinoFoto: null, fotosNueva: [] };
 
 // ── Utilidades ───────────────────────────────────────────────────
@@ -224,7 +225,7 @@ async function entrar() {
     S.quien = d.quien;
     localStorage.setItem('pde_contratista', c);
     document.getElementById('hd-sub').textContent =
-      'Garantías y piezas faltantes · ' + (d.quien === 'contratista' ? 'Contratista' : 'Desarrollador');
+      'Garantías y piezas faltantes · ' + QUIEN_TXT[d.quien];
     await cargarCasas();
   } catch (e) {
     S.codigo = null;
@@ -313,7 +314,8 @@ function verCasa(id) {
 function garHtml(g, i) {
   const gid = g.id || ('v' + i);
   const quien = g.origen === 'cliente' ? '🏠 Cliente'
-              : g.origen === 'desarrollador' ? '🏢 Desarrollador' : '🏗️ Contratista';
+              : g.origen === 'desarrollador' ? '🏢 Desarrollador'
+              : g.origen === 'woodstudio' ? '🪵 Wood Studio' : '🏗️ Contratista';
   return `<div class="g ${g.fixed ? 'ok' : ''}">
     <div class="g-top">
       <span class="g-n">#${i + 1}</span>

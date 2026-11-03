@@ -10,6 +10,7 @@
 //    MONDAY_TOKEN                 → token de Monday
 //    PORTAL_CONTRATISTA_CODE      → código del contratista
 //    PORTAL_DESARROLLADOR_CODE    → código del desarrollador
+//    PORTAL_WOOD_CODE             → código nuestro (Wood Studio)
 //    SUPABASE_URL                 → https://xxxx.supabase.co
 //    SUPABASE_SERVICE_ROLE_KEY    → llave secreta (las fotos)
 // ════════════════════════════════════════════════════════════════
@@ -41,8 +42,10 @@ function quienEs(codigo) {
   if (!c) return null;
   const con = (process.env.PORTAL_CONTRATISTA_CODE   || '').trim().toLowerCase();
   const des = (process.env.PORTAL_DESARROLLADOR_CODE || '').trim().toLowerCase();
+  const wds = (process.env.PORTAL_WOOD_CODE          || '').trim().toLowerCase();
   if (con && c === con) return 'contratista';
   if (des && c === des) return 'desarrollador';
+  if (wds && c === wds) return 'woodstudio';
   return null;
 }
 

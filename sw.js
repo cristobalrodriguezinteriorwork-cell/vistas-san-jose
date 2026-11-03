@@ -1,4 +1,4 @@
-const CACHE = 'pde-v17';
+const CACHE = 'pde-v18';
 const ASSETS = ['./index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
