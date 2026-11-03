@@ -170,7 +170,7 @@
         <span><i style="background:var(--red)"></i>Garantía activa</span>
       </div>
       <div class="plano-scroll" id="plano-scroll">
-        <div class="plano-stage" id="plano-stage"><canvas id="plano-canvas"></canvas></div>
+        <div class="plano-stage" id="plano-stage"><img id="plano-canvas" alt="Plano de Palacios del Este"></div>
       </div>
       <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-top:8px;">
         <button class="btn-sm btn-ghost" style="width:46px;font-size:20px;line-height:1;" onclick="applyPlanoScale(planoScale-0.5)">−</button>
@@ -337,15 +337,14 @@ async function renderPlano(){
   drawMarkers();
   if(planoRendered) return;
   try{
-    const img = await new Promise((ok,err)=>{
-      const i=new Image();
-      i.onload=()=>ok(i);
-      i.onerror=()=>err(new Error('no se encontró '+PLANO_IMG));
-      i.src=encodeURI(PLANO_IMG);
+    // <img> y no <canvas>: en el celular el canvas tiene tope de tamaño
+    // y reserva mucha memoria; la imagen la dibuja el navegador directo.
+    const el = document.getElementById('plano-canvas');
+    await new Promise((ok,err)=>{
+      el.onload=()=>ok();
+      el.onerror=()=>err(new Error('no se encontró '+PLANO_IMG));
+      el.src=encodeURI(PLANO_IMG);
     });
-    const canvas = document.getElementById('plano-canvas');
-    canvas.width=img.naturalWidth; canvas.height=img.naturalHeight;
-    canvas.getContext('2d').drawImage(img,0,0);
     planoRendered=true; drawMarkers();
   }catch(e){ /* si no carga la imagen: se ven solo los puntos */ }
 }

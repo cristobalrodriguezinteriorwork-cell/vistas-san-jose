@@ -442,7 +442,10 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
   </div>
   <div class="plano-scroll" id="plano-scroll">
     <div class="plano-stage" id="plano-stage" onclick="planoStageClick(event)">
-      <canvas id="plano-canvas"></canvas>
+      <!-- Imagen normal, NO <canvas>: el canvas tiene tope de tamaño en
+           el celular (iOS corta sobre 4096px) y reserva muchísima memoria.
+           Con <img> el teléfono la dibuja sin problema. -->
+      <img id="plano-canvas" alt="Plano de Palacios del Este">
       <div class="plano-markers" id="plano-markers"></div>
     </div>
   </div>
@@ -1790,16 +1793,12 @@ async function renderPlanoPdf() {
   if (planoPdfRendered) return;
   showLoading('Dibujando plano...');
   try {
-    const img = await new Promise((ok, err) => {
-      const i = new Image();
-      i.onload  = () => ok(i);
-      i.onerror = () => err(new Error('no se encontró ' + PLANO_IMG));
-      i.src = encodeURI(PLANO_IMG);
+    const el = document.getElementById('plano-canvas');
+    await new Promise((ok, err) => {
+      el.onload  = () => ok();
+      el.onerror = () => err(new Error('no se encontró ' + PLANO_IMG));
+      el.src = encodeURI(PLANO_IMG);
     });
-    const canvas = document.getElementById('plano-canvas');
-    canvas.width  = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    canvas.getContext('2d').drawImage(img, 0, 0);
     planoPdfRendered = true;
   } catch(e) {
     console.warn('renderPlano:', e);
