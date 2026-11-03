@@ -1,0 +1,2284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1F3864">
+<title>Palacios del Este</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root {
+  --brand: #1F3864;
+  --brand-mid: #2E75B6;
+  --brand-light: #D6E4F0;
+  --green: #00c875;
+  --orange: #fdab3d;
+  --red: #df2f4a;
+  --grey: #c4c4c4;
+  --bg: #f0f4f8;
+  --card: #ffffff;
+  --text: #1a1a2e;
+  --text-muted: #6b7280;
+  --radius: 14px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.10);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
+
+.screen { position: absolute; inset: 0; display: none; flex-direction: column; overflow: hidden; }
+.screen.active { display: flex; }
+
+/* ── Setup ── */
+#screen-setup { background: var(--brand); align-items: center; justify-content: center; padding: 32px 24px; }
+.setup-logo { width: 80px; height: 80px; object-fit: contain; margin-bottom: 12px; border-radius: 12px; }
+.setup-logo-fallback { font-size: 48px; margin-bottom: 12px; }
+.setup-title { color: #fff; font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 2px; }
+.setup-brand { color: rgba(255,255,255,0.6); font-size: 13px; text-align: center; margin-bottom: 24px; letter-spacing: 1px; text-transform: uppercase; }
+.setup-card { background: #fff; border-radius: var(--radius); padding: 24px; width: 100%; max-width: 360px; }
+.setup-card label { font-size: 13px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.setup-card input { width: 100%; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; font-size: 14px; color: var(--text); outline: none; }
+.setup-card input:focus { border-color: var(--brand-mid); }
+.btn-primary { width: 100%; background: var(--brand); color: #fff; border: none; border-radius: 10px; padding: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 16px; }
+
+/* ── Roles ── */
+#screen-roles { background: var(--brand); padding: 0; }
+.roles-header { padding: 48px 24px 20px; display: flex; align-items: center; gap: 14px; }
+.roles-header-logo { width: 48px; height: 48px; object-fit: contain; border-radius: 8px; flex-shrink: 0; }
+.roles-header-text h1 { color: #fff; font-size: 22px; font-weight: 800; }
+.roles-header-text p  { color: rgba(255,255,255,0.6); font-size: 13px; margin-top: 2px; }
+.roles-grid { background: var(--bg); flex: 1; border-radius: 24px 24px 0 0; padding: 24px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-content: start; overflow-y: auto; }
+.role-card { background: var(--card); border-radius: var(--radius); padding: 24px 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; box-shadow: var(--shadow); border: 2px solid transparent; transition: transform 0.15s; }
+.role-card:active { transform: scale(0.97); }
+.role-icon { font-size: 36px; }
+.role-name { font-size: 13px; font-weight: 700; text-align: center; color: var(--text); }
+.role-sub  { font-size: 11px; color: var(--text-muted); text-align: center; }
+.role-card.taller      { border-color: var(--brand-mid); }
+.role-card.fabricante  { border-color: #a45bd6; }
+.role-card.inst-cocina { border-color: var(--green); }
+.role-card.inst-tope   { border-color: var(--orange); }
+.role-card.encargado   { border-color: var(--red); }
+.role-card.admin       { border-color: var(--brand); background: var(--brand); }
+.role-card.admin .role-name { color: #fff; }
+.role-card.admin .role-sub  { color: rgba(255,255,255,0.7); }
+
+/* ── PIN Screen ── */
+#screen-pin { background: var(--brand); align-items: center; justify-content: flex-start; padding-top: 60px; }
+.pin-back { position: absolute; top: 48px; left: 16px; background: rgba(255,255,255,0.15); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.pin-role-label { color: rgba(255,255,255,0.7); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.pin-role-name  { color: #fff; font-size: 22px; font-weight: 700; margin-bottom: 32px; }
+.pin-dots { display: flex; gap: 16px; margin-bottom: 40px; }
+.pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); background: transparent; transition: background 0.15s; }
+.pin-dot.filled { background: #fff; border-color: #fff; }
+.pin-dot.error  { background: var(--red); border-color: var(--red); }
+.pin-pad { display: grid; grid-template-columns: repeat(3, 72px); gap: 14px; }
+.pin-key { width: 72px; height: 72px; border-radius: 50%; border: none; background: rgba(255,255,255,0.12); color: #fff; font-size: 24px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.1s; }
+.pin-key:active { background: rgba(255,255,255,0.28); }
+.pin-key.del { font-size: 18px; }
+.pin-key.empty { background: transparent; pointer-events: none; }
+.pin-error-msg { color: rgba(255,100,100,0.9); font-size: 14px; margin-top: 16px; min-height: 20px; }
+
+/* ── App Header ── */
+.app-header { background: var(--brand); color: #fff; padding: 48px 16px 14px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.app-header .back-btn { background: rgba(255,255,255,0.15); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.app-header .header-logo { height: 48px; width: auto; max-width: 160px; object-fit: contain; border-radius: 8px; border: 2px solid #ffffff; padding: 4px 8px; background: rgba(255,255,255,0.08); flex-shrink: 0; }
+.app-header .header-info { flex: 1; }
+.app-header h2 { font-size: 17px; font-weight: 700; }
+.app-header .header-sub { font-size: 12px; opacity: 0.7; margin-top: 1px; }
+.app-header .refresh-btn { background: rgba(255,255,255,0.15); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+.refresh-btn.spinning { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Units ── */
+.units-search { padding: 12px 16px; background: var(--brand); }
+.units-search input { width: 100%; background: rgba(255,255,255,0.15); border: none; border-radius: 10px; padding: 10px 14px; color: #fff; font-size: 14px; outline: none; }
+.units-search input::placeholder { color: rgba(255,255,255,0.55); }
+.units-stats { display: flex; gap: 8px; padding: 10px 16px; background: var(--brand); }
+.stat-chip { flex: 1; background: rgba(255,255,255,0.12); border-radius: 8px; padding: 6px 8px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+.stat-chip.chip-active { background: rgba(255,255,255,0.28); border-color: rgba(255,255,255,0.55); }
+.stat-chip .stat-n { font-size: 18px; font-weight: 700; color: #fff; display: block; }
+.stat-chip .stat-l { font-size: 10px; color: rgba(255,255,255,0.65); }
+.filter-bar { display: flex; gap: 8px; padding: 8px 12px 0; background: var(--brand); }
+.filter-pill { border: none; border-radius: 20px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.filter-pill.active   { background: #fff; color: var(--brand); }
+.filter-pill.inactive { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); }
+.units-list { flex: 1; overflow-y: auto; padding: 12px; background: var(--bg); border-radius: 20px 20px 0 0; margin-top: -2px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; align-content: start; }
+.unit-btn { aspect-ratio: 1; border: none; border-radius: 10px; cursor: pointer; font-size: 11px; font-weight: 700; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; transition: transform 0.1s; }
+.unit-btn:active { transform: scale(0.93); }
+.unit-btn .u-num  { font-size: 13px; font-weight: 800; }
+.unit-btn .u-icon { font-size: 14px; }
+.unit-btn .u-warn { font-size: 10px; }
+.unit-btn.status-done     { background: #d1fae5; color: #065f46; }
+.unit-btn.status-progress { background: #fef3c7; color: #92400e; }
+.unit-btn.status-pending  { background: #f3f4f6; color: #6b7280; }
+.unit-btn.has-issue { outline: 2px solid #df2f4a; outline-offset: -2px; }
+
+/* ── Detail ── */
+.detail-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+.detail-status-card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+.detail-status-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 12px; font-weight: 600; }
+.status-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
+.status-row:last-child { border-bottom: none; }
+.status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.status-dot.done     { background: var(--green); }
+.status-dot.progress { background: var(--orange); }
+.status-dot.pending  { background: var(--grey); }
+.status-label { font-size: 14px; color: var(--text); flex: 1; }
+.status-val   { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+/* ── Photos ── */
+.photos-card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+.photos-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 12px; font-weight: 600; }
+.photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.photo-thumb { width: 100%; aspect-ratio: 1; border-radius: 8px; object-fit: cover; cursor: pointer; display: block; }
+.photo-thumb.uploading    { opacity: 0.45; pointer-events: none; }
+.photo-thumb.upload-error { opacity: 0.45; outline: 2px solid var(--red); }
+.photo-thumb.pending      { opacity: 0.6;  outline: 2px dashed var(--orange); }
+.photo-add     { aspect-ratio: 1; border-radius: 8px; background: var(--brand-light); border: 2px dashed var(--brand-mid); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--brand-mid); font-size: 28px; }
+/* Los selectores de archivo se disparan por código: nunca se ven. */
+#camera-input, #issue-camera-input, #gar-camera-input { display: none; }
+/* ── Garantías y piezas faltantes ── */
+.gar-resumen { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
+.gar-origen  { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 20px; background: var(--brand-light); color: var(--brand); }
+.gar-que     { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; color: var(--orange); margin-bottom: 4px; }
+.gar-fotos-t { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 10px; }
+.gar-form    { margin-top: 14px; padding-top: 14px; border-top: 2px dashed #e5e7eb; }
+.gar-form-t  { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 8px; }
+.gar-chips   { display: flex; gap: 8px; margin-bottom: 8px; }
+.gar-chip    { flex: 1; border: 1.5px solid #d7dbe3; background: #fff; border-radius: 10px; padding: 10px 6px; font-size: 13px; font-weight: 700; color: var(--text-muted); cursor: pointer; }
+.gar-chip.on { border-color: var(--brand-mid); background: var(--brand-light); color: var(--brand); }
+.gar-row     { display: flex; gap: 8px; margin-bottom: 8px; }
+.gar-sel     { flex: 1; min-width: 0; border: 1.5px solid #d7dbe3; border-radius: 10px; padding: 11px 8px; font-size: 14px; font-family: inherit; background: #fff; color: var(--text); }
+.photo-loading { aspect-ratio: 1; border-radius: 8px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+
+/* ── Signature ── */
+.sig-card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+.sig-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
+.sig-card p  { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
+.sig-done-banner { background: #d1fae5; color: #065f46; border-radius: 10px; padding: 12px 16px; font-size: 14px; font-weight: 600; text-align: center; margin-bottom: 12px; }
+.sig-done-banner span { display: block; font-size: 11px; font-weight: 400; opacity: 0.75; margin-top: 3px; }
+.sig-done-banner img { display: block; max-width: 100%; border-radius: 6px; margin-top: 10px; background: #fff; }
+.sig-activate-btn { width: 100%; background: var(--brand-light); border: 2px dashed var(--brand-mid); color: var(--brand); border-radius: 10px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; text-align: center; }
+.sig-verify { background: #f8fafc; border: 1.5px solid var(--brand-mid); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+.sig-verify label { display: block; font-size: 12px; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+.sig-verify input { width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 11px; font-size: 18px; text-align: center; letter-spacing: 6px; outline: none; font-family: inherit; }
+.sig-verify input:focus { border-color: var(--brand-mid); }
+.sig-verify .hint { font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.4; }
+.sig-verified-tag { display: inline-block; background: #d6e4f0; color: var(--brand); border-radius: 20px; padding: 2px 9px; font-size: 10px; font-weight: 800; letter-spacing: 0.3px; margin-top: 6px; }
+.sig-activate-btn:active { opacity: 0.8; }
+.sig-canvas-wrap { border: 2px solid var(--brand-mid); border-radius: 10px; overflow: hidden; background: #fafafa; display: none; }
+#sig-canvas { display: block; width: 100%; touch-action: none; cursor: crosshair; }
+.sig-actions { display: flex; gap: 8px; margin-top: 10px; }
+.btn-outline  { flex: 1; background: transparent; border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 10px; font-size: 14px; cursor: pointer; color: var(--text-muted); font-weight: 600; }
+.btn-confirm-sig { flex: 2; background: var(--green); border: none; border-radius: 8px; padding: 10px; font-size: 14px; cursor: pointer; color: #fff; font-weight: 700; }
+
+/* ── Issues ── */
+.issue-card { background: #fff8f0; border: 1.5px solid var(--orange); border-radius: var(--radius); padding: 20px; }
+.issue-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #92400e; margin-bottom: 8px; font-weight: 600; }
+.issue-existing { background: #fff3cd; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; font-size: 13px; color: #7c5a00; line-height: 1.5; }
+.issue-existing strong { display: block; font-size: 11px; color: #92400e; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.4px; }
+.issue-actions-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.btn-issue-sm { flex: 1; border: none; border-radius: 8px; padding: 9px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.btn-clear   { background: #e5e7eb; color: #374151; }
+.btn-resolve { background: var(--green); color: #fff; }
+.issue-textarea { width: 100%; border: 1.5px solid var(--orange); border-radius: 10px; padding: 12px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 80px; outline: none; color: var(--text); background: #fff; }
+.btn-issue { width: 100%; background: var(--orange); color: #fff; border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+/* Cuadrito que abre la lista de reportes */
+.issue-open-box { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #fff; border: 1.5px solid var(--orange); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; cursor: pointer; text-align: left; }
+.issue-open-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.issue-open-icon { font-size: 18px; }
+.issue-open-txt { font-size: 14px; font-weight: 700; color: #92400e; }
+.issue-open-badges { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.issue-badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
+.issue-badge.pend { background: #fff3cd; color: #92400e; }
+.issue-badge.done { background: #d6f5e3; color: #00794a; }
+.issue-open-arrow { font-size: 22px; color: var(--orange); line-height: 1; }
+/* Página/modal de reportes */
+#issues-modal, #casa-modal { position: fixed; inset: 0; background: rgba(31,56,100,0.55); display: none; align-items: flex-end; justify-content: center; z-index: 998; }
+#issues-modal.show, #casa-modal.show { display: flex; }
+/* Ficha de la casa (desde el plano) */
+.casa-fotos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.casa-foto { width: 100%; aspect-ratio: 1; border-radius: 8px; object-fit: cover; cursor: pointer; display: block; }
+.casa-msg { font-size: 13px; color: var(--text-muted); text-align: center; padding: 10px 0; }
+.casa-gar { background: #fff1f1; border: 1.5px solid var(--red); color: #a11; border-radius: 10px; padding: 10px 12px; font-size: 13px; font-weight: 700; }
+.casa-marq { background: var(--brand-light); border: 1.5px solid var(--brand-mid); color: var(--brand); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+/* Pedidos de material ya enviados a Compras */
+.pedido-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
+.pedido-item:last-child { border-bottom: none; }
+.pedido-txt { flex: 1; font-size: 14px; color: var(--text); word-break: break-word; }
+.pedido-f   { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+.issues-sheet { background: var(--bg); width: 100%; max-width: 520px; max-height: 90vh; border-radius: 20px 20px 0 0; display: flex; flex-direction: column; }
+.issues-sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 18px 12px; border-bottom: 1px solid #e5e7eb; }
+.issues-sheet-header h3 { font-size: 16px; font-weight: 800; color: var(--text); }
+.issues-sheet-close { background: #e5e7eb; border: none; width: 34px; height: 34px; border-radius: 50%; font-size: 16px; cursor: pointer; color: var(--text); }
+.issues-sheet-body { padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.issue-item { background: #fff8f0; border: 1.5px solid var(--orange); border-radius: 12px; padding: 14px; }
+.issue-item.fixed { background: #f1f5f3; border-color: #b9e3cd; }
+.issue-item-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.issue-item-num { font-size: 12px; font-weight: 800; color: var(--text-muted); }
+.issue-item-tag { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; background: #d6f5e3; color: #00794a; }
+.issue-item-tag.pend { background: #fff3cd; color: #92400e; }
+.issue-item-del { margin-left: auto; background: none; border: none; font-size: 16px; cursor: pointer; opacity: 0.6; }
+.issue-item-text { font-size: 15px; line-height: 1.5; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+.issue-item.fixed .issue-item-text { text-decoration: line-through; color: var(--text-muted); }
+.issue-item-meta { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+.issue-item-fix { width: 100%; margin-top: 12px; border: none; border-radius: 10px; padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer; background: var(--green); color: #fff; }
+.issue-item-fix.on { background: #e5e7eb; color: var(--text); }
+/* ── Fotos del propio reporte (aparte de las fotos del trabajo) ── */
+.issue-fotos { display: flex; gap: 6px; overflow-x: auto; margin-top: 10px; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
+.issue-foto { width: 68px; height: 68px; flex: 0 0 auto; border-radius: 8px; object-fit: cover; cursor: pointer; border: 1.5px solid var(--orange); }
+.issue-foto.uploading { opacity: 0.45; }
+.issue-foto.pending   { opacity: 0.6; border-style: dashed; }
+.issue-foto-add { width: 68px; height: 68px; flex: 0 0 auto; border-radius: 8px; background: #fff; border: 2px dashed var(--orange); color: var(--orange); font-size: 12px; font-weight: 700; line-height: 1.2; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.issue-fotos-msg { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+.issue-empty { font-size: 13px; color: var(--text-muted); padding: 6px 2px; }
+.issue-group-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--brand); margin: 6px 2px 2px; padding-top: 6px; border-top: 1px solid #e5e7eb; }
+.issue-group-title:first-child { border-top: none; padding-top: 0; }
+/* Barra de etapas (solo Administración) */
+.admin-stage-bar { display: flex; gap: 8px; padding: 8px 16px 0; background: var(--brand); overflow-x: auto; }
+.stage-pill { flex: 1; white-space: nowrap; border: none; border-radius: 8px; padding: 8px 6px; font-size: 12px; font-weight: 700; cursor: pointer; background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.85); }
+.stage-pill.active { background: #fff; color: var(--brand); }
+
+/* ── Action Footer ── */
+.action-footer { padding: 16px; background: var(--card); border-top: 1px solid #f0f0f0; flex-shrink: 0; }
+.btn-action { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+.btn-action:active { opacity: 0.85; transform: scale(0.98); }
+.btn-action.taller      { background: var(--brand); color: #fff; }
+.btn-action.fabricante  { background: #a45bd6; color: #fff; }
+.btn-action.inst-cocina { background: var(--green); color: #fff; }
+.btn-action.inst-tope   { background: var(--orange); color: #fff; }
+.btn-action.encargado   { background: var(--red); color: #fff; }
+.btn-action:disabled    { opacity: 0.4; cursor: not-allowed; }
+.btn-undo { width: 100%; background: transparent; border: 1.5px solid #e5e7eb; color: var(--text-muted); border-radius: 10px; padding: 10px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+
+/* ── Overlays ── */
+#toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px); background: #1a1a2e; color: #fff; padding: 12px 20px; border-radius: 24px; font-size: 14px; font-weight: 500; transition: transform 0.3s ease; z-index: 1000; white-space: nowrap; pointer-events: none; max-width: 90vw; white-space: normal; text-align: center; }
+#toast.show { transform: translateX(-50%) translateY(0); }
+#loading { position: fixed; inset: 0; background: rgba(31,56,100,0.85); display: none; align-items: center; justify-content: center; z-index: 999; flex-direction: column; gap: 16px; }
+#loading.show { display: flex; }
+.spinner { width: 44px; height: 44px; border: 4px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+#loading p { color: #fff; font-size: 15px; font-weight: 500; }
+/* z-index 1002: el visor de fotos va POR ENCIMA de las fichas y del modal
+   de reportes, si no la foto ampliada se abriría detrás de ellos. */
+#photo-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.92); display: none; align-items: center; justify-content: center; z-index: 1002; }
+#photo-modal.show { display: flex; }
+#photo-modal img { max-width: 95vw; max-height: 90vh; border-radius: 8px; object-fit: contain; }
+#photo-modal-close { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.2); border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer; }
+
+/* ── Plano del Proyecto ── */
+#screen-plano { background: var(--bg); }
+.plano-legend { display: flex; gap: 14px; justify-content: center; align-items: center; padding: 8px 12px; background: var(--brand); flex-wrap: wrap; }
+.plano-legend span { display: flex; align-items: center; gap: 6px; color: #fff; font-size: 12px; font-weight: 600; }
+.plano-legend i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.lg-done { background: var(--green); } .lg-prog { background: var(--orange); } .lg-pend { background: #9ca3af; } .lg-gar { background: var(--red); }
+.plano-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--brand); }
+.plano-toolbar .sp { flex: 1; }
+.plano-zoom-btn, .plano-tool-btn { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 8px; height: 36px; min-width: 36px; padding: 0 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
+.plano-count { color: rgba(255,255,255,0.8); font-size: 12px; }
+.plano-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; background: #e9eef3; touch-action: pan-x pan-y; overscroll-behavior: contain; }
+.plano-stage { position: relative; width: 100%; }
+.plano-stage img, .plano-stage canvas { display: block; width: 100%; height: auto; background: #fff; user-select: none; -webkit-user-drag: none; }
+.plano-markers { position: absolute; inset: 0; }
+.plano-dot { position: absolute; transform: translate(-50%,-50%); width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff; cursor: pointer; }
+.plano-dot.done { background: var(--green); } .plano-dot.progress { background: var(--orange); } .plano-dot.pending { background: #9ca3af; }
+.plano-dot.garantia { background: var(--red); }
+.plano-dot.calib { background: var(--brand-mid); }
+.plano-stage.calibrating .plano-dot { pointer-events: none; }
+.plano-stage.calibrating img, .plano-stage.calibrating canvas { cursor: crosshair; }
+.calib-bar { background: #111827; color: #fff; padding: 10px 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
+.calib-bar .calib-msg { flex: 1; font-size: 14px; font-weight: 700; min-width: 130px; }
+.calib-bar button { border: none; border-radius: 8px; padding: 8px 10px; font-size: 13px; font-weight: 700; cursor: pointer; color: #fff; }
+.plano-export { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1001; padding: 20px; }
+.plano-export.show { display: flex; }
+.plano-export-card { background: #fff; border-radius: 14px; padding: 18px; max-width: 520px; width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.plano-export-card textarea { width: 100%; height: 160px; font-family: monospace; font-size: 11px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px; resize: none; }
+
+@media (min-width: 480px) { .units-list { grid-template-columns: repeat(8, 1fr); } }
+</style>
+</head>
+<body>
+
+<!-- ── Setup ─────────────────────────────────────────────────── -->
+<div id="screen-setup" class="screen">
+  <img src="logo blanco 14.png" class="setup-logo" onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'">
+  <div id="logo-fallback" class="setup-logo-fallback" style="display:none">🏗️</div>
+  <div class="setup-title">Palacios del Este</div>
+  <div class="setup-brand">Wood Studio</div>
+  <div style="color:rgba(255,255,255,0.35);font-size:10px;margin-top:-18px;margin-bottom:18px;">v1</div>
+  <div class="setup-card">
+    <label>Token API de Monday.com</label>
+    <input type="password" id="api-token-input" placeholder="eyJhbGciOiJ..." autocomplete="off">
+    <button class="btn-primary" onclick="saveToken()">Conectar</button>
+    <p style="font-size:11px;color:#9ca3af;margin-top:12px;text-align:center;">El token se guarda en este dispositivo.</p>
+  </div>
+</div>
+
+<!-- ── Roles ─────────────────────────────────────────────────── -->
+<div id="screen-roles" class="screen">
+  <div class="roles-header">
+    <img src="logo blanco 14.png" class="roles-header-logo" onerror="this.style.display='none'">
+    <div class="roles-header-text">
+      <h1>Palacios del Este</h1>
+      <p>Wood Studio · Selecciona tu rol</p>
+    </div>
+  </div>
+  <div class="roles-grid">
+    <div class="role-card fabricante"  onclick="goToPin('fabricante')">
+      <div class="role-icon">🏭</div><div class="role-name">FABRICACIÓN</div><div class="role-sub">Cocinas · John</div>
+    </div>
+    <div class="role-card inst-cocina" onclick="goToPin('instaladorCocina')">
+      <div class="role-icon">🏠</div><div class="role-name">INST. COCINAS</div><div class="role-sub">Cocina y vanity</div>
+    </div>
+    <div class="role-card inst-tope"   onclick="goToPin('instaladorTope')">
+      <div class="role-icon">🪨</div><div class="role-name">INST. TOPES</div><div class="role-sub">Countertops</div>
+    </div>
+    <div class="role-card encargado"   onclick="goToPin('encargado')">
+      <div class="role-icon">✅</div><div class="role-name">ENCARGADO</div><div class="role-sub">Aprobación final</div>
+    </div>
+    <div class="role-card" style="grid-column:1/-1;border-color:var(--red);" onclick="selectRole('garantias')">
+      <div class="role-icon">🛠️</div><div class="role-name">GARANTÍAS Y PIEZAS FALTANTES</div><div class="role-sub">Contratista y cliente · sin código</div>
+    </div>
+    <div class="role-card" style="grid-column:1/-1;border-color:var(--green);" onclick="openPlano()">
+      <div class="role-icon">📍</div><div class="role-name">PLANO DEL PROYECTO</div><div class="role-sub">Mapa de casas en el sitio · sin código</div>
+    </div>
+    <div style="grid-column:1/-1;text-align:center;padding:4px 0;">
+      <button onclick="showSetup()" style="background:none;border:none;color:var(--text-muted);font-size:12px;cursor:pointer;">⚙️ Configuración</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PIN ───────────────────────────────────────────────────── -->
+<div id="screen-pin" class="screen" style="align-items:center;">
+  <button class="pin-back" onclick="showRoles()">←</button>
+  <div class="pin-role-label">Acceso</div>
+  <div class="pin-role-name" id="pin-role-name">Taller</div>
+  <div class="pin-dots">
+    <span class="pin-dot" id="dot-0"></span>
+    <span class="pin-dot" id="dot-1"></span>
+    <span class="pin-dot" id="dot-2"></span>
+    <span class="pin-dot" id="dot-3"></span>
+  </div>
+  <div class="pin-pad">
+    <button class="pin-key" onclick="pinKey('1')">1</button>
+    <button class="pin-key" onclick="pinKey('2')">2</button>
+    <button class="pin-key" onclick="pinKey('3')">3</button>
+    <button class="pin-key" onclick="pinKey('4')">4</button>
+    <button class="pin-key" onclick="pinKey('5')">5</button>
+    <button class="pin-key" onclick="pinKey('6')">6</button>
+    <button class="pin-key" onclick="pinKey('7')">7</button>
+    <button class="pin-key" onclick="pinKey('8')">8</button>
+    <button class="pin-key" onclick="pinKey('9')">9</button>
+    <button class="pin-key empty"></button>
+    <button class="pin-key" onclick="pinKey('0')">0</button>
+    <button class="pin-key del" onclick="pinDel()">⌫</button>
+  </div>
+  <div class="pin-error-msg" id="pin-error"></div>
+</div>
+
+<!-- ── Units ─────────────────────────────────────────────────── -->
+<div id="screen-units" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="showRoles()">←</button>
+    <div class="header-info">
+      <h2 id="units-header-title">Taller</h2>
+      <div class="header-sub" id="units-header-sub">Palacios del Este · 240 unidades</div>
+    </div>
+    <button class="refresh-btn" id="refresh-btn" onclick="loadUnits()">↻</button>
+    <img src="logo blanco 14.png" class="header-logo" onerror="this.style.display='none'">
+  </div>
+  <div class="units-search">
+    <input type="text" id="search-input" placeholder="🔍  Buscar unidad..." oninput="filterUnits(this.value)">
+  </div>
+  <div class="admin-stage-bar" id="admin-stage-bar" style="display:none;">
+    <button class="stage-pill active" data-stage="fabricacion"       onclick="setAdminStage('fabricacion',this)">📐 Taller</button>
+    <button class="stage-pill"        data-stage="instalacionCocina" onclick="setAdminStage('instalacionCocina',this)">🏠 Cocina</button>
+    <button class="stage-pill"        data-stage="instalacionTope"   onclick="setAdminStage('instalacionTope',this)">🪨 Topes</button>
+    <button class="stage-pill"        data-stage="aprobacion"        onclick="setAdminStage('aprobacion',this)">✅ Aprobado</button>
+  </div>
+  <div class="units-stats">
+    <div class="stat-chip" id="chip-done"     onclick="toggleChipFilter('done')"><span class="stat-n" id="stat-done">0</span><span class="stat-l">✅ Listas</span></div>
+    <div class="stat-chip" id="chip-progress" onclick="toggleChipFilter('progress')"><span class="stat-n" id="stat-progress">0</span><span class="stat-l">⏳ En proceso</span></div>
+    <div class="stat-chip" id="chip-pending"  onclick="toggleChipFilter('pending')"><span class="stat-n" id="stat-pending">0</span><span class="stat-l">⬜ Pendientes</span></div>
+    <div class="stat-chip" id="chip-issues"   onclick="toggleChipFilter('issues')"><span class="stat-n" id="stat-issues" style="color:#fdab3d">0</span><span class="stat-l">⚠️ Problemas</span></div>
+  </div>
+  <div class="filter-bar">
+    <button class="filter-pill active"   id="filter-all"         onclick="setFilter('all')">Todas</button>
+    <button class="filter-pill inactive" id="filter-issues-pill" onclick="setFilter('issues')">⚠️ Problemas</button>
+  </div>
+  <div class="units-list" id="units-grid"></div>
+</div>
+
+<!-- ── Detail ─────────────────────────────────────────────────── -->
+<div id="screen-detail" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="showUnits()">←</button>
+    <div class="header-info">
+      <h2 id="detail-title">Unidad 1</h2>
+      <div class="header-sub" id="detail-role-label"></div>
+    </div>
+    <img src="logo blanco 14.png" class="header-logo" onerror="this.style.display='none'">
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+  <div class="action-footer">
+    <button class="btn-action" id="action-btn" onclick="handleAction()">Marcar como Lista</button>
+    <button class="btn-undo"   id="undo-btn"   onclick="undoStatus()" style="display:none;">↩ Revertir a Pendiente</button>
+  </div>
+</div>
+
+<!-- ── Plano del Proyecto ─────────────────────────────────────── -->
+<div id="screen-plano" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="showRoles()">←</button>
+    <div class="header-info">
+      <h2>Plano del Proyecto</h2>
+      <div class="header-sub" id="plano-sub">Palacios del Este · casas en el sitio</div>
+    </div>
+    <button class="refresh-btn" id="plano-refresh-btn" onclick="openPlano()">↻</button>
+    <img src="logo blanco 14.png" class="header-logo" onerror="this.style.display='none'">
+  </div>
+  <div class="plano-legend">
+    <span><i class="lg-done"></i> Lista (cocina + topes)</span>
+    <span><i class="lg-prog"></i> En proceso</span>
+    <span><i class="lg-pend"></i> Pendiente</span>
+    <span><i class="lg-gar"></i> Garantía activa</span>
+  </div>
+  <div class="calib-bar" id="calib-bar" style="display:none;">
+    <span class="calib-msg" id="calib-msg">Toca la casa #1</span>
+    <button onclick="calibBack()"   style="background:#374151;">← Atrás</button>
+    <button onclick="calibSkip()"   style="background:#374151;">Saltar</button>
+    <button onclick="calibExport()" style="background:var(--green);">Exportar</button>
+    <button onclick="stopCalibration()" style="background:#df2f4a;">Salir</button>
+  </div>
+  <div class="plano-toolbar">
+    <button class="plano-zoom-btn" onclick="planoZoom(-1)">−</button>
+    <button class="plano-zoom-btn" onclick="planoZoom(1)">+</button>
+    <span class="plano-count" id="plano-count">—</span>
+  </div>
+  <div class="plano-scroll" id="plano-scroll">
+    <div class="plano-stage" id="plano-stage" onclick="planoStageClick(event)">
+      <!-- Imagen normal, NO <canvas>: el canvas tiene tope de tamaño en
+           el celular (iOS corta sobre 4096px) y reserva muchísima memoria.
+           Con <img> el teléfono la dibuja sin problema. -->
+      <img id="plano-canvas" alt="Plano de Palacios del Este">
+      <div class="plano-markers" id="plano-markers"></div>
+    </div>
+  </div>
+</div>
+
+<div class="plano-export" id="plano-export">
+  <div class="plano-export-card">
+    <b style="font-size:15px;">📍 Posiciones del plano</b>
+    <p style="font-size:12px;color:#6b7280;margin:0;">Copia este texto y envíaselo a Claude para dejarlo fijo para todos los instaladores.</p>
+    <textarea id="plano-export-txt" readonly></textarea>
+    <div style="display:flex;gap:8px;">
+      <button onclick="copyPlanoExport()" style="flex:2;background:var(--green);color:#fff;border:none;border-radius:8px;padding:11px;font-weight:700;cursor:pointer;">📋 Copiar</button>
+      <button onclick="document.getElementById('plano-export').classList.remove('show')" style="flex:1;background:#e5e7eb;border:none;border-radius:8px;padding:11px;font-weight:700;cursor:pointer;">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="camera-input" accept="image/*" multiple onchange="handlePhotos(event)">
+<!-- Fotos que se pegan a UN reporte de daño/faltante concreto -->
+<input type="file" id="issue-camera-input" accept="image/*" multiple onchange="handleIssuePhotos(event)">
+<!-- Fotos del daño y del arreglo de una garantía -->
+<input type="file" id="gar-camera-input" accept="image/*" multiple onchange="handleGarFotos(event)">
+
+<div id="photo-modal">
+  <button id="photo-modal-close" onclick="closePhotoModal()">✕</button>
+  <img id="photo-modal-img" src="" alt="">
+</div>
+
+<div id="issues-modal">
+  <div class="issues-sheet">
+    <div class="issues-sheet-header">
+      <h3 id="issues-modal-title">Reportes de Daño / Faltante</h3>
+      <button class="issues-sheet-close" onclick="closeIssuesModal()">✕</button>
+    </div>
+    <div class="issues-sheet-body" id="issues-sheet-body"></div>
+  </div>
+</div>
+
+<!-- Ficha de la casa: se abre al tocar un punto del plano -->
+<div id="casa-modal">
+  <div class="issues-sheet">
+    <div class="issues-sheet-header">
+      <h3 id="casa-modal-title">Casa</h3>
+      <button class="issues-sheet-close" onclick="closeCasaModal()">✕</button>
+    </div>
+    <div class="issues-sheet-body" id="casa-modal-body"></div>
+  </div>
+</div>
+<div id="toast"></div>
+<div id="loading"><div class="spinner"></div><p id="loading-text">Cargando...</p></div>
+
+<!-- PDF.js: para dibujar el plano (PDF vectorial) nítido a cualquier zoom -->
+<!-- El plano de Palacios es una imagen, no un PDF: no hace falta PDF.js.
+     Ventaja: el plano abre igual sin internet. -->
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  CONFIGURACIÓN — cambia aquí los PINs de cada rol
+// ═══════════════════════════════════════════════════════════════
+const PINS = {
+  fabricante:       '1111',   // ← Fabricación (el taller · John)
+  instaladorCocina: '3583',   // ← Instalador Cocinas
+  instaladorTope:   '7073',   // ← Instalador Topes
+  encargado:        '4444',   // ← Encargado (Ing. Jorge Díaz — firma las aprobaciones)
+};
+
+// ═══ FIRMANTES AUTORIZADOS ═══════════════════════════════════════
+//  PIN personal (secreto, de cada persona) → nombre que queda en el acta.
+//  SOLO estas personas pueden confirmar una firma de aprobación.
+//  Para añadir a alguien: agrega una línea 'PIN': 'Nombre Apellido',
+const FIRMANTES = {
+  '5171': 'Ing. Jorge Díaz',   // Único firmante autorizado en Palacios del Este.
+                               // Dale el PIN 5171 EN PERSONA, no por mensaje.
+};
+// ═══════════════════════════════════════════════════════════════
+
+const BOARD_ID = 18417025952;
+const API_URL  = 'https://api.monday.com/v2';
+const FILE_URL = '/monday-file'; // proxy Netlify → Monday (evita CORS)
+
+const COL = {
+  // Rectificar Medidas: etapa RETIRADA (sep-2026, decisión de Cristóbal).
+  // El id se deja aquí solo para que no falle el rol viejo 'taller', que ya
+  // no tiene tarjeta ni PIN. La etapa no se muestra en ninguna pantalla.
+  fabricacion:       'color_mm45xy2',      // Rectificar Medidas (sin uso)
+  fabricacionCocina: 'color_mm45sq7w',     // Fabricacion Cocina (John)
+  // (Materiales a Comprar salió de aquí: ahora cada pedido es una línea
+  //  en el tablero "Compras — Palacios del Este". Ver const COMPRAS.)
+  inicioFab:         'date_mm4vr1p1',      // Inicio Fabricación (fecha+hora)
+  finFab:            'date_mm4vrqp8',      // Fin Fabricación (fecha+hora)
+  instalacionCocina: 'color_mm46atp1',     // Instalación Cocina/Vanity
+  instalacionTope:   'color_mm45qby6',     // Instalación Tope
+  aprobacion:        'color_mm456st1',     // Inspección Contratista (Encargado)
+  fechaMedidas:      'date_mm45pexh',      // Fecha Medidas
+  fechaEntrega:      'date_mm45rf2k',      // Fecha Entrega
+  fechaTopes:        'date_mm455ske',      // Fecha Topes
+  problemas:         'long_text_mm4m5nqv', // Reportes App
+  problemasCliente:  'text_mm45n0n5',      // Arreglos Cliente
+  garantias:         'long_text_mm6rh7tf', // Garantías del portal del cliente (JSON)
+  // ── Del plano/secuencia de VRM (ing. Jorge Díaz). Son fechas PLANIFICADAS:
+  //    las pone la oficina, NO la app. Las reales siguen en Fecha Entrega/Topes.
+  marquesina:        'color_mm8rmkv5',     // IZQUIERDA / DERECHA
+  planCocIni:        'date_mm8rsfgh',      // Plan: Inicio Cocina
+  planCocFin:        'date_mm8r876g',      // Plan: Fin Cocina
+  planTopIni:        'date_mm8rjjbw',      // Plan: Inicio Topes
+  planTopFin:        'date_mm8r8c44',      // Plan: Fin Topes
+};
+
+// Fecha del plan en formato corto y legible: "23 nov 2026"
+function fechaCorta(s) {
+  if (!s) return '';
+  const p = String(s).slice(0, 10).split('-');
+  if (p.length !== 3) return s;
+  const mes = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][+p[1] - 1] || '';
+  return `${+p[2]} ${mes} ${p[0]}`;
+}
+
+const ROLES = {
+  taller:           { name: 'Taller',        col: COL.fabricacion,       cls: 'taller',      photos: false, sig: false, sigRequired: false, issues: true,  doneLabel: 'Done',  action: 'Marcar Medidas Realizadas ✔' },
+  fabricante:       { name: 'Fabricación',   col: COL.fabricacionCocina, cls: 'fabricante',  photos: false, sig: false, sigRequired: false, issues: false, todo: true, twoStep: true, startLabel: 'Working on it', doneLabel: 'Done', action: 'Marcar Fabricación Terminada ✔' },
+  instaladorCocina: { name: 'Inst. Cocinas', col: COL.instalacionCocina, cls: 'inst-cocina', photos: true,  sig: true,  sigRequired: false, issues: true,  doneLabel: 'Done',  action: 'Marcar Cocina/Vanity Instalada ✔' },
+  instaladorTope:   { name: 'Inst. Topes',   col: COL.instalacionTope,   cls: 'inst-tope',   photos: true,  sig: true,  sigRequired: false, issues: true,  doneLabel: 'Done',  action: 'Marcar Topes Instalados ✔' },
+  encargado:        { name: 'Encargado',     col: COL.aprobacion,        cls: 'encargado',   photos: false, sig: true,  sigRequired: true,  issues: false, doneLabel: 'Done',  action: 'Firmar y Aprobar ✔' },
+  admin:            { name: 'Administración', col: COL.aprobacion,       cls: 'admin',       photos: true,  sig: false, sigRequired: false, issues: true,  doneLabel: '',      action: '' },
+  // Garantías: entra sin PIN (la usan el contratista y el desarrollador).
+  // No marca etapas ni firma: solo levanta y cierra garantías por casa.
+  garantias:        { name: 'Garantías',     col: COL.aprobacion,        cls: 'encargado',   photos: false, sig: false, sigRequired: false, issues: false, gar: true, doneLabel: '', action: '' },
+};
+
+// ── Garantías y piezas faltantes ─────────────────────────────────
+const GAR_ORIGEN = [
+  { k: 'contratista', t: '🏗️ Contratista' },
+  { k: 'cliente',     t: '🏠 Cliente' },
+];
+const GAR_TIPO = ['Pieza faltante', 'Daño o guayazo', 'Ajuste', 'Otro'];
+const GAR_AREA = ['Cocina', 'Vanity', 'Topes'];
+
+// ── Plano: posiciones fijas de cada casa [x%, y%] sobre el plano ──
+// Extraídas del PDF "PLANO de SECUENCIA CONST - PALACIOS DEL ESTE" (2-jun-2026)
+// detectando los 240 círculos numerados. Verificadas 1-240, sin huecos ni repetidos.
+const HOUSE_POS_BAKED = {"1":[10.88,31.38],"2":[8.84,31.48],"3":[6.77,31.42],"4":[6.72,41.09],"5":[8.94,39.94],"6":[11.1,39.79],"7":[13.65,39.07],"8":[15.82,38.35],"9":[17.98,37.54],"10":[20.11,36.96],"11":[22.33,36.4],"12":[24.49,35.95],"13":[26.65,35.51],"14":[28.88,35.4],"15":[31.05,35.07],"16":[33.26,34.74],"17":[37.24,37.17],"18":[35.19,38.6],"19":[33,38.75],"20":[30.78,39.01],"21":[28.56,39.29],"22":[26.37,39.63],"23":[24.14,40.01],"24":[21.96,40.56],"25":[19.77,41.22],"26":[17.6,41.83],"27":[15.42,42.58],"28":[13.27,43.41],"29":[11.13,44.14],"30":[8.91,44.79],"31":[7.09,44.76],"32":[7.81,54.67],"33":[9.78,53.77],"34":[11.84,52.73],"35":[14.01,51.96],"36":[16.16,51.17],"37":[18.25,50.3],"38":[20.43,49.54],"39":[22.59,49.06],"40":[24.74,48.41],"41":[29.23,47.88],"42":[31.21,47.51],"43":[33.35,47.27],"44":[35.53,47.09],"45":[37.71,46.61],"46":[39.82,45.29],"47":[42.6,43.52],"48":[44.38,45.39],"49":[45.9,46.84],"50":[46.98,51.13],"51":[44.81,51.24],"52":[42.59,51.45],"53":[40.41,51.55],"54":[38.22,51.74],"55":[36.04,51.9],"56":[33.83,51.97],"57":[31.61,52.2],"58":[29.53,52.44],"59":[25.05,53.28],"60":[22.82,53.78],"61":[20.65,54.42],"62":[18.4,55.16],"63":[16.24,55.92],"64":[14.05,56.83],"65":[11.92,57.84],"66":[10.01,58.71],"67":[10.98,67.24],"68":[12.91,66.32],"69":[15.04,65.28],"70":[17.2,64.32],"71":[19.42,63.49],"72":[21.6,62.72],"73":[23.86,62.01],"74":[26.06,61.48],"75":[28.32,61.04],"76":[30.58,60.68],"77":[32.83,60.4],"78":[35.08,60.23],"79":[37.49,60.13],"80":[39.88,59.94],"81":[42.28,59.76],"82":[44.69,59.62],"83":[47.06,59.46],"84":[46.82,63.56],"85":[44.66,63.69],"86":[42.42,63.78],"87":[40.28,63.96],"88":[38.07,64.06],"89":[35.89,64.21],"90":[33.58,64.4],"91":[31.25,64.61],"92":[28.93,64.91],"93":[26.57,65.41],"94":[24.27,65.97],"95":[21.98,66.63],"96":[19.71,67.4],"97":[17.46,68.29],"98":[15.17,69.23],"99":[13.08,70.24],"100":[14.13,78.67],"101":[16.02,77.71],"102":[18.1,76.69],"103":[20.29,75.78],"104":[22.52,74.99],"105":[24.75,74.32],"106":[26.99,73.82],"107":[29.28,73.3],"108":[31.52,72.98],"109":[36.38,72.6],"110":[38.28,72.36],"111":[40.46,72.26],"112":[42.64,72.16],"113":[44.82,72.05],"114":[47.02,71.85],"115":[47.14,75.92],"116":[44.95,76.07],"117":[42.77,76.16],"118":[40.57,76.31],"119":[38.38,76.46],"120":[36.35,76.59],"121":[31.87,76.98],"122":[29.54,77.29],"123":[27.22,77.79],"124":[24.92,78.32],"125":[22.64,79.04],"126":[20.36,79.81],"127":[18.13,80.77],"128":[16.11,81.69],"129":[17.15,90.04],"130":[18.94,89.11],"131":[21.11,88.27],"132":[23.25,87.39],"133":[25.43,86.67],"134":[27.63,86.13],"135":[29.84,85.75],"136":[32.05,85.36],"137":[34.28,85.18],"138":[36.49,84.94],"139":[38.68,84.84],"140":[40.86,84.64],"141":[43.06,84.5],"142":[45.23,84.39],"143":[47.43,84.28],"144":[51.79,84],"145":[53.76,83.89],"146":[55.94,83.69],"147":[58.18,83.54],"148":[60.41,83.28],"149":[62.62,83.1],"150":[64.83,82.73],"151":[67.05,82.43],"152":[69.26,81.99],"153":[71.45,81.48],"154":[73.63,80.91],"155":[75.83,80.38],"156":[78,79.76],"157":[80.16,78.95],"158":[82.31,78.23],"159":[84.46,77.34],"160":[84.3,68.7],"161":[82.21,69.54],"162":[80.06,70.29],"163":[77.92,71.06],"164":[75.79,71.79],"165":[73.6,72.38],"166":[71.56,72.91],"167":[67.15,73.87],"168":[64.91,74.32],"169":[62.66,74.64],"170":[60.41,74.92],"171":[58.17,75.12],"172":[55.98,75.26],"173":[53.78,75.41],"174":[51.83,75.55],"175":[51.69,71.52],"176":[53.67,71.41],"177":[55.86,71.26],"178":[58.04,71.11],"179":[60.23,70.93],"180":[62.45,70.65],"181":[64.65,70.29],"182":[66.84,69.87],"183":[71.35,68.94],"184":[73.21,68.45],"185":[75.4,67.86],"186":[77.55,67.17],"187":[79.71,66.37],"188":[81.84,65.59],"189":[83.97,64.69],"190":[75.24,59.27],"191":[73.2,60.01],"192":[71.01,60.55],"193":[68.85,61.06],"194":[66.67,61.63],"195":[64.49,62.04],"196":[62.3,62.32],"197":[60.14,62.61],"198":[57.91,62.73],"199":[55.73,62.92],"200":[53.56,63.06],"201":[51.6,63.2],"202":[51.61,59.21],"203":[53.72,59.13],"204":[55.78,58.95],"205":[57.97,58.77],"206":[60.17,58.54],"207":[62.39,58.3],"208":[64.57,57.97],"209":[66.73,57.47],"210":[59.92,50.26],"211":[58.06,50.21],"212":[55.79,50.4],"213":[53.61,50.7],"214":[51.56,50.85],"215":[53.05,47.59],"216":[51.88,43.88],"217":[49.91,40.78],"218":[48.13,38.84],"219":[45.99,36.76],"220":[44.21,35.04],"221":[40.8,31.85],"222":[38.56,29.72],"223":[36.69,27.81],"224":[34.48,25.69],"225":[32.45,24.38],"226":[30.43,23.27],"227":[28.51,22.21],"228":[26.56,21.2],"229":[24.63,20.17],"230":[22.69,19.17],"231":[20.75,18.21],"232":[18.8,17.22],"233":[16.88,16.17],"234":[14.95,15.17],"235":[13.02,14.13],"236":[11.06,13.13],"237":[9.15,12.13],"238":[7.41,11.23],"239":[6.92,21.05],"240":[9.05,21.19]};
+
+const S = {
+  token: null, role: null, units: [], current: null,
+  sigDrawn: false, sigConfirmed: false, sigActive: false,
+  filter: 'all', pinBuffer: '', pinTargetRole: null, adminStage: 'fabricacion',
+  planoZoom: 1, calib: null,
+  issueFotoTarget: null,   // a qué reporte se le está añadiendo una foto
+  fotosNuevoReporte: [],   // fotos adjuntadas antes de pulsar "Reportar"
+  garFotoTarget: null,     // { gid, momento } de la garantía que recibe la foto
+  fotosNuevaGarantia: [],  // fotos del daño adjuntadas antes de guardar
+};
+
+window.addEventListener('load', () => {
+  S.token = localStorage.getItem('vsj_token');
+  showScreen(S.token ? 'roles' : 'setup');
+});
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+function showSetup()  { showScreen('setup'); }
+function showRoles()  { showScreen('roles'); }
+function showUnits()  { showScreen('units'); }
+
+function saveToken() {
+  const t = document.getElementById('api-token-input').value.trim();
+  if (!t) { toast('Ingresa un token válido'); return; }
+  S.token = t;
+  localStorage.setItem('vsj_token', t);
+  showScreen('roles');
+}
+
+// ── PIN System ───────────────────────────────────────────────────
+function goToPin(roleId) {
+  S.pinTargetRole = roleId;
+  S.pinBuffer = '';
+  document.getElementById('pin-role-name').textContent = ROLES[roleId].name;
+  document.getElementById('pin-error').textContent = '';
+  updatePinDots(false);
+  showScreen('pin');
+}
+
+function pinKey(digit) {
+  if (S.pinBuffer.length >= 4) return;
+  S.pinBuffer += digit;
+  updatePinDots(false);
+  if (S.pinBuffer.length === 4) setTimeout(verifyPin, 120);
+}
+
+function pinDel() {
+  S.pinBuffer = S.pinBuffer.slice(0, -1);
+  updatePinDots(false);
+  document.getElementById('pin-error').textContent = '';
+}
+
+function updatePinDots(error) {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('dot-' + i);
+    dot.className = 'pin-dot';
+    if (error)              dot.classList.add('error');
+    else if (i < S.pinBuffer.length) dot.classList.add('filled');
+  }
+}
+
+function verifyPin() {
+  if (S.pinBuffer === PINS[S.pinTargetRole]) {
+    document.getElementById('pin-error').textContent = '';
+    selectRole(S.pinTargetRole);
+  } else {
+    updatePinDots(true);
+    document.getElementById('pin-error').textContent = 'Código incorrecto';
+    setTimeout(() => {
+      S.pinBuffer = '';
+      updatePinDots(false);
+      document.getElementById('pin-error').textContent = '';
+    }, 1200);
+  }
+}
+
+// ── Monday API ───────────────────────────────────────────────────
+async function gql(query, variables = {}) {
+  const res  = await fetch(API_URL, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': S.token, 'API-Version': '2024-01' },
+    body:    JSON.stringify({ query, variables })
+  });
+  const json = await res.json();
+  if (json.errors) throw new Error(json.errors[0].message);
+  return json.data;
+}
+
+async function loadAllItems() {
+  let allItems = [], cursor = null;
+  do {
+    const q = cursor
+      ? `query($bid:ID!,$cur:String!){ boards(ids:[$bid]){ items_page(limit:200,cursor:$cur){ cursor items{ id name column_values{ id text value } } } } }`
+      : `query($bid:ID!){ boards(ids:[$bid]){ items_page(limit:200){ cursor items{ id name column_values{ id text value } } } } }`;
+    const vars = cursor ? { bid: String(BOARD_ID), cur: cursor } : { bid: String(BOARD_ID) };
+    const d = await gql(q, vars);
+    const page = d.boards[0].items_page;
+    allItems = allItems.concat(page.items);
+    cursor = page.cursor || null;
+  } while (cursor);
+  return allItems;
+}
+
+async function mutateColumn(itemId, colId, val) {
+  const q = `mutation($bid:ID!,$iid:ID!,$cid:String!,$val:JSON!){ change_column_value(board_id:$bid,item_id:$iid,column_id:$cid,value:$val){ id } }`;
+  await gql(q, { bid: String(BOARD_ID), iid: String(itemId), cid: colId, val: JSON.stringify(val) });
+}
+
+async function createUpdate(itemId, body) {
+  const q = `mutation($iid:ID!,$body:String!){ create_update(item_id:$iid,body:$body){ id } }`;
+  const d = await gql(q, { iid: String(itemId), body });
+  return d.create_update.id;
+}
+
+async function uploadFileToUpdate(updateId, blob, filename) {
+  const fd = new FormData();
+  fd.append('query', `mutation add($file:File!){ add_file_to_update(update_id:${updateId}, file:$file){ id } }`);
+  fd.append('variables', JSON.stringify({ file: null }));
+  fd.append('map', JSON.stringify({ '0': ['variables.file'] }));
+  fd.append('0', blob, filename);
+  const res = await fetch(FILE_URL, {
+    method: 'POST',
+    headers: { 'Authorization': S.token },
+    body: fd
+  });
+  if (!res.ok) {
+    let detail = '';
+    try { const t = await res.text(); detail = ' — ' + t.slice(0, 200); } catch(_) {}
+    throw new Error(`HTTP ${res.status}${detail}`);
+  }
+  const json = await res.json();
+  if (json.errors) throw new Error(json.errors[0].message || 'Error Monday');
+  return json;
+}
+
+// Convierte cualquier imagen a JPEG (resuelve HEIC de iPhone)
+async function fileToJpeg(file) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const objUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      const MAX = 1400;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if (w > MAX || h > MAX) { const r = Math.min(MAX/w, MAX/h); w = Math.round(w*r); h = Math.round(h*r); }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(objUrl);
+      canvas.toBlob(blob => resolve(blob || file), 'image/jpeg', 0.82);
+    };
+    img.onerror = () => { URL.revokeObjectURL(objUrl); resolve(file); };
+    img.src = objUrl;
+  });
+}
+
+// Descarga un archivo de Monday con auth y lo convierte a blob URL
+async function fetchAsBlob(url) {
+  try {
+    const res = await fetch(url, { headers: { Authorization: S.token } });
+    if (!res.ok) return null;
+    return URL.createObjectURL(await res.blob());
+  } catch(e) { return null; }
+}
+
+// ── Helpers ──────────────────────────────────────────────────────
+function getColStatus(unit, colId) {
+  const cv = unit.column_values.find(c => c.id === colId);
+  if (!cv || !cv.text) return 'pending';
+  const t = cv.text.toLowerCase();
+  if (['terminado', 'satisfecho', 'done'].includes(t)) return 'done';
+  if (['sin comenzar', 'sin realizar', 'a realizar', 'a comenzar', 'sin empezar'].includes(t)) return 'pending';
+  return 'progress';
+}
+function getColText(unit, colId) { const cv = unit.column_values.find(c => c.id === colId); return cv?.text || ''; }
+// Lee todos los reportes de daño/faltante. Soporta el formato viejo (texto plano = 1 reporte).
+function parseIssues(unit) {
+  const raw = getColText(unit, COL.problemas).trim();
+  if (!raw) return [];
+  try {
+    const arr = JSON.parse(raw);
+    if (Array.isArray(arr)) return arr;
+  } catch (e) { /* formato viejo */ }
+  return [{ t: raw, by: '', d: '', fixed: false }];
+}
+// Identificador estable del reporte: es lo que amarra sus fotos.
+// Los reportes viejos (sin id) usan uno derivado de la unidad + su posición.
+function issueId(unit, it, idx) {
+  return it.id || ('v' + (unit.name || '').replace(/\D/g, '') + '-' + idx);
+}
+// Reportes que le corresponden a un rol. Admin ve todos. Los viejos (sin .role) solo admin.
+function issuesForRole(unit, role) {
+  const arr = parseIssues(unit);
+  if (role === 'admin') return arr;
+  return arr.filter(i => i.role === role);
+}
+// Hay problema "abierto" (sin arreglar) que le corresponde al rol actual.
+function hasIssue(unit) {
+  // En el rol Garantías el aviso de la lista es la garantía sin arreglar.
+  if (S.role === 'garantias') return unitGarantiaActiva(unit);
+  return issuesForRole(unit, S.role).some(i => !i.fixed);
+}
+// Columna de estado activa según el rol (admin elige etapa).
+function currentCol() { return S.role === 'admin' ? COL[S.adminStage] : ROLES[S.role].col; }
+function statusIcon(s)  { return s==='done'?'✅':s==='progress'?'⏳':'⬜'; }
+function statusLabel(s) { return s==='done'?'Completado':s==='progress'?'En proceso':'Pendiente'; }
+
+async function refreshAll() {
+  const items = await loadAllItems();
+  S.units = items.sort((a,b) => (parseInt(a.name.replace(/\D/g,''))||0)-(parseInt(b.name.replace(/\D/g,''))||0));
+  if (S.current) S.current = S.units.find(u => u.id === S.current.id) || S.current;
+}
+
+// ── Units Screen ─────────────────────────────────────────────────
+async function selectRole(roleId) {
+  S.role = roleId; S.filter = 'all'; S.adminStage = 'fabricacion';
+  const r = ROLES[roleId];
+  document.getElementById('units-header-title').textContent = r.name;
+  document.getElementById('units-header-sub').textContent   = 'Palacios del Este · 240 unidades';
+  // Barra de etapas: solo para Administración
+  const stageBar = document.getElementById('admin-stage-bar');
+  stageBar.style.display = roleId === 'admin' ? 'flex' : 'none';
+  if (roleId === 'admin') {
+    stageBar.querySelectorAll('.stage-pill').forEach(b => b.classList.toggle('active', b.dataset.stage === 'fabricacion'));
+  }
+  showScreen('units');
+  await loadUnits();
+}
+
+function setAdminStage(stage, btn) {
+  S.adminStage = stage; S.filter = 'all';
+  document.getElementById('admin-stage-bar').querySelectorAll('.stage-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('filter-all').className = 'filter-pill active';
+  document.getElementById('filter-issues-pill').className = 'filter-pill inactive';
+  renderUnits(S.units);
+}
+
+async function loadUnits() {
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+  showLoading('Cargando unidades...');
+  try { await refreshAll(); renderUnits(S.units); }
+  catch(e) { toast('Error: ' + e.message); }
+  finally { hideLoading(); btn.classList.remove('spinning'); }
+}
+
+function toggleChipFilter(f) { setFilter(S.filter === f ? 'all' : f); }
+
+function setFilter(f) {
+  S.filter = f;
+  document.getElementById('filter-all').className         = 'filter-pill ' + (f==='all'    ? 'active':'inactive');
+  document.getElementById('filter-issues-pill').className = 'filter-pill ' + (f==='issues' ? 'active':'inactive');
+  ['done','progress','pending','issues'].forEach(k => {
+    document.getElementById('chip-'+k)?.classList.toggle('chip-active', f===k);
+  });
+  renderUnits(S.units);
+}
+
+function renderUnits(units) {
+  const col = currentCol();
+  let done=0, prog=0, pend=0, issueCount=0;
+  units.forEach(u => {
+    const st = getColStatus(u, col);
+    if (st==='done') done++; else if (st==='progress') prog++; else pend++;
+    if (hasIssue(u)) issueCount++;
+  });
+  let visible = units;
+  if      (S.filter==='done')     visible = units.filter(u => getColStatus(u,col)==='done');
+  else if (S.filter==='progress') visible = units.filter(u => getColStatus(u,col)==='progress');
+  else if (S.filter==='pending')  visible = units.filter(u => getColStatus(u,col)==='pending');
+  else if (S.filter==='issues')   visible = units.filter(u => hasIssue(u));
+
+  document.getElementById('units-grid').innerHTML = visible.map(u => {
+    const st = getColStatus(u,col), warn = hasIssue(u), num = (u.name.replace(/\D/g,'') || u.name);
+    return `<button class="unit-btn status-${st}${warn?' has-issue':''}" onclick="openUnit('${u.id}')">
+      <span class="u-icon">${statusIcon(st)}</span><span class="u-num">${num}</span>${warn?'<span class="u-warn">⚠️</span>':''}
+    </button>`;
+  }).join('');
+
+  document.getElementById('stat-done').textContent     = done;
+  document.getElementById('stat-progress').textContent = prog;
+  document.getElementById('stat-pending').textContent  = pend;
+  document.getElementById('stat-issues').textContent   = issueCount;
+}
+
+function filterUnits(q) {
+  renderUnits(q ? S.units.filter(u => u.name.toLowerCase().includes(q.toLowerCase())) : S.units);
+}
+
+// ── Detail Screen ────────────────────────────────────────────────
+function openUnit(itemId) {
+  S.current      = S.units.find(u => u.id === itemId);
+  S.sigDrawn     = false;
+  S.sigConfirmed = false;
+  S.sigActive    = false;
+  S.fotosNuevoReporte  = [];  // que no se arrastren fotos de otra unidad
+  S.fotosNuevaGarantia = [];
+  if (!S.current) return;
+  const r = ROLES[S.role];
+
+  document.getElementById('detail-title').textContent      = S.current.name;
+  document.getElementById('detail-role-label').textContent = r.name;
+
+  const footer = document.querySelector('#screen-detail .action-footer');
+  if (S.role === 'admin' || r.gar) {
+    // Admin y Garantías no marcan etapas: sin botón de marcar/revertir.
+    footer.style.display = 'none';
+  } else {
+    footer.style.display = '';
+    const actionBtn = document.getElementById('action-btn');
+    const undoBtn   = document.getElementById('undo-btn');
+    actionBtn.className   = `btn-action ${r.cls}`;
+    const st = getColStatus(S.current, r.col);
+    if (r.twoStep) {
+      setTwoStepButton(actionBtn, undoBtn, r, st);
+    } else {
+      actionBtn.textContent = r.action;
+      if (st === 'done') {
+        actionBtn.disabled = true; actionBtn.textContent = '✅ Ya Completado';
+        undoBtn.style.display = 'block';
+      } else {
+        actionBtn.disabled = false;
+        undoBtn.style.display = 'none';
+      }
+    }
+  }
+
+  renderDetail();
+  showScreen('detail');
+  if (r.photos) loadPhotos(itemId);        // fotos compartidas (Supabase) + pendientes
+  if (r.todo)   cargarPedidos(S.current);  // lo que esta casa ya pidió a Compras
+  if (r.gar)    cargarFotosGarantias(S.current);   // fotos de daño y de arreglo
+  if (r.photos || r.sig) loadDetailMedia(itemId); // fotos + firma de Monday
+}
+
+function renderDetail() {
+  const r = ROLES[S.role], u = S.current;
+  let html = `<div class="detail-status-card"><h3>Estado General</h3>
+    ${row('Fabricación Cocina', getColStatus(u,COL.fabricacionCocina), getColText(u,COL.fabricacionCocina) || statusLabel(getColStatus(u,COL.fabricacionCocina)))}
+    ${row('Instalación Cocina', getColStatus(u,COL.instalacionCocina), getColText(u,COL.instalacionCocina) || statusLabel(getColStatus(u,COL.instalacionCocina)))}
+    ${row('Instalación Tope',   getColStatus(u,COL.instalacionTope),   getColText(u,COL.instalacionTope)   || statusLabel(getColStatus(u,COL.instalacionTope)))}
+    ${row('Insp. Contratista',  getColStatus(u,COL.aprobacion),        getColText(u,COL.aprobacion)        || statusLabel(getColStatus(u,COL.aprobacion)))}
+  </div>`;
+
+  if (r.photos) html += `<div class="photos-card">
+    <h3>📷 Fotos del Trabajo</h3>
+    <div class="photo-grid" id="photo-grid">
+      <div class="photo-loading" id="photos-loading">⏳</div>
+      <div class="photo-add" onclick="document.getElementById('camera-input').click()">+</div>
+    </div></div>`;
+
+  if (r.gar) {
+    const gs = parseGarantias(u);
+    const pend = gs.filter(g => !g.fixed).length;
+    html += `<div class="issue-card"><h3>🛠️ Garantías y piezas faltantes</h3>
+      ${gs.length
+        ? `<div class="gar-resumen">${gs.length} en total · <b>${pend} sin arreglar</b></div>` +
+          gs.map((g, i) => garItemHtml(g, i)).join('')
+        : `<div class="issue-empty">Esta casa no tiene garantías.</div>`}
+      <div class="gar-form">
+        <div class="gar-form-t">Añadir una garantía</div>
+        <div class="gar-chips" id="gar-origen">
+          ${GAR_ORIGEN.map((o, i) => `<button class="gar-chip${i === 0 ? ' on' : ''}" data-v="${o.k}" onclick="pickChip(this)">${o.t}</button>`).join('')}
+        </div>
+        <div class="gar-row">
+          <select class="gar-sel" id="gar-tipo">${GAR_TIPO.map(t => `<option>${t}</option>`).join('')}</select>
+          <select class="gar-sel" id="gar-area">${GAR_AREA.map(t => `<option>${t}</option>`).join('')}</select>
+        </div>
+        <textarea class="issue-textarea" id="gar-desc" placeholder="Ej: Falta el tirador de la gaveta de arriba"></textarea>
+        <div class="issue-fotos" id="gar-nueva-fotos">
+          <div class="issue-foto-add" onclick="addFotoGarantiaNueva()"><span>📷</span><span>Foto</span></div>
+        </div>
+        <div class="issue-fotos-msg">Puedes adjuntar fotos del daño antes de guardarla.</div>
+        <button class="btn-issue" onclick="addGarantia()">➕ Guardar garantía</button>
+      </div>
+    </div>`;
+  }
+
+  if (r.issues) {
+    const issues  = issuesForRole(u, S.role);
+    const pending = issues.filter(i => !i.fixed).length;
+    const fixed   = issues.filter(i =>  i.fixed).length;
+    const isAdmin = S.role === 'admin';
+    const box = issues.length ? `<button class="issue-open-box" onclick="openIssuesModal()">
+          <div class="issue-open-main">
+            <span class="issue-open-icon">📋</span>
+            <span class="issue-open-txt">Ver reportes (${issues.length})</span>
+          </div>
+          <div class="issue-open-badges">
+            ${pending ? `<span class="issue-badge pend">${pending} pendiente${pending>1?'s':''}</span>` : ''}
+            ${fixed   ? `<span class="issue-badge done">${fixed} arreglado${fixed>1?'s':''}</span>` : ''}
+            <span class="issue-open-arrow">›</span>
+          </div>
+        </button>` : `<div class="issue-empty">Sin reportes${isAdmin?'':' por ahora'}.</div>`;
+    if (isAdmin) {
+      html += `<div class="issue-card"><h3>⚠️ Problemas (todos los roles)</h3>${box}</div>`;
+    } else {
+      html += `<div class="issue-card"><h3>⚠️ Reportar Daño / Faltante</h3>
+        ${issues.length ? box : ''}
+        <textarea class="issue-textarea" id="issue-textarea" placeholder="Ej: Se rompió una puerta, falta una pata..."></textarea>
+        <div class="issue-fotos" id="nuevo-reporte-fotos">
+          <div class="issue-foto-add" onclick="anadirFotoNueva()"><span>📷</span><span>Foto</span></div>
+        </div>
+        <div class="issue-fotos-msg">Puedes adjuntar fotos del daño antes de reportarlo.</div>
+        <button class="btn-issue" onclick="reportIssue()">📤 Reportar Problema</button>
+      </div>`;
+    }
+  }
+
+  if (r.todo) {
+    html += `<div class="issue-card"><h3>📝 Materiales que faltan (To-Do)</h3>
+      <p style="font-size:12px;color:var(--text-muted);margin:0 0 8px;">Escribe UN material que falte y toca Agregar. Cada pedido se va al tablero de Compras y le llega el aviso a Yiny.</p>
+      <div id="pedidos-lista"><div class="issue-empty">Cargando pedidos...</div></div>
+      <textarea class="issue-textarea" id="todo-textarea" placeholder="Ej: Faltan bisagras x10"></textarea>
+      <button class="btn-issue" onclick="addMaterial()">➕ Pedir a Compras</button>
+    </div>`;
+  }
+
+  if (r.sig) {
+    const sigTitle = r.sigRequired ? '✍️ Firma de Aprobación' : '✍️ Firma del Encargado (opcional)';
+    const sigSub   = r.sigRequired ? 'Presiona el botón para activar la firma.' : 'El encargado puede firmar para certificar que el trabajo está terminado.';
+    html += `<div class="sig-card" id="sig-card">
+      <h3>${sigTitle}</h3>
+      <p>${sigSub}</p>
+      <div id="sig-status"></div>
+      <button id="sig-activate-btn" class="sig-activate-btn" onclick="activateSignature()">✍️ Activar Firma</button>
+      <div class="sig-verify" id="sig-verify" style="display:none;">
+        <label>🔐 PIN personal del firmante</label>
+        <input id="sig-pin" type="password" inputmode="numeric" maxlength="6" placeholder="••••" autocomplete="off">
+        <div class="hint">Identifica <b>quién</b> aprueba. Es tu PIN personal y secreto — no el del rol.</div>
+      </div>
+      <div id="sig-canvas-wrap" class="sig-canvas-wrap"><canvas id="sig-canvas" height="160"></canvas></div>
+      <div class="sig-actions" id="sig-actions" style="display:none;">
+        <button class="btn-outline" onclick="clearSignature()">Limpiar</button>
+        <button class="btn-confirm-sig" onclick="confirmSignature()">✅ Confirmar Firma</button>
+      </div>
+    </div>`;
+    setTimeout(initSignatureCanvas, 50);
+  }
+
+  document.getElementById('detail-body').innerHTML = html;
+}
+
+function row(label, status, text) {
+  return `<div class="status-row"><div class="status-dot ${status}"></div>
+    <span class="status-label">${label}</span><span class="status-val">${text}</span></div>`;
+}
+
+// ── Load media from Monday ────────────────────────────────────────
+async function loadDetailMedia(itemId) {
+  try {
+    const q = `query($id:ID!){ items(ids:[$id]){ updates(limit:100){ id body assets{ id name url public_url file_extension } } } }`;
+    const d = await gql(q, { id: String(itemId) });
+    const updates = d.items?.[0]?.updates || [];
+
+    // Photos: ya NO se leen de Monday — la fuente es Supabase (ver loadPhotos).
+    // Se deja el código por si alguna vez hace falta volver atrás.
+    const grid = null;
+    if (grid) {
+      const imgExts = new Set(['jpg','jpeg','png','gif','webp','heic','heif']);
+      const photoAssets = [];
+      updates.filter(u => u.body?.includes('📷')).forEach(upd =>
+        upd.assets.filter(a => imgExts.has((a.file_extension||'').toLowerCase())).forEach(a => photoAssets.push(a))
+      );
+      for (const asset of photoAssets) {
+        const img = document.createElement('img');
+        img.className = 'photo-thumb uploading';
+        grid.insertBefore(img, grid.lastElementChild);
+        const src = asset.public_url || await fetchAsBlob(asset.url);
+        if (src) {
+          img.src = src; img.classList.remove('uploading');
+          img.onclick = () => openPhotoModal(src);
+          img.onerror = () => fetchAsBlob(asset.url).then(b => b ? (img.src=b, img.onclick=()=>openPhotoModal(b)) : img.remove());
+        } else { img.remove(); }
+      }
+    }
+
+    // Signature
+    const sigStatus = document.getElementById('sig-status');
+    if (sigStatus) {
+      const sigUpd = updates.find(u => u.body?.includes('✍️'));
+      if (sigUpd) {
+        // El body puede venir con HTML: lo pasamos a texto plano para leerlo bien.
+        const plain = String(sigUpd.body || '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n').replace(/<[^>]+>/g, '');
+        const verificada = /APROBACIÓN VERIFICADA/i.test(plain);
+        let who  = (plain.match(/Firmante:\s*(.+)/)      || [])[1];
+        let when = (plain.match(/Fecha:\s*([^(\n]+)/)    || [])[1];
+        const sello = (plain.match(/Sello de integridad:\s*(\w+)/) || [])[1];
+        const lugar = (plain.match(/Ubicación:\s*(.+)/)  || [])[1];
+        if (!who) {  // firmas viejas (formato anterior)
+          const m = plain.match(/✍️\s(.+?)\s—\sFirma.+\((.+)\)/);
+          who  = m?.[1]; when = when || m?.[2];
+        }
+        who  = (who  || 'Encargado').trim();
+        when = (when || '').trim();
+        const sigAsset = sigUpd.assets?.find(a => (a.file_extension||'').toLowerCase() === 'png');
+        let sigImgHtml = '';
+        if (sigAsset) {
+          const sigSrc = sigAsset.public_url || await fetchAsBlob(sigAsset.url);
+          if (sigSrc) sigImgHtml = `<img src="${sigSrc}" alt="Firma">`;
+        }
+        const extra = verificada
+          ? `<span>${lugar ? '📍 ' + lugar.trim() + '<br>' : ''}🔐 Sello: ${(sello||'').slice(0,16)}…</span>
+             <span class="sig-verified-tag">🔐 FIRMA VERIFICADA</span>`
+          : '';
+        sigStatus.innerHTML = `<div class="sig-done-banner">✅ Firmado por ${who}${when?`<span>${when}</span>`:''}${extra}${sigImgHtml}</div>`;
+        // Ocultar botón de activar, PIN y canvas — ya está firmado
+        document.getElementById('sig-activate-btn')?.style && (document.getElementById('sig-activate-btn').style.display = 'none');
+        const sv = document.getElementById('sig-verify'); if (sv) sv.style.display = 'none';
+        document.getElementById('sig-canvas-wrap').style.display  = 'none';
+        document.getElementById('sig-actions').style.display      = 'none';
+        S.sigConfirmed = true;
+      }
+    }
+  } catch(e) {
+    document.getElementById('photos-loading')?.remove();
+    console.warn('loadDetailMedia:', e.message);
+  }
+}
+
+// ── Signature ────────────────────────────────────────────────────
+let sigCtx = null, sigDrawing = false;
+
+function initSignatureCanvas() {
+  const canvas = document.getElementById('sig-canvas');
+  if (!canvas) return;
+  canvas.width = canvas.offsetWidth || 300;
+  sigCtx = canvas.getContext('2d');
+  Object.assign(sigCtx, { strokeStyle: '#1F3864', lineWidth: 2.5, lineCap: 'round', lineJoin: 'round' });
+  const pos = e => {
+    const rect = canvas.getBoundingClientRect();
+    const src  = e.touches ? e.touches[0] : e;
+    return { x: src.clientX - rect.left, y: src.clientY - rect.top };
+  };
+  canvas.addEventListener('mousedown',  e => { if (!S.sigActive) return; sigDrawing=true; const p=pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); });
+  canvas.addEventListener('mousemove',  e => { if (!sigDrawing || !S.sigActive) return; const p=pos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); S.sigDrawn=true; });
+  canvas.addEventListener('mouseup',    () => sigDrawing=false);
+  canvas.addEventListener('touchstart', e => { if (!S.sigActive) return; e.preventDefault(); sigDrawing=true; const p=pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); }, {passive:false});
+  canvas.addEventListener('touchmove',  e => { if (!sigDrawing || !S.sigActive) return; e.preventDefault(); const p=pos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); S.sigDrawn=true; }, {passive:false});
+  canvas.addEventListener('touchend',   () => sigDrawing=false);
+}
+
+function activateSignature() {
+  if (S.sigConfirmed) return;
+  S.sigActive = true;
+  document.getElementById('sig-activate-btn').style.display = 'none';
+  document.getElementById('sig-verify').style.display       = 'block';
+  document.getElementById('sig-canvas-wrap').style.display  = 'block';
+  document.getElementById('sig-actions').style.display      = 'flex';
+  // Re-init canvas size now that it's visible
+  const canvas = document.getElementById('sig-canvas');
+  if (canvas && sigCtx) { canvas.width = canvas.offsetWidth || 300; }
+  toast('Dibuja tu firma');
+}
+
+function clearSignature() {
+  if (!sigCtx || S.sigConfirmed) return;
+  const c = document.getElementById('sig-canvas');
+  sigCtx.clearRect(0, 0, c.width, c.height);
+  S.sigDrawn = false;
+}
+
+// ── Evidencia de la firma (todo gratis, sin servidor extra) ──────
+// Ubicación: mejor esfuerzo. Si el celular no da permiso o no hay señal, se anota y se firma igual.
+function getGeo() {
+  return new Promise(res => {
+    if (!navigator.geolocation) return res(null);
+    let done = false;
+    const finish = v => { if (!done) { done = true; res(v); } };
+    setTimeout(() => finish(null), 8000);
+    navigator.geolocation.getCurrentPosition(
+      p => finish({ lat: p.coords.latitude, lon: p.coords.longitude, acc: Math.round(p.coords.accuracy || 0) }),
+      () => finish(null),
+      { enableHighAccuracy: true, timeout: 7000, maximumAge: 0 }
+    );
+  });
+}
+const toHex = buf => Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+async function sha256Text(str) { return toHex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str))); }
+async function sha256Blob(blob) { return toHex(await crypto.subtle.digest('SHA-256', await blob.arrayBuffer())); }
+function deviceInfo() {
+  const ua = navigator.userAgent || '';
+  const os = /iPhone|iPad|iPod/.test(ua) ? 'iPhone/iPad' : /Android/.test(ua) ? 'Android'
+           : /Windows/.test(ua) ? 'Windows' : /Mac OS/.test(ua) ? 'Mac' : 'Otro';
+  const br = /CriOS|Chrome/.test(ua) ? 'Chrome' : /FxiOS|Firefox/.test(ua) ? 'Firefox'
+           : /Safari/.test(ua) ? 'Safari' : 'Navegador';
+  return `${os} · ${br}`;
+}
+
+async function confirmSignature() {
+  if (!S.sigDrawn) { toast('Dibuja tu firma primero'); return; }
+  if (S.sigConfirmed) return;
+
+  // Paso 1 — Identidad: PIN personal del firmante (no el PIN del rol)
+  const pinEl = document.getElementById('sig-pin');
+  const pin   = (pinEl && pinEl.value || '').trim();
+  if (!pin) { toast('Escribe tu PIN personal para firmar'); pinEl && pinEl.focus(); return; }
+  const firmante = FIRMANTES[pin];
+  if (!firmante) {
+    if (pinEl) pinEl.value = '';
+    toast('❌ PIN personal no autorizado — no se puede firmar');
+    return;
+  }
+
+  const u = S.current, r = ROLES[S.role];
+  const today = new Date().toISOString().split('T')[0];
+  showLoading('Verificando y guardando firma...');
+  try {
+    const blob = await getSignatureBlob();
+
+    // Paso 2 — Evidencia: ubicación (opcional), dispositivo, hora
+    const geo   = await getGeo();
+    const geoTx = geo ? `${geo.lat.toFixed(6)}, ${geo.lon.toFixed(6)} (±${geo.acc} m)` : 'no disponible (permiso denegado o sin señal)';
+    const dev   = deviceInfo();
+    const fecha = new Date().toLocaleString('es-PR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+    // Paso 3 — Sello de integridad: huella de la firma + de todo el paquete
+    const firmaHash = await sha256Blob(blob);
+    const sello     = await sha256Text([firmante, S.role, u.id, u.name, fecha, geoTx, dev, firmaHash].join('|'));
+
+    const acta =
+`✍️ APROBACIÓN VERIFICADA — ${u.name}
+Firmante: ${firmante}
+Rol: ${r.name}
+Fecha: ${fecha} (hora del dispositivo)
+Ubicación: ${geoTx}
+Dispositivo: ${dev}
+Huella de la firma: ${firmaHash.slice(0,32)}
+Sello de integridad: ${sello}
+
+Verificación: PIN personal del firmante.
+El sello cubre firmante, unidad, fecha, ubicación y la imagen de la firma.
+La hora oficial es la de este registro en Monday (sello del servidor).`;
+
+    const uid = await createUpdate(u.id, acta);
+    await uploadFileToUpdate(uid, blob, `firma_${firmante.replace(/ /g,'_')}_${u.name.replace(/ /g,'_')}_${today}.png`);
+
+    S.sigConfirmed = true;
+    S.sigActive    = false;
+
+    // Lock the canvas visually
+    document.getElementById('sig-verify').style.display = 'none';
+    document.getElementById('sig-canvas-wrap').style.pointerEvents = 'none';
+    document.getElementById('sig-canvas-wrap').style.opacity = '0.7';
+    document.getElementById('sig-actions').innerHTML =
+      `<div style="color:var(--green);font-weight:700;font-size:14px;padding:8px 0;">✅ Firma verificada de ${firmante} — guardada en Monday</div>`;
+    hideLoading();
+    toast('✅ Firma guardada en Monday');
+  } catch(e) {
+    hideLoading();
+    toast('❌ Error guardando firma: ' + e.message);
+  }
+}
+
+function getSignatureBlob() {
+  return new Promise(res => document.getElementById('sig-canvas').toBlob(res, 'image/png'));
+}
+
+// ── Fotos ────────────────────────────────────────────────────────
+//  Las fotos viven en Supabase (Storage) → las ve CUALQUIER celular,
+//  no solo el que las tomó. Si no hay internet se guardan en una cola
+//  local (IndexedDB) y suben solas cuando vuelve la conexión.
+//  Copia adicional a Monday (best-effort) para que la oficina las vea ahí.
+const FOTOS_URL = '/.netlify/functions/fotos';
+
+async function fotosApi(action, payload) {
+  const res = await fetch(FOTOS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(Object.assign({ action, token: S.token }, payload || {}))
+  });
+  let data = {};
+  try { data = await res.json(); } catch(e) {}
+  if (!res.ok || data.error) throw new Error(data.error || ('HTTP ' + res.status));
+  return data;
+}
+
+// ── Cola local de pendientes (solo lo que aún no subió) ──────────
+async function dbOpen() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open('pde-photos', 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore('photos', { keyPath: 'id', autoIncrement: true });
+    req.onsuccess = e => res(e.target.result);
+    req.onerror   = e => rej(e.target.error);
+  });
+}
+async function dbSavePending(rec) {
+  const db = await dbOpen();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('photos', 'readwrite');
+    tx.objectStore('photos').add(Object.assign({ ts: Date.now() }, rec));
+    tx.oncomplete = res; tx.onerror = e => rej(e.target.error);
+  });
+}
+async function dbAllPending() {
+  const db = await dbOpen();
+  return new Promise((res, rej) => {
+    const req = db.transaction('photos', 'readonly').objectStore('photos').getAll();
+    req.onsuccess = () => res(req.result || []);
+    req.onerror   = e => rej(e.target.error);
+  });
+}
+async function dbPendingFor(unitId) {
+  return (await dbAllPending()).filter(p => String(p.unitId) === String(unitId));
+}
+async function dbDeletePending(id) {
+  const db = await dbOpen();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('photos', 'readwrite');
+    tx.objectStore('photos').delete(id);
+    tx.oncomplete = res; tx.onerror = e => rej(e.target.error);
+  });
+}
+
+function unitNum(u) { return (u.name || '').replace(/\D/g, '') || '0'; }
+
+// ── Subir fotos ──────────────────────────────────────────────────
+async function handlePhotos(event) {
+  const files = Array.from(event.target.files);
+  event.target.value = '';
+  if (!files.length || !S.current) return;
+  const u = S.current, r = ROLES[S.role];
+  const grid = document.getElementById('photo-grid');
+  if (!grid) return;
+
+  for (const file of files) {
+    const previewUrl = URL.createObjectURL(file);
+    const img = document.createElement('img');
+    img.src = previewUrl; img.className = 'photo-thumb uploading';
+    grid.insertBefore(img, grid.lastElementChild);
+    toast('⏳ Subiendo foto...');
+    try {
+      const jpeg    = await fileToJpeg(file);
+      const dataUrl = await blobToDataUrl(jpeg);
+      const fname   = `unidad_${unitNum(u)}_${Date.now()}.jpg`;
+      const rec     = { unitId: u.id, unidad: unitNum(u), unidadNombre: u.name, rol: r.name, dataUrl, nombre: fname, tipo: 'trabajo' };
+
+      try {
+        await fotosApi('upload', rec);
+        img.classList.remove('uploading');
+        img.onclick = () => openPhotoModal(previewUrl);
+        toast('✅ Foto guardada — la ven todos los equipos');
+      } catch(e) {
+        // Sin conexión (o función caída): a la cola, sube sola después.
+        await dbSavePending(rec);
+        img.classList.replace('uploading', 'pending');
+        img.onclick = () => openPhotoModal(previewUrl);
+        toast('📴 Sin conexión — la foto subirá sola cuando haya internet');
+        console.warn('foto a cola local:', e.message);
+      }
+
+      // Copia a Monday (no bloquea; si falla no pasa nada)
+      const today = new Date().toISOString().split('T')[0];
+      createUpdate(u.id, `📷 ${r.name} — Foto de instalación ${u.name} (${today})`)
+        .then(uid => uploadFileToUpdate(uid, jpeg, fname))
+        .catch(e => console.warn('copia a Monday falló:', e.message));
+
+    } catch(e) {
+      img.classList.replace('uploading', 'upload-error');
+      toast('❌ Error: ' + e.message);
+    }
+  }
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload  = () => res(reader.result);
+    reader.onerror = rej;
+    reader.readAsDataURL(blob);
+  });
+}
+
+// ── Mostrar fotos de la unidad (Supabase + pendientes locales) ───
+async function loadPhotos(unitId) {
+  const grid = document.getElementById('photo-grid');
+  if (!grid) return;
+  const addThumb = (src, extraCls) => {
+    const img = document.createElement('img');
+    img.src = src;
+    img.className = 'photo-thumb' + (extraCls ? ' ' + extraCls : '');
+    img.onclick = () => openPhotoModal(src);
+    img.onerror = () => img.remove();
+    grid.insertBefore(img, grid.lastElementChild);
+  };
+
+  // 1) Pendientes de este equipo (se ven al instante aunque no hayan subido).
+  //    Solo las de trabajo: las de problemas viven dentro de su reporte.
+  try {
+    (await dbPendingFor(unitId))
+      .filter(p => (p.tipo || 'trabajo') === 'trabajo')
+      .forEach(p => addThumb(p.dataUrl, 'pending'));
+  } catch(e) { console.warn('pendientes:', e); }
+
+  // 2) Las de Supabase (compartidas)
+  try {
+    const u = (S.units || []).find(x => String(x.id) === String(unitId)) || S.current;
+    // tipo 'trabajo': las de los reportes de problema NO salen aquí
+    const d = await fotosApi('list', { unidad: unitNum(u || { name: '' }), tipo: 'trabajo' });
+    document.getElementById('photos-loading')?.remove();
+    (d.fotos || []).forEach(f => addThumb(f.url));
+  } catch(e) {
+    document.getElementById('photos-loading')?.remove();
+    console.warn('loadPhotos:', e.message);
+  }
+
+  retryPendingPhotos();   // aprovecha para vaciar la cola
+}
+
+// ── Reintento de la cola ─────────────────────────────────────────
+let retrying = false;
+async function retryPendingPhotos() {
+  if (retrying || !navigator.onLine || !S.token) return;
+  retrying = true;
+  try {
+    const pend = await dbAllPending();
+    for (const p of pend) {
+      try {
+        await fotosApi('upload', {
+          unitId: p.unitId, unidad: p.unidad, unidadNombre: p.unidadNombre,
+          rol: p.rol, dataUrl: p.dataUrl, nombre: p.nombre,
+          tipo: p.tipo || 'trabajo', issueId: p.issueId || ''
+        });
+        await dbDeletePending(p.id);
+      } catch(e) { break; }   // sigue sin conexión: lo dejamos para después
+    }
+  } catch(e) { console.warn('retryPendingPhotos:', e); }
+  finally { retrying = false; }
+}
+window.addEventListener('online', retryPendingPhotos);
+
+function openPhotoModal(src)  { document.getElementById('photo-modal-img').src=src; document.getElementById('photo-modal').classList.add('show'); }
+function closePhotoModal()    { document.getElementById('photo-modal').classList.remove('show'); }
+
+// ── Garantías y piezas faltantes (por casa) ──────────────────────
+//  Viven en la columna "Garantías" de Monday como lista JSON.
+//  Cada una: quién la pidió, qué es, dónde, cuándo, y si ya se arregló.
+//  Las fotos van a Supabase con tipo 'garantia':
+//    <id>      = fotos del daño
+//    <id>-fix  = fotos del arreglo
+function parseGarantias(unit) {
+  const raw = getColText(unit, COL.garantias).trim();
+  if (!raw) return [];
+  try { const a = JSON.parse(raw); return Array.isArray(a) ? a : []; } catch(e) { return []; }
+}
+async function saveGarantias(unitId, arr) {
+  await mutateColumn(unitId, COL.garantias, { text: arr.length ? JSON.stringify(arr) : '' });
+}
+function garOrigenTxt(k) { return (GAR_ORIGEN.find(o => o.k === k) || GAR_ORIGEN[0]).t; }
+
+function garItemHtml(g, i) {
+  const gid = g.id || ('v' + i);
+  return `<div class="issue-item ${g.fixed ? 'fixed' : ''}">
+      <div class="issue-item-top">
+        <span class="issue-item-num">#${i + 1}</span>
+        <span class="gar-origen">${garOrigenTxt(g.origen)}</span>
+        ${g.fixed ? '<span class="issue-item-tag">✅ Arreglada</span>' : '<span class="issue-item-tag pend">⚠️ Pendiente</span>'}
+        <button class="issue-item-del" onclick="deleteGarantia(${i})" title="Borrar">🗑️</button>
+      </div>
+      <div class="gar-que">${escHtml(g.tipo || '')}${g.area ? ' · ' + escHtml(g.area) : ''}</div>
+      <div class="issue-item-text">${escHtml(g.desc || '')}</div>
+      <div class="issue-item-meta">Pedida el ${escHtml(fechaCorta(g.d))}${g.fixed && g.fd ? ' · Arreglada el ' + escHtml(fechaCorta(g.fd)) : ''}</div>
+
+      <div class="gar-fotos-t">📷 Foto del daño</div>
+      <div class="issue-fotos" id="gd-${gid}" data-gid="${gid}" data-momento="dano">
+        <div class="issue-foto-add" onclick="addFotoGarantia('${gid}','dano')"><span>📷</span><span>Foto</span></div>
+      </div>
+
+      <div class="gar-fotos-t">🔧 Foto del arreglo</div>
+      <div class="issue-fotos" id="ga-${gid}" data-gid="${gid}" data-momento="fix">
+        <div class="issue-foto-add" onclick="addFotoGarantia('${gid}','fix')"><span>📷</span><span>Foto</span></div>
+      </div>
+
+      <button class="issue-item-fix ${g.fixed ? 'on' : ''}" onclick="toggleGarantiaFixed(${i})">
+        ${g.fixed ? '↩ Volver a abrir' : '✅ Marcar arreglada'}
+      </button>
+    </div>`;
+}
+
+function pickChip(btn) {
+  const cont = btn.parentElement;
+  cont.querySelectorAll('.gar-chip').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+async function addGarantia() {
+  const u = S.current;
+  const desc = (document.getElementById('gar-desc')?.value || '').trim();
+  if (!desc) { toast('Escribe qué hay que arreglar'); return; }
+  const origen = document.querySelector('#gar-origen .gar-chip.on')?.dataset.v || 'contratista';
+  const tipo   = document.getElementById('gar-tipo')?.value || GAR_TIPO[0];
+  const area   = document.getElementById('gar-area')?.value || GAR_AREA[0];
+  const gid    = 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+  showLoading('Guardando garantía...');
+  try {
+    const arr = parseGarantias(u);
+    arr.push({ id: gid, origen, tipo, area, desc, d: new Date().toISOString().slice(0, 10), fixed: false, fd: '' });
+    await saveGarantias(u.id, arr);
+    await createUpdate(u.id, `🛠️ GARANTÍA — ${u.name}\nPidió: ${garOrigenTxt(origen)} · ${tipo} · ${area}\n${fechaHoraLocal()}\n\n${desc}`);
+
+    // Las fotos que adjuntó antes de guardar ya tienen a dónde ir
+    const pend = S.fotosNuevaGarantia.slice();
+    for (const f of pend) {
+      const rec = { unitId: u.id, unidad: unitNum(u), unidadNombre: u.name, rol: 'Garantías',
+                    dataUrl: f.dataUrl, nombre: `garantia_${unitNum(u)}_${Date.now()}.jpg`,
+                    tipo: 'garantia', issueId: gid };
+      try { await fotosApi('upload', rec); } catch(e) { await dbSavePending(rec); }
+    }
+    S.fotosNuevaGarantia = [];
+
+    await refreshAll(); hideLoading();
+    toast(pend.length ? `Garantía guardada con ${pend.length} foto(s) 🛠️` : 'Garantía guardada 🛠️');
+    renderDetail(); renderUnits(S.units);
+  } catch(e) { hideLoading(); toast('Error: ' + e.message); }
+}
+
+async function toggleGarantiaFixed(i) {
+  const u = S.current;
+  const arr = parseGarantias(u);
+  if (!arr[i]) return;
+  const ahoraArreglada = !arr[i].fixed;
+  arr[i].fixed = ahoraArreglada;
+  arr[i].fd = ahoraArreglada ? new Date().toISOString().slice(0, 10) : '';   // fecha automática
+  showLoading(ahoraArreglada ? 'Marcando arreglada...' : 'Reabriendo...');
+  try {
+    await saveGarantias(u.id, arr);
+    if (ahoraArreglada) await createUpdate(u.id, `✅ GARANTÍA ARREGLADA — ${u.name}\n${fechaHoraLocal()}\n\n${arr[i].desc || ''}`);
+    await refreshAll(); hideLoading();
+    toast(ahoraArreglada ? 'Marcada arreglada ✅' : 'Reabierta');
+    renderDetail(); renderUnits(S.units);
+  } catch(e) { hideLoading(); toast('Error: ' + e.message); }
+}
+
+async function deleteGarantia(i) {
+  const u = S.current;
+  const arr = parseGarantias(u);
+  if (!arr[i]) return;
+  if (!confirm('¿Borrar esta garantía? No se puede deshacer.')) return;
+  arr.splice(i, 1);
+  showLoading('Borrando...');
+  try {
+    await saveGarantias(u.id, arr);
+    await refreshAll(); hideLoading(); toast('Garantía borrada');
+    renderDetail(); renderUnits(S.units);
+  } catch(e) { hideLoading(); toast('Error: ' + e.message); }
+}
+
+// ── Fotos de garantía (daño y arreglo) ───────────────────────────
+function addFotoGarantia(gid, momento) {
+  S.garFotoTarget = { gid, momento };
+  document.getElementById('gar-camera-input').click();
+}
+function addFotoGarantiaNueva() {
+  S.garFotoTarget = { gid: 'NUEVA', momento: 'dano' };
+  document.getElementById('gar-camera-input').click();
+}
+
+async function handleGarFotos(event) {
+  const files = Array.from(event.target.files);
+  event.target.value = '';
+  const t = S.garFotoTarget;
+  if (!files.length || !S.current || !t) return;
+  const u = S.current;
+
+  // Adjuntadas antes de guardar la garantía: esperan a que exista
+  if (t.gid === 'NUEVA') {
+    const tira = document.getElementById('gar-nueva-fotos');
+    for (const file of files) {
+      try {
+        const previewUrl = URL.createObjectURL(file);
+        const img = document.createElement('img');
+        img.src = previewUrl; img.className = 'issue-foto pending';
+        img.onclick = () => openPhotoModal(previewUrl);
+        if (tira) tira.appendChild(img);
+        const jpeg = await fileToJpeg(file);
+        S.fotosNuevaGarantia.push({ dataUrl: await blobToDataUrl(jpeg) });
+      } catch(e) { toast('❌ ' + e.message); }
+    }
+    toast(`📎 ${S.fotosNuevaGarantia.length} foto(s) lista(s) — se suben al guardar`);
+    return;
+  }
+
+  const tira = document.getElementById((t.momento === 'fix' ? 'ga-' : 'gd-') + t.gid);
+  for (const file of files) {
+    const previewUrl = URL.createObjectURL(file);
+    const img = document.createElement('img');
+    img.src = previewUrl; img.className = 'issue-foto uploading';
+    if (tira) tira.appendChild(img);
+    toast('⏳ Subiendo foto...');
+    try {
+      const jpeg = await fileToJpeg(file);
+      const rec = { unitId: u.id, unidad: unitNum(u), unidadNombre: u.name, rol: 'Garantías',
+                    dataUrl: await blobToDataUrl(jpeg),
+                    nombre: `garantia_${unitNum(u)}_${Date.now()}.jpg`,
+                    tipo: 'garantia', issueId: t.gid + (t.momento === 'fix' ? '-fix' : '') };
+      try {
+        await fotosApi('upload', rec);
+        img.classList.remove('uploading');
+        toast('✅ Foto guardada');
+      } catch(e) {
+        await dbSavePending(rec);
+        img.classList.replace('uploading', 'pending');
+        toast('📴 Sin conexión — subirá sola después');
+      }
+      img.onclick = () => openPhotoModal(previewUrl);
+    } catch(e) {
+      img.classList.replace('uploading', 'upload-error');
+      toast('❌ Error: ' + e.message);
+    }
+  }
+}
+
+// Carga las fotos de daño y de arreglo de cada garantía visible
+async function cargarFotosGarantias(u) {
+  const tiras = document.querySelectorAll('#screen-detail .issue-fotos[data-gid]');
+  for (const tira of tiras) {
+    const gid = tira.dataset.gid;
+    const sufijo = tira.dataset.momento === 'fix' ? '-fix' : '';
+    if (!gid) continue;
+    try {
+      const d = await fotosApi('list', { unidad: unitNum(u), tipo: 'garantia', issueId: gid + sufijo });
+      (d.fotos || []).forEach(f => {
+        const img = document.createElement('img');
+        img.src = f.url; img.className = 'issue-foto';
+        img.onclick = () => openPhotoModal(f.url);
+        img.onerror = () => img.remove();
+        tira.insertBefore(img, tira.firstChild);
+      });
+    } catch(e) { console.warn('fotos garantía ' + gid + ':', e.message); }
+  }
+}
+
+// ── Issues ───────────────────────────────────────────────────────
+function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+async function saveIssues(unitId, arr) {
+  // Si quedó vacío mandamos texto vacío para limpiar la columna.
+  await mutateColumn(unitId, COL.problemas, { text: arr.length ? JSON.stringify(arr) : '' });
+}
+
+async function reportIssue() {
+  const text = document.getElementById('issue-textarea')?.value.trim();
+  if (!text) { toast('Escribe el problema antes de reportar'); return; }
+  const u = S.current, r = ROLES[S.role];
+  const now = new Date();
+  const ds = now.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const ts = now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  showLoading('Reportando...');
+  try {
+    const arr = parseIssues(u);
+    // id único: es lo que amarra las fotos a ESTE reporte
+    const nuevoId = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    arr.push({ id: nuevoId, t: text, by: r.name, role: S.role, d: `${ds} ${ts}`, fixed: false });
+    await saveIssues(u.id, arr);
+    await createUpdate(u.id, `⚠️ PROBLEMA — ${u.name}\nPor: ${r.name} · ${ds} ${ts}\n\n${text}`);
+
+    // Las fotos que adjuntó antes de reportar ya tienen a dónde ir
+    const pend = S.fotosNuevoReporte.slice();
+    if (pend.length) {
+      showLoading(`Subiendo ${pend.length} foto(s)...`);
+      for (const f of pend) {
+        const fname = `problema_${unitNum(u)}_${Date.now()}.jpg`;
+        const rec = { unitId: u.id, unidad: unitNum(u), unidadNombre: u.name, rol: r.name,
+                      dataUrl: f.dataUrl, nombre: fname, tipo: 'problema', issueId: nuevoId };
+        try { await fotosApi('upload', rec); }
+        catch(e) { await dbSavePending(rec); }   // sin internet: sube sola después
+        createUpdate(u.id, `🛠️ FOTO DE PROBLEMA — ${u.name}\nPor: ${r.name} · ${fechaHoraLocal()}`)
+          .then(uid => uploadFileToUpdate(uid, f.jpeg, fname))
+          .catch(e => console.warn('copia a Monday falló:', e.message));
+      }
+    }
+    limpiarFotosNuevoReporte();
+
+    await refreshAll(); hideLoading();
+    toast(pend.length ? `Problema reportado con ${pend.length} foto(s) ⚠️` : 'Problema reportado ⚠️');
+    renderDetail(); renderUnits(S.units);
+    // Se abre la lista para verlo y poder añadirle más fotos
+    openIssuesModal();
+  } catch(e) { hideLoading(); toast('Error: '+e.message); }
+}
+
+// ── Modal de reportes ─────────────────────────────────────────────
+function openIssuesModal() {
+  if (!S.current) return;
+  document.getElementById('issues-modal-title').textContent = `Reportes — ${S.current.name}`;
+  renderIssuesList();
+  document.getElementById('issues-modal').classList.add('show');
+}
+function closeIssuesModal() { document.getElementById('issues-modal').classList.remove('show'); }
+
+function issueItemHtml(it, realIdx, editable) {
+  const gid = issueId(S.current, it, realIdx);
+  return `<div class="issue-item ${it.fixed ? 'fixed' : ''}">
+      <div class="issue-item-top">
+        <span class="issue-item-num">#${realIdx+1}</span>
+        ${it.fixed ? '<span class="issue-item-tag">✅ Arreglado</span>' : '<span class="issue-item-tag pend">⚠️ Pendiente</span>'}
+        ${editable ? `<button class="issue-item-del" onclick="deleteIssue(${realIdx})" title="Borrar">🗑️</button>` : ''}
+      </div>
+      <div class="issue-item-text">${escHtml(it.t)}</div>
+      ${(it.by || it.d) ? `<div class="issue-item-meta">${escHtml(it.by)}${it.by && it.d ? ' · ' : ''}${escHtml(it.d)}</div>` : ''}
+      <div class="issue-fotos" id="gf-${gid}" data-gid="${gid}">
+        ${editable ? `<div class="issue-foto-add" onclick="addIssuePhoto('${gid}')"><span>📷</span><span>Foto</span></div>` : ''}
+      </div>
+      ${editable ? `<button class="issue-item-fix ${it.fixed ? 'on' : ''}" onclick="toggleIssueFixed(${realIdx})">
+        ${it.fixed ? '↩ Marcar como pendiente' : '✅ Marcar como arreglado'}
+      </button>` : ''}
+    </div>`;
+}
+
+// ── Fotos de un reporte concreto ─────────────────────────────────
+//  Van aparte de las fotos del trabajo: se guardan con tipo 'problema'
+//  y el id del reporte, así que NUNCA salen en el recuadro de fotos.
+function addIssuePhoto(gid) {
+  S.issueFotoTarget = gid;
+  document.getElementById('issue-camera-input').click();
+}
+
+// ── Fotos adjuntadas ANTES de reportar ───────────────────────────
+//  Se guardan en el aire hasta que el reporte existe (necesitan su id).
+//  Al pulsar "Reportar Problema" se suben ya pegadas a ese reporte.
+function anadirFotoNueva() {
+  S.issueFotoTarget = 'NUEVO';
+  document.getElementById('issue-camera-input').click();
+}
+
+async function guardarFotoNueva(file) {
+  const tira = document.getElementById('nuevo-reporte-fotos');
+  const previewUrl = URL.createObjectURL(file);
+  const img = document.createElement('img');
+  img.src = previewUrl; img.className = 'issue-foto pending';
+  img.title = 'Se subirá al reportar';
+  img.onclick = () => openPhotoModal(previewUrl);
+  if (tira) tira.appendChild(img);
+  const jpeg = await fileToJpeg(file);
+  S.fotosNuevoReporte.push({ dataUrl: await blobToDataUrl(jpeg), jpeg, img });
+}
+
+function limpiarFotosNuevoReporte() {
+  S.fotosNuevoReporte = [];
+  const tira = document.getElementById('nuevo-reporte-fotos');
+  if (tira) tira.querySelectorAll('img.issue-foto').forEach(i => i.remove());
+}
+
+async function handleIssuePhotos(event) {
+  const files = Array.from(event.target.files);
+  event.target.value = '';
+  const gid = S.issueFotoTarget;
+  if (!files.length || !S.current || !gid) return;
+
+  // Fotos adjuntadas antes de reportar: se quedan esperando al reporte.
+  if (gid === 'NUEVO') {
+    for (const file of files) {
+      try { await guardarFotoNueva(file); }
+      catch(e) { toast('❌ No se pudo preparar la foto: ' + e.message); }
+    }
+    toast(`📎 ${S.fotosNuevoReporte.length} foto(s) lista(s) — se suben al reportar`);
+    return;
+  }
+
+  const u = S.current, r = ROLES[S.role];
+  const tira = document.getElementById('gf-' + gid);
+  if (!tira) return;
+
+  for (const file of files) {
+    const previewUrl = URL.createObjectURL(file);
+    const img = document.createElement('img');
+    img.src = previewUrl; img.className = 'issue-foto uploading';
+    tira.appendChild(img);
+    toast('⏳ Subiendo foto del problema...');
+    try {
+      const jpeg    = await fileToJpeg(file);
+      const dataUrl = await blobToDataUrl(jpeg);
+      const fname   = `problema_${unitNum(u)}_${Date.now()}.jpg`;
+      const rec = { unitId: u.id, unidad: unitNum(u), unidadNombre: u.name, rol: r.name,
+                    dataUrl, nombre: fname, tipo: 'problema', issueId: gid };
+      try {
+        await fotosApi('upload', rec);
+        img.classList.remove('uploading');
+        img.onclick = () => openPhotoModal(previewUrl);
+        toast('✅ Foto añadida al reporte');
+      } catch(e) {
+        await dbSavePending(rec);
+        img.classList.replace('uploading', 'pending');
+        img.onclick = () => openPhotoModal(previewUrl);
+        toast('📴 Sin conexión — subirá sola cuando haya internet');
+      }
+      // Copia a Monday, marcada como foto de PROBLEMA (no de instalación)
+      createUpdate(u.id, `🛠️ FOTO DE PROBLEMA — ${u.name}\nPor: ${r.name} · ${fechaHoraLocal()}`)
+        .then(uid => uploadFileToUpdate(uid, jpeg, fname))
+        .catch(e => console.warn('copia a Monday falló:', e.message));
+    } catch(e) {
+      img.classList.replace('uploading', 'upload-error');
+      toast('❌ Error: ' + e.message);
+    }
+  }
+}
+
+// Carga las fotos de cada reporte visible en el modal
+async function loadIssuePhotos() {
+  const tiras = document.querySelectorAll('#issues-sheet-body .issue-fotos');
+  for (const tira of tiras) {
+    const gid = tira.dataset.gid;
+    if (!gid) continue;
+    try {
+      const d = await fotosApi('list', { unidad: unitNum(S.current), tipo: 'problema', issueId: gid });
+      (d.fotos || []).forEach(f => {
+        const img = document.createElement('img');
+        img.src = f.url; img.className = 'issue-foto';
+        img.onclick = () => openPhotoModal(f.url);
+        img.onerror = () => img.remove();
+        tira.insertBefore(img, tira.firstChild);
+      });
+    } catch(e) { console.warn('fotos del reporte ' + gid + ':', e.message); }
+  }
+}
+
+function renderIssuesList() {
+  const all  = parseIssues(S.current).map((it, i) => ({ it, i }));
+  const body = document.getElementById('issues-sheet-body');
+
+  if (S.role === 'admin') {
+    // Admin: todos los reportes agrupados por rol, solo lectura.
+    const groups = [['taller','📐 Taller'],['instaladorCocina','🏠 Inst. Cocinas'],['instaladorTope','🪨 Inst. Topes'],['encargado','✅ Encargado']];
+    let html = '';
+    groups.forEach(([rid, label]) => {
+      const items = all.filter(x => x.it.role === rid);
+      if (items.length) html += `<div class="issue-group-title">${label} (${items.length})</div>` + items.map(x => issueItemHtml(x.it, x.i, false)).join('');
+    });
+    const known = groups.map(g => g[0]);
+    const legacy = all.filter(x => !known.includes(x.it.role));
+    if (legacy.length) html += `<div class="issue-group-title">🗂️ Histórico (sin rol) (${legacy.length})</div>` + legacy.map(x => issueItemHtml(x.it, x.i, false)).join('');
+    if (!html) { closeIssuesModal(); renderDetail(); return; }
+    body.innerHTML = html;
+  } else {
+    // Rol normal: solo sus propios reportes, editables.
+    const mine = all.filter(x => x.it.role === S.role);
+    if (!mine.length) { closeIssuesModal(); renderDetail(); return; }
+    body.innerHTML = mine.map(x => issueItemHtml(x.it, x.i, true)).join('');
+  }
+  loadIssuePhotos();   // cada reporte trae sus propias fotos
+}
+
+async function toggleIssueFixed(i) {
+  const u = S.current, r = ROLES[S.role];
+  const arr = parseIssues(u);
+  if (!arr[i]) return;
+  // Solo el rol dueño puede marcar/reabrir el suyo (el admin es solo lectura).
+  if (S.role === 'admin' || (arr[i].role && arr[i].role !== S.role)) { toast('Solo el rol que lo reportó puede cambiarlo'); return; }
+  const nowFixed = !arr[i].fixed;
+  arr[i].fixed = nowFixed;
+  arr[i].fd = nowFixed ? new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '';
+  showLoading(nowFixed ? 'Marcando arreglado...' : 'Reabriendo...');
+  try {
+    await saveIssues(u.id, arr);
+    if (nowFixed) await createUpdate(u.id, `✅ ARREGLADO — ${u.name}\nPor: ${r.name} · ${arr[i].fd}\n\n${arr[i].t}`);
+    await refreshAll(); hideLoading();
+    toast(nowFixed ? 'Marcado arreglado ✅' : 'Reabierto');
+    renderIssuesList(); renderDetail(); renderUnits(S.units);
+  } catch(e) { hideLoading(); toast('Error: '+e.message); }
+}
+
+async function deleteIssue(i) {
+  const u = S.current;
+  const arr = parseIssues(u);
+  if (!arr[i]) return;
+  if (S.role === 'admin' || (arr[i].role && arr[i].role !== S.role)) { toast('Solo el rol que lo reportó puede borrarlo'); return; }
+  arr.splice(i, 1);
+  showLoading('Borrando...');
+  try {
+    await saveIssues(u.id, arr);
+    await refreshAll(); hideLoading(); toast('Reporte borrado');
+    renderIssuesList(); renderDetail(); renderUnits(S.units);
+  } catch(e) { hideLoading(); toast('Error: '+e.message); }
+}
+
+// ── Undo ─────────────────────────────────────────────────────────
+async function undoStatus() {
+  const u = S.current, r = ROLES[S.role];
+  showLoading('Revirtiendo...');
+  try {
+    await mutateColumn(u.id, r.col, {});
+    await refreshAll(); hideLoading(); toast(`${u.name} revertida a pendiente`);
+    const ab = document.getElementById('action-btn');
+    ab.className = `btn-action ${r.cls}`;
+    if (r.twoStep) {
+      setTwoStepButton(ab, document.getElementById('undo-btn'), r, getColStatus(S.current, r.col));
+    } else {
+      ab.disabled = false; ab.textContent = r.action;
+      document.getElementById('undo-btn').style.display = 'none';
+    }
+    renderDetail(); renderUnits(S.units);
+  } catch(e) { hideLoading(); toast('Error: '+e.message); }
+}
+
+// ── Fabricación (rol de 2 pasos) + To-Do de materiales ────────────
+function setTwoStepButton(actionBtn, undoBtn, r, st) {
+  if (st === 'done') {                 // Terminado
+    actionBtn.disabled = true;  actionBtn.textContent = '✅ Ya Terminado';
+    actionBtn.dataset.step = 'done';   undoBtn.style.display = 'block';
+  } else if (st === 'progress') {      // Comenzado
+    actionBtn.disabled = false; actionBtn.textContent = '✔️ Marcar Terminado';
+    actionBtn.dataset.step = 'finish'; undoBtn.style.display = 'block';
+  } else {                              // Sin comenzar
+    actionBtn.disabled = false; actionBtn.textContent = '▶️ Empezar Fabricación';
+    actionBtn.dataset.step = 'start';  undoBtn.style.display = 'none';
+  }
+}
+
+function fechaHoraLocal() {
+  const n = new Date(), p = x => String(x).padStart(2,'0');
+  return `${p(n.getDate())}/${p(n.getMonth()+1)}/${n.getFullYear()} ${p(n.getHours())}:${p(n.getMinutes())}`;
+}
+
+// ── Pedidos de material → tablero "Compras — Palacios del Este" ──
+//  Cada material que falta es una LÍNEA en ese tablero, no una nota
+//  dentro de la casa: así la oficina lo ve todo junto en un solo sitio.
+const COMPRAS = {
+  board:  18438349820,
+  casa:   'text_mm8rnpsw',       // Casa
+  por:    'text_mm8rpqk',        // Pedido por
+  fecha:  'date_mm8ryysf',       // Fecha del pedido
+  estado: 'color_mm8rz103',      // Estado Compra
+};
+
+async function addMaterial() {
+  const u = S.current, r = ROLES[S.role];
+  const el = document.getElementById('todo-textarea');
+  const nuevo = (el && el.value || '').trim();
+  if (!nuevo) { toast('Escribe qué material falta'); return; }
+  const hoy = new Date().toISOString().slice(0, 10);
+  const vals = {
+    [COMPRAS.casa]:   'Unidad ' + unitNum(u),
+    [COMPRAS.por]:    r.name,
+    [COMPRAS.fecha]:  { date: hoy },
+    [COMPRAS.estado]: { label: 'Pendiente' },
+  };
+  showLoading('Enviando a Compras...');
+  try {
+    const q = `mutation($bid:ID!,$name:String!,$vals:JSON!){
+      create_item(board_id:$bid, item_name:$name, column_values:$vals){ id } }`;
+    await gql(q, { bid: String(COMPRAS.board), name: nuevo.slice(0, 250), vals: JSON.stringify(vals) });
+    if (el) el.value = '';
+    hideLoading();
+    toast('✅ Pedido enviado a Compras');
+    cargarPedidos(u);
+  } catch(e) { hideLoading(); toast('Error: ' + e.message); }
+}
+
+// Lo que esta casa ya pidió, para que John no lo pida dos veces
+async function cargarPedidos(u) {
+  const caja = document.getElementById('pedidos-lista');
+  if (!caja) return;
+  try {
+    const q = `query($bid:ID!,$casa:CompareValue!){
+      boards(ids:[$bid]){ items_page(limit:50, query_params:{rules:[{column_id:"${COMPRAS.casa}", compare_value:[$casa], operator:contains_text}]}){
+        items { id name column_values(ids:["${COMPRAS.estado}","${COMPRAS.fecha}"]){ id text } } } } }`;
+    const d = await gql(q, { bid: String(COMPRAS.board), casa: 'Unidad ' + unitNum(u) });
+    const items = d.boards?.[0]?.items_page?.items || [];
+    if (!items.length) { caja.innerHTML = '<div class="issue-empty">Sin pedidos para esta casa.</div>'; return; }
+    caja.innerHTML = items.map(it => {
+      const est = (it.column_values.find(c => c.id === COMPRAS.estado) || {}).text || 'Pendiente';
+      const f   = (it.column_values.find(c => c.id === COMPRAS.fecha)  || {}).text || '';
+      const cls = est === 'Comprado' ? 'done' : 'pend';
+      return `<div class="pedido-item">
+        <span class="issue-badge ${cls}">${escHtml(est)}</span>
+        <span class="pedido-txt">${escHtml(it.name)}</span>
+        <span class="pedido-f">${escHtml(fechaCorta(f))}</span>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    caja.innerHTML = '<div class="issue-empty">No se pudo cargar la lista de pedidos.</div>';
+    console.warn('cargarPedidos:', e.message);
+  }
+}
+
+// ── Main Action ───────────────────────────────────────────────────
+async function handleAction() {
+  const r = ROLES[S.role], u = S.current;
+  if (r.sig && r.sigRequired && !S.sigConfirmed) { toast('Confirma tu firma primero'); return; }
+
+  // Rol de dos pasos (Fabricación: Empezar → Terminar)
+  if (r.twoStep) {
+    const ab = document.getElementById('action-btn');
+    const step = ab.dataset.step;
+    const label = step === 'start' ? r.startLabel : r.doneLabel;
+    const iso = new Date().toISOString();               // UTC → Monday la muestra en tu zona
+    const dt  = { date: iso.slice(0,10), time: iso.slice(11,19) };
+    const stamp = fechaHoraLocal();
+    showLoading('Guardando...');
+    try {
+      await mutateColumn(u.id, r.col, { label });
+      if (step === 'start') await mutateColumn(u.id, COL.inicioFab, dt);
+      else                  await mutateColumn(u.id, COL.finFab,    dt);
+      await createUpdate(u.id, step === 'start'
+        ? `▶️ Fabricación COMENZADA — ${stamp}`
+        : `✅ Fabricación TERMINADA — ${stamp}`);
+      await refreshAll(); hideLoading();
+      toast(step === 'start' ? `${u.name}: fabricación comenzada ▶️` : `${u.name}: fabricación terminada ✅`);
+      setTwoStepButton(ab, document.getElementById('undo-btn'), r, getColStatus(S.current, r.col));
+      renderDetail(); renderUnits(S.units);
+    } catch(e) { hideLoading(); toast('Error: '+e.message); }
+    return;
+  }
+
+  showLoading('Guardando...');
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    await mutateColumn(u.id, r.col, { label: r.doneLabel });
+    if (S.role === 'taller')                await mutateColumn(u.id, COL.fechaMedidas, { date: today });
+    else if (S.role === 'instaladorCocina') await mutateColumn(u.id, COL.fechaEntrega, { date: today });
+    else if (S.role === 'instaladorTope')   await mutateColumn(u.id, COL.fechaTopes,   { date: today });
+
+    await refreshAll(); hideLoading(); toast(`${u.name} completada ✅`);
+    const ab = document.getElementById('action-btn');
+    ab.disabled = true; ab.textContent = '✅ Ya Completado';
+    document.getElementById('undo-btn').style.display = 'block';
+    renderDetail(); renderUnits(S.units);
+  } catch(e) { hideLoading(); toast('Error: '+e.message); }
+}
+
+// ── Plano del Proyecto ────────────────────────────────────────────
+function loadPlanoLocal() {
+  try { return JSON.parse(localStorage.getItem('pde_plano_pos')) || {}; } catch(e) { return {}; }
+}
+function getPlanoPos() { return Object.assign({}, HOUSE_POS_BAKED, loadPlanoLocal()); }
+
+// Verde = cocina Y topes instalados · Amarillo = algo avanzado · Gris = nada
+function planoStatus(unit) {
+  const c = getColStatus(unit, COL.instalacionCocina);
+  const t = getColStatus(unit, COL.instalacionTope);
+  if (c === 'done' && t === 'done') return 'done';
+  if (c === 'done' || t === 'done' || c === 'progress' || t === 'progress') return 'progress';
+  return 'pending';
+}
+// Garantía activa (reportada en el portal del cliente y aún sin arreglar) → punto ROJO
+function unitGarantiaActiva(unit) {
+  const raw = getColText(unit, COL.garantias).trim();
+  if (!raw) return false;
+  try { const a = JSON.parse(raw); return Array.isArray(a) && a.some(g => !g.fixed); } catch(e) { return false; }
+}
+
+// Dibuja el PDF del plano en alta resolución sobre el canvas (vectorial = nítido al hacer zoom)
+const PLANO_IMG = 'plano-palacios.jpg';   // plano de secuencia de entrega, 3600px
+let planoPdfRendered = false;
+async function renderPlanoPdf() {
+  if (planoPdfRendered) return;
+  showLoading('Dibujando plano...');
+  try {
+    const el = document.getElementById('plano-canvas');
+    await new Promise((ok, err) => {
+      el.onload  = () => ok();
+      el.onerror = () => err(new Error('no se encontró ' + PLANO_IMG));
+      el.src = encodeURI(PLANO_IMG);
+    });
+    planoPdfRendered = true;
+  } catch(e) {
+    console.warn('renderPlano:', e);
+    toast('No se pudo dibujar el plano: ' + e.message);
+  } finally { hideLoading(); }
+}
+
+async function openPlano() {
+  showScreen('plano');
+  applyPlanoZoom();
+  await renderPlanoPdf();
+  if (!S.token) { document.getElementById('plano-count').textContent = 'Configura el token'; renderPlano(); return; }
+  showLoading('Cargando estado...');
+  try { await refreshAll(); }
+  catch(e) { toast('No se pudo cargar Monday: ' + e.message); }
+  finally { hideLoading(); }
+  renderPlano();
+}
+
+function applyPlanoZoom() {
+  document.getElementById('plano-stage').style.width = (S.planoZoom * 100) + '%';
+}
+function planoZoom(d) {
+  S.planoZoom = Math.min(5, Math.max(1, (S.planoZoom || 1) + d * 0.5));
+  applyPlanoZoom();
+}
+function setPlanoZoom(k) {
+  S.planoZoom = Math.min(5, Math.max(1, k));
+  applyPlanoZoom();
+}
+// Pellizco con dos dedos (celular) + Ctrl+rueda (computadora) + doble toque = reiniciar.
+// Escala el stage completo (plano + puntos juntos), igual que los botones +/−.
+(function initPlanoPinch() {
+  const sc = document.getElementById('plano-scroll');
+  if (!sc) return;
+  let startDist = 0, startScale = 1;
+  const dist = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+  sc.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) { startDist = dist(e.touches); startScale = S.planoZoom || 1; }
+  }, { passive: true });
+  sc.addEventListener('touchmove', e => {
+    if (e.touches.length === 2 && startDist) { e.preventDefault(); setPlanoZoom(startScale * dist(e.touches) / startDist); }
+  }, { passive: false });
+  sc.addEventListener('touchend', () => { startDist = 0; });
+  sc.addEventListener('wheel', e => {
+    if (e.ctrlKey) { e.preventDefault(); setPlanoZoom((S.planoZoom || 1) - e.deltaY * 0.003); }
+  }, { passive: false });
+  sc.addEventListener('dblclick', () => setPlanoZoom(1));
+})();
+
+function renderPlano() {
+  const pos = (S.calib && S.calib.active) ? S.calib.pos : getPlanoPos();
+  const byNum = {};
+  (S.units || []).forEach(u => { const n = (u.name.replace(/\D/g,'') || ''); if (n) byNum[n] = u; });
+  let placed = 0, html = '';
+  Object.keys(pos).forEach(n => {
+    const p = pos[n]; if (!p) return;
+    placed++;
+    let cls = 'pending';
+    if (S.calib && S.calib.active) cls = 'calib';
+    else if (byNum[n]) cls = unitGarantiaActiva(byNum[n]) ? 'garantia' : planoStatus(byNum[n]);
+    html += `<div class="plano-dot ${cls}" style="left:${p[0]}%;top:${p[1]}%;" onclick="planoDotTap('${n}')">${n}</div>`;
+  });
+  document.getElementById('plano-markers').innerHTML = html;
+  if (!(S.calib && S.calib.active))
+    document.getElementById('plano-count').textContent = placed ? `${placed} casas ubicadas` : 'Casas sin ubicar';
+}
+
+// Al tocar una casa en el plano se abre su ficha: en qué va y sus fotos.
+function planoDotTap(n) {
+  if (S.calib && S.calib.active) return;
+  const u = (S.units || []).find(x => (x.name.replace(/\D/g,'')) === n);
+  if (!u) { toast('Casa ' + n + ' — sin datos todavía'); return; }
+  openCasaModal(u, n);
+}
+
+function closeCasaModal() { document.getElementById('casa-modal').classList.remove('show'); }
+
+function openCasaModal(u, n) {
+  document.getElementById('casa-modal-title').textContent = `Casa ${n}`;
+  const body = document.getElementById('casa-modal-body');
+
+  const etapa = (label, colId) => {
+    const st = getColStatus(u, colId);
+    return row(label, st, getColText(u, colId) || statusLabel(st));
+  };
+
+  // Datos del plano de VRM: de qué lado queda la marquesina y cuándo toca entrar
+  const marq    = getColText(u, COL.marquesina);
+  const cocIni  = fechaCorta(getColText(u, COL.planCocIni));
+  const cocFin  = fechaCorta(getColText(u, COL.planCocFin));
+  const topIni  = fechaCorta(getColText(u, COL.planTopIni));
+  const topFin  = fechaCorta(getColText(u, COL.planTopFin));
+  const hayPlan = cocIni || cocFin || topIni || topFin;
+
+  body.innerHTML =
+    (unitGarantiaActiva(u) ? `<div class="casa-gar">🛠️ Tiene una garantía sin arreglar</div>` : '') +
+    (marq ? `<div class="casa-marq">🚗 Marquesina a la <b>${escHtml(marq)}</b></div>` : '') +
+    `<div class="detail-status-card"><h3>Cómo va</h3>
+       ${etapa('Fabricación',        COL.fabricacionCocina)}
+       ${etapa('Instalación Cocina', COL.instalacionCocina)}
+       ${etapa('Instalación Tope',   COL.instalacionTope)}
+       ${etapa('Insp. Contratista',  COL.aprobacion)}
+     </div>` +
+    (hayPlan ? `<div class="detail-status-card"><h3>Fechas del plano (VRM)</h3>
+       <div class="status-row"><span class="status-label">Cocina y baños</span>
+         <span class="status-val">${cocIni} → ${cocFin}</span></div>
+       <div class="status-row"><span class="status-label">Topes</span>
+         <span class="status-val">${topIni} → ${topFin}</span></div>
+     </div>` : '') +
+    `
+     <div class="detail-status-card"><h3>Fotos de la instalación</h3>
+       <div class="casa-fotos" id="casa-fotos"></div>
+       <div class="casa-msg" id="casa-fotos-msg">Cargando fotos...</div>
+     </div>`;
+
+  document.getElementById('casa-modal').classList.add('show');
+  cargarFotosCasa(u);
+}
+
+async function cargarFotosCasa(u) {
+  const grid = document.getElementById('casa-fotos');
+  const msg  = document.getElementById('casa-fotos-msg');
+  try {
+    // Solo las del trabajo: las de los reportes de problema viven en su reporte.
+    const d = await fotosApi('list', { unidad: unitNum(u), tipo: 'trabajo' });
+    const fotos = d.fotos || [];
+    if (!grid || !msg) return;                 // cerró la ficha mientras cargaba
+    if (!fotos.length) { msg.textContent = 'Todavía no hay fotos de esta casa.'; return; }
+    msg.remove();
+    fotos.forEach(f => {
+      const img = document.createElement('img');
+      img.src = f.url; img.className = 'casa-foto';
+      img.onclick = () => openPhotoModal(f.url);
+      img.onerror = () => img.remove();
+      grid.appendChild(img);
+    });
+  } catch(e) {
+    if (msg) msg.textContent = 'No se pudieron cargar las fotos.';
+    console.warn('cargarFotosCasa:', e.message);
+  }
+}
+
+// ── Calibración guiada ────────────────────────────────────────────
+function startCalibration() {
+  S.calib = { active: true, n: 1, pos: Object.assign({}, getPlanoPos()) };
+  document.getElementById('calib-bar').style.display = 'flex';
+  document.getElementById('calib-start-btn').style.display = 'none';
+  document.getElementById('plano-stage').classList.add('calibrating');
+  updateCalibUI();
+  renderPlano();
+  toast('Toca cada casa en el plano, en orden');
+}
+function stopCalibration() {
+  S.calib = null;
+  document.getElementById('calib-bar').style.display = 'none';
+  document.getElementById('calib-start-btn').style.display = '';
+  document.getElementById('plano-stage').classList.remove('calibrating');
+  renderPlano();
+}
+function updateCalibUI() {
+  const placed = Object.keys(S.calib.pos).length;
+  document.getElementById('calib-msg').textContent = S.calib.n <= 240
+    ? `Toca la casa #${S.calib.n}   (${placed}/240 ubicadas)`
+    : `¡Listo! ${placed}/240. Toca "Exportar" y envíame el texto.`;
+}
+function planoStageClick(e) {
+  if (!S.calib || !S.calib.active) return;
+  const img = document.getElementById('plano-canvas');
+  const rect = img.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width  * 100;
+  const y = (e.clientY - rect.top)  / rect.height * 100;
+  if (x < 0 || x > 100 || y < 0 || y > 100) return;
+  if (S.calib.n > 240) { toast('Ya ubicaste las 240. Toca Exportar.'); return; }
+  S.calib.pos[String(S.calib.n)] = [Math.round(x*10)/10, Math.round(y*10)/10];
+  localStorage.setItem('pde_plano_pos', JSON.stringify(S.calib.pos));
+  S.calib.n++;
+  updateCalibUI();
+  renderPlano();
+}
+function calibBack() {
+  if (!S.calib) return;
+  S.calib.n = Math.max(1, S.calib.n - 1);
+  delete S.calib.pos[String(S.calib.n)];
+  localStorage.setItem('pde_plano_pos', JSON.stringify(S.calib.pos));
+  updateCalibUI();
+  renderPlano();
+}
+function calibSkip() {
+  if (!S.calib) return;
+  S.calib.n = Math.min(241, S.calib.n + 1);
+  updateCalibUI();
+}
+function calibExport() {
+  if (!S.calib) return;
+  document.getElementById('plano-export-txt').value = JSON.stringify(S.calib.pos);
+  document.getElementById('plano-export').classList.add('show');
+}
+function copyPlanoExport() {
+  const ta = document.getElementById('plano-export-txt');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(ta.value).then(() => toast('✅ Copiado'))
+      .catch(() => { ta.select(); document.execCommand('copy'); toast('✅ Copiado'); });
+  } else { ta.select(); document.execCommand('copy'); toast('✅ Copiado'); }
+}
+
+// ── UI Helpers ────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 5000);
+}
+function showLoading(msg='Cargando...') { document.getElementById('loading-text').textContent=msg; document.getElementById('loading').classList.add('show'); }
+function hideLoading() { document.getElementById('loading').classList.remove('show'); }
+
+if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+</script>
+</body>
+</html>

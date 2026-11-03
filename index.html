@@ -137,7 +137,19 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .photo-thumb.pending      { opacity: 0.6;  outline: 2px dashed var(--orange); }
 .photo-add     { aspect-ratio: 1; border-radius: 8px; background: var(--brand-light); border: 2px dashed var(--brand-mid); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--brand-mid); font-size: 28px; }
 /* Los selectores de archivo se disparan por código: nunca se ven. */
-#camera-input, #issue-camera-input { display: none; }
+#camera-input, #issue-camera-input, #gar-camera-input { display: none; }
+/* ── Garantías y piezas faltantes ── */
+.gar-resumen { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
+.gar-origen  { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 20px; background: var(--brand-light); color: var(--brand); }
+.gar-que     { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; color: var(--orange); margin-bottom: 4px; }
+.gar-fotos-t { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 10px; }
+.gar-form    { margin-top: 14px; padding-top: 14px; border-top: 2px dashed #e5e7eb; }
+.gar-form-t  { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 8px; }
+.gar-chips   { display: flex; gap: 8px; margin-bottom: 8px; }
+.gar-chip    { flex: 1; border: 1.5px solid #d7dbe3; background: #fff; border-radius: 10px; padding: 10px 6px; font-size: 13px; font-weight: 700; color: var(--text-muted); cursor: pointer; }
+.gar-chip.on { border-color: var(--brand-mid); background: var(--brand-light); color: var(--brand); }
+.gar-row     { display: flex; gap: 8px; margin-bottom: 8px; }
+.gar-sel     { flex: 1; min-width: 0; border: 1.5px solid #d7dbe3; border-radius: 10px; padding: 11px 8px; font-size: 14px; font-family: inherit; background: #fff; color: var(--text); }
 .photo-loading { aspect-ratio: 1; border-radius: 8px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
 /* ── Signature ── */
@@ -324,6 +336,9 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
     <div class="role-card encargado"   onclick="goToPin('encargado')">
       <div class="role-icon">✅</div><div class="role-name">ENCARGADO</div><div class="role-sub">Aprobación final</div>
     </div>
+    <div class="role-card" style="grid-column:1/-1;border-color:var(--red);" onclick="selectRole('garantias')">
+      <div class="role-icon">🛠️</div><div class="role-name">GARANTÍAS Y PIEZAS FALTANTES</div><div class="role-sub">Contratista y cliente · sin código</div>
+    </div>
     <div class="role-card" style="grid-column:1/-1;border-color:var(--green);" onclick="openPlano()">
       <div class="role-icon">📍</div><div class="role-name">PLANO DEL PROYECTO</div><div class="role-sub">Mapa de casas en el sitio · sin código</div>
     </div>
@@ -466,6 +481,8 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 <input type="file" id="camera-input" accept="image/*" multiple onchange="handlePhotos(event)">
 <!-- Fotos que se pegan a UN reporte de daño/faltante concreto -->
 <input type="file" id="issue-camera-input" accept="image/*" multiple onchange="handleIssuePhotos(event)">
+<!-- Fotos del daño y del arreglo de una garantía -->
+<input type="file" id="gar-camera-input" accept="image/*" multiple onchange="handleGarFotos(event)">
 
 <div id="photo-modal">
   <button id="photo-modal-close" onclick="closePhotoModal()">✕</button>
@@ -568,7 +585,18 @@ const ROLES = {
   instaladorTope:   { name: 'Inst. Topes',   col: COL.instalacionTope,   cls: 'inst-tope',   photos: true,  sig: true,  sigRequired: false, issues: true,  doneLabel: 'Done',  action: 'Marcar Topes Instalados ✔' },
   encargado:        { name: 'Encargado',     col: COL.aprobacion,        cls: 'encargado',   photos: false, sig: true,  sigRequired: true,  issues: false, doneLabel: 'Done',  action: 'Firmar y Aprobar ✔' },
   admin:            { name: 'Administración', col: COL.aprobacion,       cls: 'admin',       photos: true,  sig: false, sigRequired: false, issues: true,  doneLabel: '',      action: '' },
+  // Garantías: entra sin PIN (la usan el contratista y el desarrollador).
+  // No marca etapas ni firma: solo levanta y cierra garantías por casa.
+  garantias:        { name: 'Garantías',     col: COL.aprobacion,        cls: 'encargado',   photos: false, sig: false, sigRequired: false, issues: false, gar: true, doneLabel: '', action: '' },
 };
+
+// ── Garantías y piezas faltantes ─────────────────────────────────
+const GAR_ORIGEN = [
+  { k: 'contratista', t: '🏗️ Contratista' },
+  { k: 'cliente',     t: '🏠 Cliente' },
+];
+const GAR_TIPO = ['Pieza faltante', 'Daño o guayazo', 'Ajuste', 'Otro'];
+const GAR_AREA = ['Cocina', 'Vanity', 'Topes'];
 
 // ── Plano: posiciones fijas de cada casa [x%, y%] sobre el plano ──
 // Extraídas del PDF "PLANO de SECUENCIA CONST - PALACIOS DEL ESTE" (2-jun-2026)
@@ -582,6 +610,8 @@ const S = {
   planoZoom: 1, calib: null,
   issueFotoTarget: null,   // a qué reporte se le está añadiendo una foto
   fotosNuevoReporte: [],   // fotos adjuntadas antes de pulsar "Reportar"
+  garFotoTarget: null,     // { gid, momento } de la garantía que recibe la foto
+  fotosNuevaGarantia: [],  // fotos del daño adjuntadas antes de guardar
 };
 
 window.addEventListener('load', () => {
@@ -772,7 +802,11 @@ function issuesForRole(unit, role) {
   return arr.filter(i => i.role === role);
 }
 // Hay problema "abierto" (sin arreglar) que le corresponde al rol actual.
-function hasIssue(unit) { return issuesForRole(unit, S.role).some(i => !i.fixed); }
+function hasIssue(unit) {
+  // En el rol Garantías el aviso de la lista es la garantía sin arreglar.
+  if (S.role === 'garantias') return unitGarantiaActiva(unit);
+  return issuesForRole(unit, S.role).some(i => !i.fixed);
+}
 // Columna de estado activa según el rol (admin elige etapa).
 function currentCol() { return S.role === 'admin' ? COL[S.adminStage] : ROLES[S.role].col; }
 function statusIcon(s)  { return s==='done'?'✅':s==='progress'?'⏳':'⬜'; }
@@ -867,7 +901,8 @@ function openUnit(itemId) {
   S.sigDrawn     = false;
   S.sigConfirmed = false;
   S.sigActive    = false;
-  S.fotosNuevoReporte = [];   // que no se arrastren fotos de otra unidad
+  S.fotosNuevoReporte  = [];  // que no se arrastren fotos de otra unidad
+  S.fotosNuevaGarantia = [];
   if (!S.current) return;
   const r = ROLES[S.role];
 
@@ -875,8 +910,8 @@ function openUnit(itemId) {
   document.getElementById('detail-role-label').textContent = r.name;
 
   const footer = document.querySelector('#screen-detail .action-footer');
-  if (S.role === 'admin') {
-    // El admin solo observa: sin botón de marcar/revertir.
+  if (S.role === 'admin' || r.gar) {
+    // Admin y Garantías no marcan etapas: sin botón de marcar/revertir.
     footer.style.display = 'none';
   } else {
     footer.style.display = '';
@@ -902,6 +937,7 @@ function openUnit(itemId) {
   showScreen('detail');
   if (r.photos) loadPhotos(itemId);        // fotos compartidas (Supabase) + pendientes
   if (r.todo)   cargarPedidos(S.current);  // lo que esta casa ya pidió a Compras
+  if (r.gar)    cargarFotosGarantias(S.current);   // fotos de daño y de arreglo
   if (r.photos || r.sig) loadDetailMedia(itemId); // fotos + firma de Monday
 }
 
@@ -920,6 +956,33 @@ function renderDetail() {
       <div class="photo-loading" id="photos-loading">⏳</div>
       <div class="photo-add" onclick="document.getElementById('camera-input').click()">+</div>
     </div></div>`;
+
+  if (r.gar) {
+    const gs = parseGarantias(u);
+    const pend = gs.filter(g => !g.fixed).length;
+    html += `<div class="issue-card"><h3>🛠️ Garantías y piezas faltantes</h3>
+      ${gs.length
+        ? `<div class="gar-resumen">${gs.length} en total · <b>${pend} sin arreglar</b></div>` +
+          gs.map((g, i) => garItemHtml(g, i)).join('')
+        : `<div class="issue-empty">Esta casa no tiene garantías.</div>`}
+      <div class="gar-form">
+        <div class="gar-form-t">Añadir una garantía</div>
+        <div class="gar-chips" id="gar-origen">
+          ${GAR_ORIGEN.map((o, i) => `<button class="gar-chip${i === 0 ? ' on' : ''}" data-v="${o.k}" onclick="pickChip(this)">${o.t}</button>`).join('')}
+        </div>
+        <div class="gar-row">
+          <select class="gar-sel" id="gar-tipo">${GAR_TIPO.map(t => `<option>${t}</option>`).join('')}</select>
+          <select class="gar-sel" id="gar-area">${GAR_AREA.map(t => `<option>${t}</option>`).join('')}</select>
+        </div>
+        <textarea class="issue-textarea" id="gar-desc" placeholder="Ej: Falta el tirador de la gaveta de arriba"></textarea>
+        <div class="issue-fotos" id="gar-nueva-fotos">
+          <div class="issue-foto-add" onclick="addFotoGarantiaNueva()"><span>📷</span><span>Foto</span></div>
+        </div>
+        <div class="issue-fotos-msg">Puedes adjuntar fotos del daño antes de guardarla.</div>
+        <button class="btn-issue" onclick="addGarantia()">➕ Guardar garantía</button>
+      </div>
+    </div>`;
+  }
 
   if (r.issues) {
     const issues  = issuesForRole(u, S.role);
@@ -1376,6 +1439,205 @@ window.addEventListener('online', retryPendingPhotos);
 
 function openPhotoModal(src)  { document.getElementById('photo-modal-img').src=src; document.getElementById('photo-modal').classList.add('show'); }
 function closePhotoModal()    { document.getElementById('photo-modal').classList.remove('show'); }
+
+// ── Garantías y piezas faltantes (por casa) ──────────────────────
+//  Viven en la columna "Garantías" de Monday como lista JSON.
+//  Cada una: quién la pidió, qué es, dónde, cuándo, y si ya se arregló.
+//  Las fotos van a Supabase con tipo 'garantia':
+//    <id>      = fotos del daño
+//    <id>-fix  = fotos del arreglo
+function parseGarantias(unit) {
+  const raw = getColText(unit, COL.garantias).trim();
+  if (!raw) return [];
+  try { const a = JSON.parse(raw); return Array.isArray(a) ? a : []; } catch(e) { return []; }
+}
+async function saveGarantias(unitId, arr) {
+  await mutateColumn(unitId, COL.garantias, { text: arr.length ? JSON.stringify(arr) : '' });
+}
+function garOrigenTxt(k) { return (GAR_ORIGEN.find(o => o.k === k) || GAR_ORIGEN[0]).t; }
+
+function garItemHtml(g, i) {
+  const gid = g.id || ('v' + i);
+  return `<div class="issue-item ${g.fixed ? 'fixed' : ''}">
+      <div class="issue-item-top">
+        <span class="issue-item-num">#${i + 1}</span>
+        <span class="gar-origen">${garOrigenTxt(g.origen)}</span>
+        ${g.fixed ? '<span class="issue-item-tag">✅ Arreglada</span>' : '<span class="issue-item-tag pend">⚠️ Pendiente</span>'}
+        <button class="issue-item-del" onclick="deleteGarantia(${i})" title="Borrar">🗑️</button>
+      </div>
+      <div class="gar-que">${escHtml(g.tipo || '')}${g.area ? ' · ' + escHtml(g.area) : ''}</div>
+      <div class="issue-item-text">${escHtml(g.desc || '')}</div>
+      <div class="issue-item-meta">Pedida el ${escHtml(fechaCorta(g.d))}${g.fixed && g.fd ? ' · Arreglada el ' + escHtml(fechaCorta(g.fd)) : ''}</div>
+
+      <div class="gar-fotos-t">📷 Foto del daño</div>
+      <div class="issue-fotos" id="gd-${gid}" data-gid="${gid}" data-momento="dano">
+        <div class="issue-foto-add" onclick="addFotoGarantia('${gid}','dano')"><span>📷</span><span>Foto</span></div>
+      </div>
+
+      <div class="gar-fotos-t">🔧 Foto del arreglo</div>
+      <div class="issue-fotos" id="ga-${gid}" data-gid="${gid}" data-momento="fix">
+        <div class="issue-foto-add" onclick="addFotoGarantia('${gid}','fix')"><span>📷</span><span>Foto</span></div>
+      </div>
+
+      <button class="issue-item-fix ${g.fixed ? 'on' : ''}" onclick="toggleGarantiaFixed(${i})">
+        ${g.fixed ? '↩ Volver a abrir' : '✅ Marcar arreglada'}
+      </button>
+    </div>`;
+}
+
+function pickChip(btn) {
+  const cont = btn.parentElement;
+  cont.querySelectorAll('.gar-chip').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+async function addGarantia() {
+  const u = S.current;
+  const desc = (document.getElementById('gar-desc')?.value || '').trim();
+  if (!desc) { toast('Escribe qué hay que arreglar'); return; }
+  const origen = document.querySelector('#gar-origen .gar-chip.on')?.dataset.v || 'contratista';
+  const tipo   = document.getElementById('gar-tipo')?.value || GAR_TIPO[0];
+  const area   = document.getElementById('gar-area')?.value || GAR_AREA[0];
+  const gid    = 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+  showLoading('Guardando garantía...');
+  try {
+    const arr = parseGarantias(u);
+    arr.push({ id: gid, origen, tipo, area, desc, d: new Date().toISOString().slice(0, 10), fixed: false, fd: '' });
+    await saveGarantias(u.id, arr);
+    await createUpdate(u.id, `🛠️ GARANTÍA — ${u.name}\nPidió: ${garOrigenTxt(origen)} · ${tipo} · ${area}\n${fechaHoraLocal()}\n\n${desc}`);
+
+    // Las fotos que adjuntó antes de guardar ya tienen a dónde ir
+    const pend = S.fotosNuevaGarantia.slice();
+    for (const f of pend) {
+      const rec = { unitId: u.id, unidad: unitNum(u), unidadNombre: u.name, rol: 'Garantías',
+                    dataUrl: f.dataUrl, nombre: `garantia_${unitNum(u)}_${Date.now()}.jpg`,
+                    tipo: 'garantia', issueId: gid };
+      try { await fotosApi('upload', rec); } catch(e) { await dbSavePending(rec); }
+    }
+    S.fotosNuevaGarantia = [];
+
+    await refreshAll(); hideLoading();
+    toast(pend.length ? `Garantía guardada con ${pend.length} foto(s) 🛠️` : 'Garantía guardada 🛠️');
+    renderDetail(); renderUnits(S.units);
+  } catch(e) { hideLoading(); toast('Error: ' + e.message); }
+}
+
+async function toggleGarantiaFixed(i) {
+  const u = S.current;
+  const arr = parseGarantias(u);
+  if (!arr[i]) return;
+  const ahoraArreglada = !arr[i].fixed;
+  arr[i].fixed = ahoraArreglada;
+  arr[i].fd = ahoraArreglada ? new Date().toISOString().slice(0, 10) : '';   // fecha automática
+  showLoading(ahoraArreglada ? 'Marcando arreglada...' : 'Reabriendo...');
+  try {
+    await saveGarantias(u.id, arr);
+    if (ahoraArreglada) await createUpdate(u.id, `✅ GARANTÍA ARREGLADA — ${u.name}\n${fechaHoraLocal()}\n\n${arr[i].desc || ''}`);
+    await refreshAll(); hideLoading();
+    toast(ahoraArreglada ? 'Marcada arreglada ✅' : 'Reabierta');
+    renderDetail(); renderUnits(S.units);
+  } catch(e) { hideLoading(); toast('Error: ' + e.message); }
+}
+
+async function deleteGarantia(i) {
+  const u = S.current;
+  const arr = parseGarantias(u);
+  if (!arr[i]) return;
+  if (!confirm('¿Borrar esta garantía? No se puede deshacer.')) return;
+  arr.splice(i, 1);
+  showLoading('Borrando...');
+  try {
+    await saveGarantias(u.id, arr);
+    await refreshAll(); hideLoading(); toast('Garantía borrada');
+    renderDetail(); renderUnits(S.units);
+  } catch(e) { hideLoading(); toast('Error: ' + e.message); }
+}
+
+// ── Fotos de garantía (daño y arreglo) ───────────────────────────
+function addFotoGarantia(gid, momento) {
+  S.garFotoTarget = { gid, momento };
+  document.getElementById('gar-camera-input').click();
+}
+function addFotoGarantiaNueva() {
+  S.garFotoTarget = { gid: 'NUEVA', momento: 'dano' };
+  document.getElementById('gar-camera-input').click();
+}
+
+async function handleGarFotos(event) {
+  const files = Array.from(event.target.files);
+  event.target.value = '';
+  const t = S.garFotoTarget;
+  if (!files.length || !S.current || !t) return;
+  const u = S.current;
+
+  // Adjuntadas antes de guardar la garantía: esperan a que exista
+  if (t.gid === 'NUEVA') {
+    const tira = document.getElementById('gar-nueva-fotos');
+    for (const file of files) {
+      try {
+        const previewUrl = URL.createObjectURL(file);
+        const img = document.createElement('img');
+        img.src = previewUrl; img.className = 'issue-foto pending';
+        img.onclick = () => openPhotoModal(previewUrl);
+        if (tira) tira.appendChild(img);
+        const jpeg = await fileToJpeg(file);
+        S.fotosNuevaGarantia.push({ dataUrl: await blobToDataUrl(jpeg) });
+      } catch(e) { toast('❌ ' + e.message); }
+    }
+    toast(`📎 ${S.fotosNuevaGarantia.length} foto(s) lista(s) — se suben al guardar`);
+    return;
+  }
+
+  const tira = document.getElementById((t.momento === 'fix' ? 'ga-' : 'gd-') + t.gid);
+  for (const file of files) {
+    const previewUrl = URL.createObjectURL(file);
+    const img = document.createElement('img');
+    img.src = previewUrl; img.className = 'issue-foto uploading';
+    if (tira) tira.appendChild(img);
+    toast('⏳ Subiendo foto...');
+    try {
+      const jpeg = await fileToJpeg(file);
+      const rec = { unitId: u.id, unidad: unitNum(u), unidadNombre: u.name, rol: 'Garantías',
+                    dataUrl: await blobToDataUrl(jpeg),
+                    nombre: `garantia_${unitNum(u)}_${Date.now()}.jpg`,
+                    tipo: 'garantia', issueId: t.gid + (t.momento === 'fix' ? '-fix' : '') };
+      try {
+        await fotosApi('upload', rec);
+        img.classList.remove('uploading');
+        toast('✅ Foto guardada');
+      } catch(e) {
+        await dbSavePending(rec);
+        img.classList.replace('uploading', 'pending');
+        toast('📴 Sin conexión — subirá sola después');
+      }
+      img.onclick = () => openPhotoModal(previewUrl);
+    } catch(e) {
+      img.classList.replace('uploading', 'upload-error');
+      toast('❌ Error: ' + e.message);
+    }
+  }
+}
+
+// Carga las fotos de daño y de arreglo de cada garantía visible
+async function cargarFotosGarantias(u) {
+  const tiras = document.querySelectorAll('#screen-detail .issue-fotos[data-gid]');
+  for (const tira of tiras) {
+    const gid = tira.dataset.gid;
+    const sufijo = tira.dataset.momento === 'fix' ? '-fix' : '';
+    if (!gid) continue;
+    try {
+      const d = await fotosApi('list', { unidad: unitNum(u), tipo: 'garantia', issueId: gid + sufijo });
+      (d.fotos || []).forEach(f => {
+        const img = document.createElement('img');
+        img.src = f.url; img.className = 'issue-foto';
+        img.onclick = () => openPhotoModal(f.url);
+        img.onerror = () => img.remove();
+        tira.insertBefore(img, tira.firstChild);
+      });
+    } catch(e) { console.warn('fotos garantía ' + gid + ':', e.message); }
+  }
+}
 
 // ── Issues ───────────────────────────────────────────────────────
 function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }

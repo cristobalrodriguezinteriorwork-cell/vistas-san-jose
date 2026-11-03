@@ -84,8 +84,8 @@ async function sbSelect(unidad, tipo, issueId) {
   let q = `proyecto=eq.${PROYECTO}&unidad=eq.${encodeURIComponent(unidad)}` +
           `&tipo=eq.${encodeURIComponent(tipo)}` +
           `&order=created_at.asc&select=id,ruta,rol,autor,tipo,issue_id,created_at`;
-  // Las de un reporte se piden por su id; las de trabajo no llevan reporte.
-  if (tipo === 'problema') q += `&issue_id=eq.${encodeURIComponent(issueId)}`;
+  // Las de un reporte o garantía se piden por su id; las de trabajo no.
+  if (tipo !== 'trabajo') q += `&issue_id=eq.${encodeURIComponent(issueId)}`;
   const r = await fetch(`${SUPABASE_URL}/rest/v1/fotos?${q}`, { headers: sbHeaders() });
   if (!r.ok) throw new Error('BD: ' + (await r.text()).slice(0, 200));
   return r.json();
@@ -109,9 +109,9 @@ exports.handler = async (event) => {
     if (body.action === 'list') {
       const unidad = String(body.unidad || '').replace(/\D/g, '');
       if (!unidad) return json(400, { error: 'Falta la unidad' });
-      const tipo    = body.tipo === 'problema' ? 'problema' : 'trabajo';
+      const tipo    = ['problema', 'garantia'].includes(body.tipo) ? body.tipo : 'trabajo';
       const issueId = String(body.issueId || '');
-      if (tipo === 'problema' && !issueId) return json(400, { error: 'Falta el reporte' });
+      if (tipo !== 'trabajo' && !issueId) return json(400, { error: 'Falta el reporte o la garantía' });
       const filas = await sbSelect(unidad, tipo, issueId);
       const fotos = [];
       for (const f of filas) {
@@ -132,13 +132,14 @@ exports.handler = async (event) => {
       const buffer = Buffer.from(m[2], 'base64');
       if (buffer.length > 8 * 1024 * 1024) return json(413, { error: 'La foto pesa demasiado' });
 
-      const tipo    = body.tipo === 'problema' ? 'problema' : 'trabajo';
+      const tipo    = ['problema', 'garantia'].includes(body.tipo) ? body.tipo : 'trabajo';
       const issueId = String(body.issueId || '').slice(0, 60);
-      if (tipo === 'problema' && !issueId) return json(400, { error: 'Falta el reporte al que pertenece la foto' });
+      if (tipo !== 'trabajo' && !issueId) return json(400, { error: 'Falta el reporte o la garantía a la que pertenece la foto' });
 
       const ext  = mime === 'image/png' ? 'png' : 'jpg';
-      // Las de problemas van en su propia subcarpeta: se ven aparte también en Storage.
-      const carpeta = tipo === 'problema' ? `problemas/${issueId}/` : '';
+      // Problemas y garantías van en su propia subcarpeta: se ven aparte en Storage.
+      const carpeta = tipo === 'trabajo' ? ''
+        : `${tipo}s/${issueId.replace(/[^A-Za-z0-9_-]/g, '_')}/`;
       const ruta = `${PROYECTO}/unidad-${unidad.padStart(3, '0')}/${carpeta}` +
                    `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
@@ -152,7 +153,7 @@ exports.handler = async (event) => {
         rol:             String(body.rol || '').slice(0, 60),
         autor:           String(body.autor || '').slice(0, 80),
         tipo:            tipo,
-        issue_id:        tipo === 'problema' ? issueId : null,
+        issue_id:        tipo === 'trabajo' ? null : issueId,
         mime:            mime,
         bytes:           buffer.length
       });
